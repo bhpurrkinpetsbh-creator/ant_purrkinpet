@@ -8,7 +8,7 @@ const About = () => {
       <section className="bg-muted/30 py-16">
         <div className="container">
           <div className="max-w-3xl mx-auto text-center space-y-4">
-            <img src={logo} alt="Purrkin Pets Logo" className="h-24 w-24 mx-auto mb-4" />
+            <img src={logo} alt="Purrkin Pets Logo" className="h-32 w-32 mx-auto mb-4" />
             <h1 className="font-display text-4xl lg:text-5xl font-bold">About Purrkin Pets</h1>
             <p className="text-xl text-muted-foreground">Your One Stop Pet Paradise</p>
           </div>
@@ -21,10 +21,12 @@ const About = () => {
             <Card className="p-6">
               <h2 className="font-display text-2xl font-bold mb-4">Our Story</h2>
               <p className="text-muted-foreground leading-relaxed mb-4">
-                Welcome to Purrkin Pets, Bahrain's favorite destination for all your pet needs. We are passionate about providing premium quality products and exceptional services for your beloved companions.
+                Welcome to Purrkin Pets, Bahrain's favorite destination for all your pet needs. We are passionate about
+                providing premium quality products and exceptional services for your beloved companions.
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                From nutritious food to engaging toys, comfortable accessories to expert grooming services, we offer everything your pets need to live happy, healthy lives.
+                From nutritious food to engaging toys, comfortable accessories to expert grooming services, we offer
+                everything your pets need to live happy, healthy lives.
               </p>
             </Card>
 
@@ -82,10 +84,10 @@ const About = () => {
                   <Instagram className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
                   <div>
                     <p className="font-medium">Instagram</p>
-                    <a 
-                      href="https://www.instagram.com/purrkinpets.bh/" 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
+                    <a
+                      href="https://www.instagram.com/purrkinpets.bh/"
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="text-sm text-primary hover:underline"
                     >
                       @purrkinpets.bh
@@ -114,9 +116,7 @@ const About = () => {
                   title="Purrkin Pets Location"
                 />
               </div>
-              <p className="text-sm text-muted-foreground mt-4">
-                7JJW+VQ Galali, Bahrain
-              </p>
+              <p className="text-sm text-muted-foreground mt-4">7JJW+VQ Galali, Bahrain</p>
             </Card>
 
             <Card className="p-6 bg-gradient-hero text-primary-foreground">
