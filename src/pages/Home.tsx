@@ -1,9 +1,12 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowRight, Heart, Truck, Shield, Sparkles } from "lucide-react";
+import { ArrowRight, Heart, Truck, Shield, Sparkles, ShoppingBag, Calendar, Package } from "lucide-react";
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
+import { supabase } from "@/integrations/supabase/client";
+import { useState, useEffect } from "react";
+import { useCart } from "@/hooks/useCart";
 import heroStorefront from "@/assets/hero-storefront.jpg";
 import hamsterFood from "@/assets/hamster-food.jpg";
 import catFood from "@/assets/cat-food.jpg";
@@ -26,6 +29,42 @@ import dogsImage from "@/assets/category-dogs.jpg";
 import fishImage from "@/assets/category-fish.jpg";
 import rabbitsImage from "@/assets/category-rabbits.jpg";
 const Home = () => {
+  const [user, setUser] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const { cartCount } = useCart();
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+      if (user) {
+        fetchUserProfile(user.id);
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchUserProfile(session.user.id);
+      } else {
+        setUserProfile(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const fetchUserProfile = async (userId: string) => {
+    const { data } = await supabase
+      .from('customers')
+      .select('full_name')
+      .eq('id', userId)
+      .maybeSingle();
+    
+    if (data) {
+      setUserProfile(data);
+    }
+  };
+
   const categories = [{
     name: "Cats",
     image: catsImage,
@@ -208,17 +247,55 @@ const Home = () => {
       <section className="container py-20">
         <Card className="relative overflow-hidden bg-gradient-hero p-12 text-center">
           <div className="relative z-10 max-w-2xl mx-auto space-y-6">
-            <h2 className="font-display text-4xl font-bold text-primary-foreground">
-              Join Our Pet-Loving Community
-            </h2>
-            <p className="text-lg text-primary-foreground/90">
-              Sign up today and get exclusive access to special offers, expert tips, and more!
-            </p>
-            <Button size="lg" variant="secondary" className="shadow-lg" asChild>
-              <Link to="/auth">
-                Get Started <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </Button>
+            {user ? (
+              <>
+                <h2 className="font-display text-4xl font-bold text-primary-foreground">
+                  Welcome Back, {userProfile?.full_name || 'Pet Lover'}! 🎉
+                </h2>
+                <p className="text-lg text-primary-foreground/90">
+                  Ready to pamper your furry friends? Explore new arrivals, book grooming, or check your orders!
+                </p>
+                <div className="flex flex-wrap gap-4 justify-center">
+                  <Button size="lg" variant="secondary" className="shadow-lg" asChild>
+                    <Link to="/shop">
+                      <ShoppingBag className="mr-2 h-5 w-5" />
+                      Shop New Arrivals
+                    </Link>
+                  </Button>
+                  <Button size="lg" variant="secondary" className="shadow-lg" asChild>
+                    <Link to="/appointments">
+                      <Calendar className="mr-2 h-5 w-5" />
+                      Book Grooming
+                    </Link>
+                  </Button>
+                  <Button size="lg" variant="secondary" className="shadow-lg" asChild>
+                    <Link to="/orders">
+                      <Package className="mr-2 h-5 w-5" />
+                      My Orders
+                    </Link>
+                  </Button>
+                </div>
+                {cartCount > 0 && (
+                  <p className="text-sm text-primary-foreground/80">
+                    💝 You have {cartCount} item{cartCount > 1 ? 's' : ''} in your cart!
+                  </p>
+                )}
+              </>
+            ) : (
+              <>
+                <h2 className="font-display text-4xl font-bold text-primary-foreground">
+                  Join Our Pet-Loving Community
+                </h2>
+                <p className="text-lg text-primary-foreground/90">
+                  Sign up today and get exclusive access to special offers, expert tips, and more!
+                </p>
+                <Button size="lg" variant="secondary" className="shadow-lg" asChild>
+                  <Link to="/auth">
+                    Get Started <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
+                </Button>
+              </>
+            )}
           </div>
         </Card>
       </section>
