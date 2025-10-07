@@ -85,17 +85,11 @@ const Shop = () => {
   };
 
   const handleAddToCart = async (productId: string) => {
-    try {
-      await addToCart(productId, 1);
+    const success = await addToCart(productId, 1);
+    if (success) {
       toast({
         title: "Added to cart",
         description: "Product has been added to your cart",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to add to cart. Please sign in.",
-        variant: "destructive",
       });
     }
   };
