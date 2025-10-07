@@ -23,13 +23,18 @@ type Product = {
 const Shop = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryParam = searchParams.get("category") || "all";
-  const [searchQuery, setSearchQuery] = useState("");
+  const searchParamQuery = searchParams.get("search") || "";
+  const [searchQuery, setSearchQuery] = useState(searchParamQuery);
   const [sortBy, setSortBy] = useState("featured");
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<string[]>(["all"]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const { addToCart } = useCart();
+
+  useEffect(() => {
+    setSearchQuery(searchParamQuery);
+  }, [searchParamQuery]);
 
   useEffect(() => {
     fetchProducts();
@@ -94,12 +99,24 @@ const Shop = () => {
     }
   };
 
-  const filteredProducts = products.filter(product => {
-    const categorySlug = product.categories?.slug || "";
-    const matchesCategory = categoryParam === "all" || categorySlug === categoryParam;
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+  const filteredProducts = products
+    .filter(product => {
+      const categorySlug = product.categories?.slug || "";
+      const matchesCategory = categoryParam === "all" || categorySlug === categoryParam;
+      const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case "price-low":
+          return a.price - b.price;
+        case "price-high":
+          return b.price - a.price;
+        case "featured":
+        default:
+          return 0;
+      }
+    });
 
   return (
     <div className="container py-8">

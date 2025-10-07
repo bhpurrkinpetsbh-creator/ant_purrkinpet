@@ -15,6 +15,7 @@ const Header = () => {
   } = useCart();
   const [user, setUser] = useState<any>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
+  const [headerSearch, setHeaderSearch] = useState("");
   const navigate = useNavigate();
   useEffect(() => {
     supabase.auth.getUser().then(({
@@ -58,6 +59,14 @@ const Header = () => {
     toast.success("Signed out successfully");
     navigate("/");
   };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (headerSearch.trim()) {
+      navigate(`/shop?search=${encodeURIComponent(headerSearch)}`);
+      setHeaderSearch("");
+    }
+  };
   return <header className="sticky top-0 z-50 w-full border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
       <div className="container flex h-20 items-center justify-between">
         <Link to="/" className="flex items-center gap-3 group">
@@ -78,12 +87,18 @@ const Header = () => {
         </nav>
 
         <div className="flex items-center gap-2">
-          <div className="hidden lg:flex items-center gap-2 max-w-sm">
+          <form onSubmit={handleSearch} className="hidden lg:flex items-center gap-2 max-w-sm">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input type="search" placeholder="Search products..." className="pl-9 w-full" />
+              <Input 
+                type="search" 
+                placeholder="Search products..." 
+                className="pl-9 w-full"
+                value={headerSearch}
+                onChange={(e) => setHeaderSearch(e.target.value)}
+              />
             </div>
-          </div>
+          </form>
 
           <Button variant="ghost" size="icon" className="relative" asChild>
             <Link to="/cart">
