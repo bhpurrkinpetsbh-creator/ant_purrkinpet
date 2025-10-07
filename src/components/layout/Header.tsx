@@ -40,7 +40,7 @@ const Header = () => {
       <div className="container flex h-20 items-center justify-between">
         <Link to="/" className="flex items-center gap-3 group">
           <img src={logo} alt="Purrkin Pets" className="h-16 w-16 transition-transform group-hover:scale-105" />
-          <span className="font-display text-2xl font-bold bg-gradient-hero bg-clip-text text-transparent hidden sm:inline">PURRKIN </span>
+          <span className="font-display text-2xl font-bold bg-gradient-hero bg-clip-text text-transparent hidden sm:inline">PURRKIN PETS</span>
         </Link>
 
         <nav className="hidden md:flex items-center gap-6">
