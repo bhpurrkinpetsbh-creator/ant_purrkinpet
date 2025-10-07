@@ -2,7 +2,15 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowRight, Heart, Truck, Shield, Sparkles } from "lucide-react";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+} from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
 import heroImage from "@/assets/hero-pets.jpg";
+import heroImage2 from "@/assets/hero-pets-2.jpg";
+import heroImage3 from "@/assets/hero-pets-3.jpg";
 import catsImage from "@/assets/category-cats.jpg";
 import dogsImage from "@/assets/category-dogs.jpg";
 import fishImage from "@/assets/category-fish.jpg";
@@ -62,11 +70,41 @@ const Home = () => {
 
             <div className="relative animate-slide-up">
               <div className="absolute inset-0 bg-gradient-hero opacity-20 rounded-3xl blur-3xl" />
-              <img
-                src={heroImage}
-                alt="Happy pets"
-                className="relative rounded-3xl shadow-lg w-full object-cover"
-              />
+              <Carousel
+                className="relative w-full"
+                plugins={[
+                  Autoplay({
+                    delay: 4000,
+                  }),
+                ]}
+                opts={{
+                  loop: true,
+                }}
+              >
+                <CarouselContent>
+                  <CarouselItem>
+                    <img
+                      src={heroImage}
+                      alt="Happy pets at Purrkin Pets"
+                      className="rounded-3xl shadow-lg w-full object-cover aspect-video"
+                    />
+                  </CarouselItem>
+                  <CarouselItem>
+                    <img
+                      src={heroImage2}
+                      alt="Pet grooming services"
+                      className="rounded-3xl shadow-lg w-full object-cover aspect-video"
+                    />
+                  </CarouselItem>
+                  <CarouselItem>
+                    <img
+                      src={heroImage3}
+                      alt="Professional pet care"
+                      className="rounded-3xl shadow-lg w-full object-cover aspect-video"
+                    />
+                  </CarouselItem>
+                </CarouselContent>
+              </Carousel>
             </div>
           </div>
         </div>
