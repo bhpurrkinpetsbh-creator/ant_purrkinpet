@@ -65,13 +65,30 @@ export const useCart = () => {
         return false;
       }
 
+      // Ensure customer profile exists to satisfy FK constraint
+      const { data: customerProfile, error: customerFetchError } = await supabase
+        .from('customers')
+        .select('id')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (customerFetchError) {
+        console.error('Error checking customer profile:', customerFetchError);
+      }
+      if (!customerProfile) {
+        const { error: customerInsertError } = await supabase
+          .from('customers')
+          .insert({ id: user.id, full_name: user.email });
+        if (customerInsertError) throw customerInsertError;
+      }
+
       // Check if item already exists in cart
       const { data: existing } = await supabase
         .from('cart_items')
         .select('id, quantity')
         .eq('customer_id', user.id)
         .eq('product_id', productId)
-        .single();
+        .maybeSingle();
 
       if (existing) {
         // Update quantity
