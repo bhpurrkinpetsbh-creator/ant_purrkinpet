@@ -49,7 +49,26 @@ export const useCart = () => {
       fetchCartItems();
     });
 
-    return () => subscription.unsubscribe();
+    // Subscribe to real-time cart changes
+    const cartChannel = supabase
+      .channel('cart_items_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'cart_items'
+        },
+        () => {
+          fetchCartItems();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+      supabase.removeChannel(cartChannel);
+    };
   }, []);
 
   const addToCart = async (productId: string, quantity: number = 1) => {

@@ -102,7 +102,7 @@ const Header = () => {
 
           {user ? <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="gap-2">
+                <Button variant="ghost" className="gap-2 group">
                   <div className="flex items-center gap-2">
                     <div className="relative">
                       <User className="h-5 w-5" />
@@ -110,10 +110,10 @@ const Header = () => {
                     </div>
                     <div className="hidden lg:flex flex-col items-start">
                       <span className="text-sm font-medium leading-none">
-                        {userProfile?.full_name || 'Account'}
+                        {userProfile?.full_name || 'My Account'}
                       </span>
-                      <span className="text-xs text-muted-foreground truncate max-w-[120px]">
-                        {user.email}
+                      <span className="text-xs text-foreground group-hover:text-primary-foreground truncate max-w-[120px]">
+                        Signed In
                       </span>
                     </div>
                   </div>
