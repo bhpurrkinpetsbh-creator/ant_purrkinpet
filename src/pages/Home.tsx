@@ -82,7 +82,7 @@ const Home = () => {
               <p className="text-lg text-muted-foreground max-w-lg text-center">
                 Discover premium pet products, book grooming appointments, and get expert care - all in one place.
               </p>
-              <div className="flex flex-col sm:flex-row flex-wrap gap-4">
+              <div className="flex flex-col sm:flex-row sm:justify-center flex-wrap gap-4">
                 <Button size="lg" className="bg-gradient-hero hover:opacity-90 shadow-md w-full sm:w-auto" asChild>
                   <Link to="/shop">
                     Shop Now <ArrowRight className="ml-2 h-5 w-5" />
