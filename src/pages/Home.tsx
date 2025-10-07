@@ -55,7 +55,7 @@ const Home = () => {
             <div className="space-y-6 animate-fade-in">
               <div className="inline-block space-y-2">
                 <span className="bg-accent/10 px-4 py-2 rounded-full font-display text-5xl lg:text-6xl font-bold block">
-                  🐾 Welcome to Purrkin Pets
+                  🐾 Welcome to <span className="bg-gradient-hero bg-clip-text text-transparent">Purrkin Pets</span>
                 </span>
                 <p className="font-display text-5xl lg:text-6xl font-bold">Your One Stop Pet Paradise</p>
               </div>
