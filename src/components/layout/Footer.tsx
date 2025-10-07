@@ -9,14 +9,14 @@ const Footer = () => {
           <div>
             <h3 className="font-display font-bold text-lg mb-4">Purrkin Pets</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Bahrain's favorite pet store offering quality products and services for your beloved companions.
+              Your One Stop Pet Paradise in Bahrain offering quality products and services for your beloved companions.
             </p>
             <div className="flex gap-3">
-              <a href="#" className="hover:text-primary transition-colors">
-                <Facebook className="h-5 w-5" />
+              <a href="https://www.instagram.com/purrkinpets.bh/" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+                <Instagram className="h-5 w-5" />
               </a>
               <a href="#" className="hover:text-primary transition-colors">
-                <Instagram className="h-5 w-5" />
+                <Facebook className="h-5 w-5" />
               </a>
               <a href="#" className="hover:text-primary transition-colors">
                 <Twitter className="h-5 w-5" />
@@ -36,29 +36,32 @@ const Footer = () => {
           </div>
 
           <div>
-            <h4 className="font-semibold mb-4">Services</h4>
+            <h4 className="font-semibold mb-4">Services & Info</h4>
             <ul className="space-y-2 text-sm">
               <li><Link to="/appointments" className="text-muted-foreground hover:text-primary transition-colors">Book Appointment</Link></li>
-              <li><Link to="/grooming" className="text-muted-foreground hover:text-primary transition-colors">Pet Grooming</Link></li>
-              <li><Link to="/vet" className="text-muted-foreground hover:text-primary transition-colors">Veterinary Care</Link></li>
+              <li><Link to="/about" className="text-muted-foreground hover:text-primary transition-colors">About Us</Link></li>
               <li><Link to="/delivery" className="text-muted-foreground hover:text-primary transition-colors">Delivery Info</Link></li>
             </ul>
           </div>
 
           <div>
-            <h4 className="font-semibold mb-4">Contact</h4>
+            <h4 className="font-semibold mb-4">Contact & Hours</h4>
             <ul className="space-y-3 text-sm">
               <li className="flex items-center gap-2 text-muted-foreground">
-                <MapPin className="h-4 w-4" />
-                <span>Manama, Bahrain</span>
+                <MapPin className="h-4 w-4 flex-shrink-0" />
+                <span>Galali, Bahrain</span>
               </li>
               <li className="flex items-center gap-2 text-muted-foreground">
-                <Phone className="h-4 w-4" />
-                <span>+973 1234 5678</span>
+                <Phone className="h-4 w-4 flex-shrink-0" />
+                <span>+973 3595 7800</span>
               </li>
-              <li className="flex items-center gap-2 text-muted-foreground">
-                <Mail className="h-4 w-4" />
-                <span>hello@purrkinpets.com</span>
+              <li className="text-muted-foreground">
+                <p className="font-medium mb-1">🛍 Shop Hours:</p>
+                <p>Daily 10am–1pm & 4–11pm</p>
+              </li>
+              <li className="text-muted-foreground">
+                <p className="font-medium mb-1">✂️ Grooming:</p>
+                <p>Mon–Sat 10am–1pm & 4–11pm</p>
               </li>
             </ul>
           </div>

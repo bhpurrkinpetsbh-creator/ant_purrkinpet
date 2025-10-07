@@ -1,17 +1,16 @@
 import { Link } from "react-router-dom";
-import { ShoppingCart, User, Search, Calendar, PawPrint } from "lucide-react";
+import { ShoppingCart, User, Search, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import logo from "@/assets/logo.png";
 
 const Header = () => {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
       <div className="container flex h-20 items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 group">
-          <div className="bg-gradient-hero p-2 rounded-xl shadow-md group-hover:shadow-lg transition-all">
-            <PawPrint className="h-6 w-6 text-primary-foreground" />
-          </div>
-          <span className="font-display text-2xl font-bold bg-gradient-hero bg-clip-text text-transparent">
+        <Link to="/" className="flex items-center gap-3 group">
+          <img src={logo} alt="Purrkin Pets" className="h-12 w-12 transition-transform group-hover:scale-105" />
+          <span className="font-display text-2xl font-bold bg-gradient-hero bg-clip-text text-transparent hidden sm:inline">
             Purrkin Pets
           </span>
         </Link>

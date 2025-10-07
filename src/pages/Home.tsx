@@ -20,7 +20,7 @@ const Home = () => {
     { icon: Heart, title: "Quality Products", desc: "Premium pet supplies from trusted brands" },
     { icon: Truck, title: "Fast Delivery", desc: "Same-day delivery across Bahrain" },
     { icon: Shield, title: "Safe & Secure", desc: "100% authentic products guaranteed" },
-    { icon: Sparkles, title: "Expert Care", desc: "Professional grooming & vet services" },
+    { icon: Sparkles, title: "Expert Grooming", desc: "Professional grooming services" },
   ];
 
   return (
@@ -31,10 +31,11 @@ const Home = () => {
         <div className="container relative">
           <div className="grid lg:grid-cols-2 gap-12 items-center py-12 lg:py-20">
             <div className="space-y-6 animate-fade-in">
-              <div className="inline-block">
-                <span className="bg-accent/10 text-accent px-4 py-2 rounded-full text-sm font-medium">
+              <div className="inline-block space-y-2">
+                <span className="bg-accent/10 text-accent px-4 py-2 rounded-full text-sm font-medium block">
                   🐾 Welcome to Purrkin Pets
                 </span>
+                <p className="text-accent font-medium">Your One Stop Pet Paradise</p>
               </div>
               <h1 className="font-display text-5xl lg:text-6xl font-bold leading-tight">
                 Everything Your Pet{" "}
@@ -43,7 +44,7 @@ const Home = () => {
                 </span>
               </h1>
               <p className="text-lg text-muted-foreground max-w-lg">
-                Discover premium pet products, book grooming appointments, and access expert veterinary care - all in one place.
+                Discover premium pet products, book grooming appointments, and get expert care - all in one place.
               </p>
               <div className="flex flex-wrap gap-4">
                 <Button size="lg" className="bg-gradient-hero hover:opacity-90 shadow-md" asChild>
