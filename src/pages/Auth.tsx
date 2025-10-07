@@ -6,10 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
-import { PawPrint } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
+import logo from "@/assets/purrkin-logo.png";
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -105,8 +105,8 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center py-12 px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-hero rounded-2xl shadow-lg mb-4">
-            <PawPrint className="h-8 w-8 text-primary-foreground" />
+          <div className="inline-flex items-center justify-center mb-4">
+            <img src={logo} alt="Purrkin Pets" className="h-20 w-20" />
           </div>
           <h1 className="font-display text-3xl font-bold">Welcome to Purrkin Pets</h1>
           <p className="text-muted-foreground mt-2">Join our pet-loving community</p>
