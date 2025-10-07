@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Scissors, Sparkles, Clock, Bath, Brush, Wind, Gift } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 const services = [{
   id: "basic-grooming",
   name: "Basic Grooming",
@@ -86,11 +87,145 @@ const Appointments = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [selectedService, setSelectedService] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast.success("Appointment booked successfully!", {
-      description: "We'll send you a confirmation email shortly."
+  const [bookedSlots, setBookedSlots] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    phone: "",
+    petName: "",
+    petType: "",
+    petSize: "",
+    notes: ""
+  });
+
+  useEffect(() => {
+    if (selectedDate) {
+      fetchBookedSlots();
+    }
+  }, [selectedDate]);
+
+  const fetchBookedSlots = async () => {
+    if (!selectedDate) return;
+
+    const dateStr = selectedDate.toISOString().split('T')[0];
+    const { data, error } = await supabase
+      .from('appointments')
+      .select('appointment_time')
+      .eq('appointment_date', dateStr)
+      .neq('status', 'cancelled');
+
+    if (error) {
+      console.error('Error fetching booked slots:', error);
+      return;
+    }
+
+    const bookedTimes = data.map(apt => {
+      const time = new Date(`2000-01-01T${apt.appointment_time}`);
+      return time.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
     });
+    setBookedSlots(bookedTimes);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!selectedService || !selectedDate || !selectedTime) {
+      toast.error("Please select service, date, and time");
+      return;
+    }
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast.error("Please sign in to book an appointment");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const selectedServiceData = services.find(s => s.id === selectedService);
+      
+      // Parse time to 24-hour format
+      const timeParts = selectedTime.match(/(\d+):(\d+)\s*(AM|PM)/i);
+      if (!timeParts) {
+        throw new Error("Invalid time format");
+      }
+      let hours = parseInt(timeParts[1]);
+      const minutes = timeParts[2];
+      const period = timeParts[3].toUpperCase();
+      if (period === 'PM' && hours !== 12) hours += 12;
+      if (period === 'AM' && hours === 12) hours = 0;
+      const timeStr = `${hours.toString().padStart(2, '0')}:${minutes}:00`;
+
+      // Determine pet size from service name
+      let petSize = formData.petSize || 'medium';
+      if (selectedService.includes('puppy') || selectedService.includes('small')) petSize = 'small';
+      if (selectedService.includes('medium')) petSize = 'medium';
+      if (selectedService.includes('large')) petSize = 'large';
+
+      // Save to database
+      const { error: dbError } = await supabase
+        .from('appointments')
+        .insert({
+          customer_id: user.id,
+          appointment_date: selectedDate.toISOString().split('T')[0],
+          appointment_time: timeStr,
+          pet_size: petSize,
+          duration_minutes: parseInt(selectedServiceData?.duration || '60'),
+          total_price: parseFloat(selectedServiceData?.price?.replace(/[^\d.]/g, '') || '0'),
+          special_requests: formData.notes,
+          status: 'pending'
+        });
+
+      if (dbError) throw dbError;
+
+      // Send to n8n webhook
+      const webhookData = {
+        customerName: formData.name,
+        customerPhone: formData.phone,
+        customerEmail: user.email,
+        petName: formData.petName,
+        petType: formData.petType,
+        petSize,
+        serviceName: selectedServiceData?.name,
+        servicePrice: selectedServiceData?.price,
+        appointmentDate: selectedDate.toLocaleDateString(),
+        appointmentTime: selectedTime,
+        duration: selectedServiceData?.duration,
+        specialRequests: formData.notes,
+        bookingTimestamp: new Date().toISOString()
+      };
+
+      await fetch('https://n8n.srv1034374.hstgr.cloud/webhook/2bb6a776-3d96-48a0-b28b-87e4acb48c1a', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(webhookData)
+      });
+
+      toast.success("Appointment booked successfully!", {
+        description: "We'll send you a confirmation email shortly."
+      });
+
+      // Reset form
+      setSelectedService("");
+      setSelectedTime("");
+      setFormData({
+        name: "",
+        phone: "",
+        petName: "",
+        petType: "",
+        petSize: "",
+        notes: ""
+      });
+      fetchBookedSlots();
+    } catch (error: any) {
+      console.error('Error booking appointment:', error);
+      toast.error("Failed to book appointment", {
+        description: error.message
+      });
+    } finally {
+      setLoading(false);
+    }
   };
   return <div className="container py-8">
       <div className="max-w-5xl mx-auto">
@@ -153,9 +288,22 @@ const Appointments = () => {
                 <div>
                   <Label className="mb-3 block">Available Time Slots</Label>
                   <div className="grid grid-cols-2 gap-2 max-h-[300px] overflow-y-auto">
-                    {timeSlots.map(time => <Button key={time} variant={selectedTime === time ? "default" : "outline"} size="sm" onClick={() => setSelectedTime(time)}>
-                        {time}
-                      </Button>)}
+                    {timeSlots.map(time => {
+                      const isBooked = bookedSlots.includes(time);
+                      return (
+                        <Button 
+                          key={time} 
+                          variant={selectedTime === time ? "default" : "outline"} 
+                          size="sm" 
+                          onClick={() => !isBooked && setSelectedTime(time)}
+                          disabled={isBooked}
+                          className={isBooked ? "opacity-50 cursor-not-allowed" : ""}
+                        >
+                          {time}
+                          {isBooked && <Badge variant="secondary" className="ml-1 text-xs">Booked</Badge>}
+                        </Button>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -167,22 +315,45 @@ const Appointments = () => {
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="name">Your Name *</Label>
-                    <Input id="name" required placeholder="Enter your name" />
+                    <Input 
+                      id="name" 
+                      required 
+                      placeholder="Enter your name"
+                      value={formData.name}
+                      onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number *</Label>
-                    <Input id="phone" type="tel" required placeholder="+973..." />
+                    <Input 
+                      id="phone" 
+                      type="tel" 
+                      required 
+                      placeholder="+973..."
+                      value={formData.phone}
+                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                    />
                   </div>
                 </div>
 
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="pet-name">Pet Name *</Label>
-                    <Input id="pet-name" required placeholder="Enter pet's name" />
+                    <Input 
+                      id="pet-name" 
+                      required 
+                      placeholder="Enter pet's name"
+                      value={formData.petName}
+                      onChange={(e) => setFormData({...formData, petName: e.target.value})}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="pet-type">Pet Type *</Label>
-                    <Select required>
+                    <Select 
+                      required
+                      value={formData.petType}
+                      onValueChange={(value) => setFormData({...formData, petType: value})}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Select pet type" />
                       </SelectTrigger>
@@ -199,11 +370,22 @@ const Appointments = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="notes">Additional Notes</Label>
-                  <Textarea id="notes" placeholder="Any special requirements or information..." rows={3} />
+                  <Textarea 
+                    id="notes" 
+                    placeholder="Any special requirements or information..." 
+                    rows={3}
+                    value={formData.notes}
+                    onChange={(e) => setFormData({...formData, notes: e.target.value})}
+                  />
                 </div>
 
-                <Button type="submit" className="w-full bg-gradient-hero hover:opacity-90" size="lg">
-                  Confirm Appointment
+                <Button 
+                  type="submit" 
+                  className="w-full bg-gradient-hero hover:opacity-90" 
+                  size="lg"
+                  disabled={loading}
+                >
+                  {loading ? "Booking..." : "Confirm Appointment"}
                 </Button>
               </form>
             </Card>

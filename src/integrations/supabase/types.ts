@@ -599,6 +599,54 @@ export type Database = {
         }
         Relationships: []
       }
+      stg_products_excel: {
+        Row: {
+          brand: string | null
+          categories: string | null
+          currency: string | null
+          images_local: string | null
+          images_remote: string | null
+          long_description: string | null
+          regular_price: number | null
+          sale_price: number | null
+          short_description: string | null
+          sku: string | null
+          stock: string | null
+          title: string | null
+          url: string | null
+        }
+        Insert: {
+          brand?: string | null
+          categories?: string | null
+          currency?: string | null
+          images_local?: string | null
+          images_remote?: string | null
+          long_description?: string | null
+          regular_price?: number | null
+          sale_price?: number | null
+          short_description?: string | null
+          sku?: string | null
+          stock?: string | null
+          title?: string | null
+          url?: string | null
+        }
+        Update: {
+          brand?: string | null
+          categories?: string | null
+          currency?: string | null
+          images_local?: string | null
+          images_remote?: string | null
+          long_description?: string | null
+          regular_price?: number | null
+          sale_price?: number | null
+          short_description?: string | null
+          sku?: string | null
+          stock?: string | null
+          title?: string | null
+          url?: string | null
+        }
+        Relationships: []
+      }
       wishlist_items: {
         Row: {
           created_at: string | null
@@ -640,7 +688,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      slugify: {
+        Args: { txt: string }
+        Returns: string
+      }
+      unaccent: {
+        Args: { "": string }
+        Returns: string
+      }
+      unaccent_init: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
     }
     Enums: {
       [_ in never]: never
