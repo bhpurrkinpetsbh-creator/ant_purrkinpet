@@ -49,11 +49,15 @@ const Footer = () => {
             <ul className="space-y-3 text-sm">
               <li className="flex items-center gap-2 text-muted-foreground">
                 <MapPin className="h-4 w-4 flex-shrink-0" />
-                <span>Galali, Bahrain</span>
+                <span>Shop A2136, Near Al Salam Bank, Road 5541, Block 255, Galali, Al Muharraq, Bahrain</span>
               </li>
               <li className="flex items-center gap-2 text-muted-foreground">
                 <Phone className="h-4 w-4 flex-shrink-0" />
                 <span>+973 3595 7800</span>
+              </li>
+              <li className="flex items-center gap-2 text-muted-foreground">
+                <Mail className="h-4 w-4 flex-shrink-0" />
+                <span>purrkinpets@gmail.com</span>
               </li>
               <li className="text-muted-foreground">
                 <p className="font-medium mb-1">🛍 Shop Hours:</p>

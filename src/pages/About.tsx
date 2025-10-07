@@ -1,4 +1,4 @@
-import { MapPin, Phone, Clock, Instagram } from "lucide-react";
+import { MapPin, Phone, Clock, Instagram, Mail } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
 const About = () => {
@@ -53,7 +53,9 @@ const About = () => {
                   <MapPin className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
                   <div>
                     <p className="font-medium">Location</p>
-                    <p className="text-sm text-muted-foreground">Galali, Bahrain</p>
+                    <p className="text-sm text-muted-foreground">Shop A2136, Near Al Salam Bank</p>
+                    <p className="text-sm text-muted-foreground">Road 5541, Block 255</p>
+                    <p className="text-sm text-muted-foreground">Galali, Al Muharraq, Bahrain</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
@@ -62,6 +64,15 @@ const About = () => {
                     <p className="font-medium">WhatsApp</p>
                     <a href="https://wa.me/97335957800" className="text-sm text-primary hover:underline">
                       +973 3595 7800
+                    </a>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Mail className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-medium">Email</p>
+                    <a href="mailto:purrkinpets@gmail.com" className="text-sm text-primary hover:underline">
+                      purrkinpets@gmail.com
                     </a>
                   </div>
                 </div>

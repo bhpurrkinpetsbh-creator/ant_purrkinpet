@@ -7,19 +7,89 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Scissors, Stethoscope, Sparkles, Clock } from "lucide-react";
+import { Scissors, Sparkles, Clock, Bath, Brush, Wind, Gift } from "lucide-react";
 import { toast } from "sonner";
 
 const services = [
-  { id: "grooming-basic", name: "Basic Grooming", icon: Scissors, price: "15 BHD", duration: "1 hour" },
-  { id: "grooming-full", name: "Full Grooming Package", icon: Sparkles, price: "30 BHD", duration: "2 hours" },
-  { id: "vet-checkup", name: "Veterinary Checkup", icon: Stethoscope, price: "25 BHD", duration: "30 mins" },
-  { id: "vet-vaccination", name: "Vaccination", icon: Stethoscope, price: "20 BHD", duration: "20 mins" },
+  { 
+    id: "basic-grooming", 
+    name: "Basic Grooming", 
+    icon: Scissors, 
+    description: "Essential grooming services",
+    duration: "45 mins" 
+  },
+  { 
+    id: "full-grooming-cat", 
+    name: "Full Grooming - Cat", 
+    icon: Sparkles, 
+    price: "4.900 BD",
+    description: "Complete grooming package for cats",
+    duration: "1.5 hours" 
+  },
+  { 
+    id: "full-grooming-dog-puppy", 
+    name: "Full Grooming - Puppy", 
+    icon: Sparkles, 
+    price: "6.500 BD",
+    description: "Complete grooming package for puppies",
+    duration: "1.5 hours" 
+  },
+  { 
+    id: "full-grooming-dog-medium", 
+    name: "Full Grooming - Dog (M)", 
+    icon: Sparkles, 
+    price: "8.500 BD",
+    description: "Complete grooming package for medium dogs",
+    duration: "2 hours" 
+  },
+  { 
+    id: "full-grooming-dog-large", 
+    name: "Full Grooming - Dog (L)", 
+    icon: Sparkles, 
+    price: "11.500 BD",
+    description: "Complete grooming package for large dogs",
+    duration: "2.5 hours" 
+  },
+  { 
+    id: "nail-trimming", 
+    name: "Nail Trimming", 
+    icon: Scissors, 
+    description: "Professional nail care",
+    duration: "20 mins" 
+  },
+  { 
+    id: "ear-cleaning", 
+    name: "Ear Cleaning", 
+    icon: Brush, 
+    description: "Gentle ear cleaning service",
+    duration: "15 mins" 
+  },
+  { 
+    id: "fur-styling", 
+    name: "Fur Styling", 
+    icon: Wind, 
+    description: "Professional styling and trimming",
+    duration: "1 hour" 
+  },
+  { 
+    id: "shower-shampoo", 
+    name: "Shower & Shampoo", 
+    icon: Bath, 
+    description: "Complete bath with premium shampoo",
+    duration: "45 mins" 
+  },
 ];
 
 const timeSlots = [
-  "09:00 AM", "10:00 AM", "11:00 AM", "12:00 PM",
-  "02:00 PM", "03:00 PM", "04:00 PM", "05:00 PM"
+  "10:00 AM", "11:00 AM", "12:00 PM",
+  "04:00 PM", "05:00 PM", "06:00 PM", "07:00 PM", "08:00 PM", "09:00 PM", "10:00 PM"
+];
+
+const specialOffers = [
+  { icon: Gift, text: "Get 1 Grooming Free After 5 Visits!" },
+  { icon: Gift, text: "Bring a friend & you both get 10% OFF in grooming" },
+  { icon: Gift, text: "Groom 2 pets together & get 20% OFF on Accessories" },
+  { icon: Gift, text: "Special Discounts for Rescued Pets" },
 ];
 
 const Appointments = () => {
@@ -39,15 +109,31 @@ const Appointments = () => {
       <div className="max-w-5xl mx-auto">
         <div className="mb-8 text-center">
           <h1 className="font-display text-4xl font-bold mb-2">Book an Appointment</h1>
-          <p className="text-muted-foreground text-lg">Schedule grooming or veterinary services for your pet</p>
+          <p className="text-muted-foreground text-lg">Schedule professional grooming services for your pet</p>
+          <p className="text-sm text-muted-foreground mt-2">
+            📅 Available: Mon-Sat, 10am–1pm & 4–11pm | 📲 WhatsApp: +973 3595 7800
+          </p>
         </div>
+
+        {/* Special Offers Banner */}
+        <Card className="p-6 mb-8 bg-gradient-hero text-primary-foreground">
+          <h2 className="font-display text-2xl font-bold mb-4 text-center">🎉 Grand Opening Offers!</h2>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {specialOffers.map((offer, index) => (
+              <div key={index} className="flex items-start gap-2 text-sm">
+                <offer.icon className="h-5 w-5 flex-shrink-0 mt-0.5" />
+                <span>{offer.text}</span>
+              </div>
+            ))}
+          </div>
+        </Card>
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Service Selection */}
           <div className="lg:col-span-2 space-y-6">
             <Card className="p-6">
               <h2 className="font-semibold text-xl mb-4">Select Service</h2>
-              <div className="grid sm:grid-cols-2 gap-4">
+              <div className="grid sm:grid-cols-2 gap-3">
                 {services.map((service) => (
                   <button
                     key={service.id}
@@ -59,21 +145,29 @@ const Appointments = () => {
                     }`}
                   >
                     <div className="flex items-start gap-3">
-                      <div className="bg-gradient-hero p-2 rounded-lg">
-                        <service.icon className="h-5 w-5 text-primary-foreground" />
+                      <div className="bg-gradient-hero p-2 rounded-lg flex-shrink-0">
+                        <service.icon className="h-4 w-4 text-primary-foreground" />
                       </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold mb-1">{service.name}</h3>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Clock className="h-3 w-3" />
-                          <span>{service.duration}</span>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold mb-1 text-sm">{service.name}</h3>
+                        <p className="text-xs text-muted-foreground mb-2">{service.description}</p>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Clock className="h-3 w-3" />
+                            <span>{service.duration}</span>
+                          </div>
+                          {service.price && (
+                            <p className="text-primary font-semibold text-sm">{service.price}</p>
+                          )}
                         </div>
-                        <p className="text-primary font-semibold mt-2">{service.price}</p>
                       </div>
                     </div>
                   </button>
                 ))}
               </div>
+              <p className="text-xs text-muted-foreground mt-4 text-center">
+                * Contact us for pricing on individual services
+              </p>
             </Card>
 
             <Card className="p-6">
