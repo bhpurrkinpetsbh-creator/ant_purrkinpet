@@ -25,7 +25,23 @@ import catsImage from "@/assets/category-cats.jpg";
 import dogsImage from "@/assets/category-dogs.jpg";
 import fishImage from "@/assets/category-fish.jpg";
 import rabbitsImage from "@/assets/category-rabbits.jpg";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 const Home = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsLoggedIn(!!session?.user);
+    });
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsLoggedIn(!!session?.user);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   const categories = [{
     name: "Cats",
     image: catsImage,
@@ -204,24 +220,25 @@ const Home = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="container py-20">
-        <Card className="relative overflow-hidden bg-gradient-hero p-12 text-center">
-          <div className="relative z-10 max-w-2xl mx-auto space-y-6">
-            <h2 className="font-display text-4xl font-bold text-primary-foreground">
-              Join Our Pet-Loving Community
-            </h2>
-            <p className="text-lg text-primary-foreground/90">
-              Sign up today and get exclusive access to special offers, expert tips, and more!
-            </p>
-            <Button size="lg" variant="secondary" className="shadow-lg" asChild>
-              <Link to="/auth">
-                Get Started <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </Button>
-          </div>
-        </Card>
-      </section>
+{!isLoggedIn && (
+        <section className="container py-20">
+          <Card className="relative overflow-hidden bg-gradient-hero p-12 text-center">
+            <div className="relative z-10 max-w-2xl mx-auto space-y-6">
+              <h2 className="font-display text-4xl font-bold text-primary-foreground">
+                Join Our Pet-Loving Community
+              </h2>
+              <p className="text-lg text-primary-foreground/90">
+                Sign up today and get exclusive access to special offers, expert tips, and more!
+              </p>
+              <Button size="lg" variant="secondary" className="shadow-lg" asChild>
+                <Link to="/auth">
+                  Get Started <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+              </Button>
+            </div>
+          </Card>
+        </section>
+      )}
     </div>;
 };
 export default Home;
