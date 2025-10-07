@@ -54,10 +54,10 @@ const Home = () => {
           <div className="grid lg:grid-cols-2 gap-12 items-center py-12 lg:py-20">
             <div className="space-y-6 animate-fade-in">
               <div className="inline-block space-y-2">
-                <span className="bg-accent/10 text-accent px-4 py-2 rounded-full font-display text-5xl lg:text-6xl font-bold block">
+                <span className="bg-accent/10 px-4 py-2 rounded-full font-display text-5xl lg:text-6xl font-bold block">
                   🐾 Welcome to Purrkin Pets
                 </span>
-                <p className="text-accent font-display text-5xl lg:text-6xl font-bold">Your One Stop Pet Paradise</p>
+                <p className="font-display text-5xl lg:text-6xl font-bold">Your One Stop Pet Paradise</p>
               </div>
               <h1 className="font-display text-5xl lg:text-6xl font-bold leading-tight">
                 Everything Your Pet{" "}
