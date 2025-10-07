@@ -68,7 +68,7 @@ const Home = () => {
           <div className="grid lg:grid-cols-2 gap-12 items-center py-12 lg:py-20">
             <div className="space-y-6 animate-fade-in">
               <div className="inline-block space-y-2">
-                <span className="bg-accent/10 py-2 rounded-full font-display text-5xl block font-extrabold text-center mx-0 px-[26px] my-0 lg:text-5xl">
+                <span className="bg-accent/10 py-2 rounded-full font-display text-3xl lg:text-5xl block font-extrabold text-center mx-0 px-[26px] my-0">
                   🐾 Welcome to <span className="bg-gradient-hero bg-clip-text text-transparent text-center mx-0 px-0 my-0 py-0">PURRKIN PETS</span>
                 </span>
                 <p className="font-display text-xl font-bold text-center mx-0 my-[16px]">Your One Stop Pet Paradise</p>
