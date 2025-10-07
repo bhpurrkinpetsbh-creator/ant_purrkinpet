@@ -26,7 +26,9 @@ const Header = () => {
       setUser(user);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
     });
 
@@ -43,7 +45,7 @@ const Header = () => {
     <header className="sticky top-0 z-50 w-full border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
       <div className="container flex h-20 items-center justify-between">
         <Link to="/" className="flex items-center gap-3 group">
-          <img src={logo} alt="Purrkin Pets" className="h-12 w-12 transition-transform group-hover:scale-105" />
+          <img src={logo} alt="Purrkin Pets" className="h-16 w-16 transition-transform group-hover:scale-105" />
           <span className="font-display text-2xl font-bold bg-gradient-hero bg-clip-text text-transparent hidden sm:inline">
             Purrkin Pets
           </span>
@@ -65,14 +67,10 @@ const Header = () => {
           <div className="hidden lg:flex items-center gap-2 max-w-sm">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Search products..."
-                className="pl-9 w-full"
-              />
+              <Input type="search" placeholder="Search products..." className="pl-9 w-full" />
             </div>
           </div>
-          
+
           <Button variant="ghost" size="icon" className="relative" asChild>
             <Link to="/cart">
               <ShoppingCart className="h-5 w-5" />
@@ -101,9 +99,7 @@ const Header = () => {
                 <DropdownMenuLabel>
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium">My Account</p>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {user.email}
-                    </p>
+                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
