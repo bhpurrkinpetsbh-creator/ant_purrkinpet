@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -6,46 +6,71 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ShoppingCart, Heart, Share2, Truck, Shield, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useCart } from "@/hooks/useCart";
 
 const ProductDetail = () => {
   const { id } = useParams();
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [product, setProduct] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const { addToCart } = useCart();
 
-  // Mock product data
-  const product = {
-    id,
-    name: "Premium Cat Food - Chicken & Rice Formula",
-    category: "Cat Food",
-    price: "15.99 BHD",
-    originalPrice: "19.99 BHD",
-    rating: 4.8,
-    reviews: 124,
-    inStock: true,
-    stock: 45,
-    images: ["/placeholder.svg", "/placeholder.svg", "/placeholder.svg"],
-    description: "Our premium cat food is specially formulated with high-quality chicken and rice to provide complete nutrition for your feline friend. Made with natural ingredients and no artificial preservatives.",
-    features: [
-      "100% natural ingredients",
-      "High protein content",
-      "Omega-3 & 6 fatty acids",
-      "Supports healthy digestion",
-      "No artificial colors or flavors"
-    ],
-    specifications: {
-      "Weight": "2kg",
-      "Brand": "Purrkin Premium",
-      "Life Stage": "Adult",
-      "Flavor": "Chicken & Rice",
-      "Made In": "USA"
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .select(`
+            *,
+            categories (name),
+            brands (name)
+          `)
+          .eq('id', id)
+          .single();
+
+        if (error) throw error;
+        setProduct(data);
+      } catch (error) {
+        console.error('Error fetching product:', error);
+        toast.error("Failed to load product");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchProduct();
+    }
+  }, [id]);
+
+  const handleAddToCart = async () => {
+    if (!product) return;
+    
+    const success = await addToCart(product.id, quantity);
+    if (success) {
+      toast.success("Added to cart!", {
+        description: `${quantity} x ${product.name}`,
+      });
     }
   };
 
-  const handleAddToCart = () => {
-    toast.success("Added to cart!", {
-      description: `${quantity} x ${product.name}`,
-    });
-  };
+  if (loading) {
+    return (
+      <div className="container py-12 min-h-[60vh] flex items-center justify-center">
+        <p className="text-muted-foreground">Loading product...</p>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="container py-12 min-h-[60vh] flex items-center justify-center">
+        <p className="text-muted-foreground">Product not found</p>
+      </div>
+    );
+  }
 
   return (
     <div className="container py-8">
@@ -61,49 +86,39 @@ const ProductDetail = () => {
         <div className="space-y-4">
           <Card className="overflow-hidden aspect-square">
             <img
-              src={product.images[selectedImage]}
+              src={product.image_url || '/placeholder.svg'}
               alt={product.name}
               className="w-full h-full object-cover"
             />
           </Card>
-          <div className="grid grid-cols-4 gap-4">
-            {product.images.map((img, idx) => (
-              <button
-                key={idx}
-                onClick={() => setSelectedImage(idx)}
-                className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
-                  selectedImage === idx ? "border-primary" : "border-transparent"
-                }`}
-              >
-                <img src={img} alt={`View ${idx + 1}`} className="w-full h-full object-cover" />
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* Product Info */}
         <div className="space-y-6">
           <div>
-            <Badge className="mb-2">{product.category}</Badge>
+            <Badge className="mb-2">{product.categories?.name || 'Product'}</Badge>
             <h1 className="font-display text-3xl font-bold mb-2">{product.name}</h1>
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-1">
-                <span className="text-lg">⭐</span>
-                <span className="font-semibold">{product.rating}</span>
-                <span className="text-muted-foreground">({product.reviews} reviews)</span>
-              </div>
-              {product.inStock && (
+              {product.stock_quantity > 0 && (
                 <Badge variant="secondary" className="bg-secondary/20 text-secondary-foreground">
-                  In Stock: {product.stock} units
+                  In Stock: {product.stock_quantity} units
                 </Badge>
               )}
             </div>
           </div>
 
           <div className="flex items-baseline gap-3">
-            <span className="text-4xl font-bold text-primary">{product.price}</span>
-            <span className="text-xl text-muted-foreground line-through">{product.originalPrice}</span>
-            <Badge variant="destructive">20% OFF</Badge>
+            <span className="text-4xl font-bold text-primary">{product.price} BHD</span>
+            {product.compare_at_price && (
+              <>
+                <span className="text-xl text-muted-foreground line-through">
+                  {product.compare_at_price} BHD
+                </span>
+                <Badge variant="destructive">
+                  {Math.round((1 - product.price / product.compare_at_price) * 100)}% OFF
+                </Badge>
+              </>
+            )}
           </div>
 
           <p className="text-muted-foreground">{product.description}</p>
@@ -123,7 +138,7 @@ const ProductDetail = () => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
+                  onClick={() => setQuantity(Math.min(product.stock_quantity, quantity + 1))}
                 >
                   +
                 </Button>
@@ -172,42 +187,39 @@ const ProductDetail = () => {
       </div>
 
       {/* Product Details Tabs */}
-      <Tabs defaultValue="features" className="mb-12">
+      <Tabs defaultValue="description" className="mb-12">
         <TabsList className="w-full justify-start">
-          <TabsTrigger value="features">Features</TabsTrigger>
+          <TabsTrigger value="description">Description</TabsTrigger>
           <TabsTrigger value="specifications">Specifications</TabsTrigger>
-          <TabsTrigger value="reviews">Reviews ({product.reviews})</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="features" className="space-y-4 py-6">
-          <h3 className="font-semibold text-lg">Product Features</h3>
-          <ul className="space-y-2">
-            {product.features.map((feature, idx) => (
-              <li key={idx} className="flex items-center gap-2">
-                <span className="text-primary">✓</span>
-                <span>{feature}</span>
-              </li>
-            ))}
-          </ul>
+        <TabsContent value="description" className="space-y-4 py-6">
+          <h3 className="font-semibold text-lg">Product Description</h3>
+          <p className="text-muted-foreground">{product.description || 'No description available.'}</p>
         </TabsContent>
 
         <TabsContent value="specifications" className="py-6">
           <h3 className="font-semibold text-lg mb-4">Specifications</h3>
           <Card className="p-6">
             <dl className="space-y-4">
-              {Object.entries(product.specifications).map(([key, value]) => (
-                <div key={key} className="flex justify-between border-b pb-2">
-                  <dt className="font-medium text-muted-foreground">{key}</dt>
-                  <dd className="font-semibold">{value}</dd>
+              <div className="flex justify-between border-b pb-2">
+                <dt className="font-medium text-muted-foreground">SKU</dt>
+                <dd className="font-semibold">{product.sku || 'N/A'}</dd>
+              </div>
+              {product.brands?.name && (
+                <div className="flex justify-between border-b pb-2">
+                  <dt className="font-medium text-muted-foreground">Brand</dt>
+                  <dd className="font-semibold">{product.brands.name}</dd>
                 </div>
-              ))}
+              )}
+              {product.weight_kg && (
+                <div className="flex justify-between border-b pb-2">
+                  <dt className="font-medium text-muted-foreground">Weight</dt>
+                  <dd className="font-semibold">{product.weight_kg} kg</dd>
+                </div>
+              )}
             </dl>
           </Card>
-        </TabsContent>
-
-        <TabsContent value="reviews" className="py-6">
-          <h3 className="font-semibold text-lg mb-4">Customer Reviews</h3>
-          <p className="text-muted-foreground">Reviews coming soon...</p>
         </TabsContent>
       </Tabs>
     </div>
