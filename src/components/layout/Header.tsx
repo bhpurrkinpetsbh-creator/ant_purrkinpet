@@ -59,9 +59,6 @@ const Header = () => {
           <Link to="/about" className="text-sm font-medium hover:text-primary transition-colors">
             About Us
           </Link>
-          <Link to="/contact" className="text-sm font-medium hover:text-primary transition-colors">
-            Contact
-          </Link>
         </nav>
 
         <div className="flex items-center gap-2">
