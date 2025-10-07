@@ -39,7 +39,7 @@ const Home = () => {
     image: fishImage,
     link: "/shop?category=fish"
   }, {
-    name: "Small Pets",
+    name: "Birds & Small Pets",
     image: rabbitsImage,
     link: "/shop?category=rabbits"
   }];
