@@ -3,6 +3,7 @@ import { ShoppingCart, User, Search, Calendar, LogOut, Package } from "lucide-re
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
 import logo from "@/assets/purrkin-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/hooks/useCart";
@@ -13,6 +14,7 @@ const Header = () => {
     cartCount
   } = useCart();
   const [user, setUser] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
   const navigate = useNavigate();
   useEffect(() => {
     supabase.auth.getUser().then(({
@@ -21,6 +23,9 @@ const Header = () => {
       }
     }) => {
       setUser(user);
+      if (user) {
+        fetchUserProfile(user.id);
+      }
     });
     const {
       data: {
@@ -28,9 +33,26 @@ const Header = () => {
       }
     } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchUserProfile(session.user.id);
+      } else {
+        setUserProfile(null);
+      }
     });
     return () => subscription.unsubscribe();
   }, []);
+
+  const fetchUserProfile = async (userId: string) => {
+    const { data } = await supabase
+      .from('customers')
+      .select('full_name')
+      .eq('id', userId)
+      .single();
+    
+    if (data) {
+      setUserProfile(data);
+    }
+  };
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     toast.success("Signed out successfully");
@@ -80,15 +102,29 @@ const Header = () => {
 
           {user ? <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <User className="h-5 w-5" />
+                <Button variant="ghost" className="gap-2">
+                  <div className="flex items-center gap-2">
+                    <div className="relative">
+                      <User className="h-5 w-5" />
+                      <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-green-500 border-2 border-background" />
+                    </div>
+                    <div className="hidden lg:flex flex-col items-start">
+                      <span className="text-sm font-medium leading-none">
+                        {userProfile?.full_name || 'Account'}
+                      </span>
+                      <span className="text-xs text-muted-foreground truncate max-w-[120px]">
+                        {user.email}
+                      </span>
+                    </div>
+                  </div>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium">My Account</p>
+                    <p className="text-sm font-medium">{userProfile?.full_name || 'My Account'}</p>
                     <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                    <Badge variant="secondary" className="w-fit mt-1">Logged In</Badge>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
@@ -110,9 +146,10 @@ const Header = () => {
                   Sign Out
                 </DropdownMenuItem>
               </DropdownMenuContent>
-            </DropdownMenu> : <Button variant="ghost" size="icon" asChild>
-              <Link to="/auth">
-                <User className="h-5 w-5" />
+            </DropdownMenu> : <Button variant="outline" size="sm" asChild>
+              <Link to="/auth" className="gap-2">
+                <User className="h-4 w-4" />
+                <span className="hidden sm:inline">Sign In</span>
               </Link>
             </Button>}
         </div>
