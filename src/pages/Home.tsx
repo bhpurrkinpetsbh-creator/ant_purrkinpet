@@ -11,6 +11,7 @@ import Autoplay from "embla-carousel-autoplay";
 import heroImage from "@/assets/hero-pets.jpg";
 import heroImage2 from "@/assets/hero-pets-2.jpg";
 import heroImage3 from "@/assets/hero-pets-3.jpg";
+import heroStorefront from "@/assets/hero-storefront.jpg";
 import catsImage from "@/assets/category-cats.jpg";
 import dogsImage from "@/assets/category-dogs.jpg";
 import fishImage from "@/assets/category-fish.jpg";
@@ -100,6 +101,13 @@ const Home = () => {
                     <img
                       src={heroImage3}
                       alt="Professional pet care"
+                      className="rounded-3xl shadow-lg w-full object-cover aspect-video"
+                    />
+                  </CarouselItem>
+                  <CarouselItem>
+                    <img
+                      src={heroStorefront}
+                      alt="Purrkin Pets storefront"
                       className="rounded-3xl shadow-lg w-full object-cover aspect-video"
                     />
                   </CarouselItem>
