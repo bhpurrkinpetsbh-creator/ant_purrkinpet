@@ -71,9 +71,9 @@ const Home = () => {
                 <span className="bg-accent/10 py-2 rounded-full font-display text-5xl block font-extrabold text-center mx-0 px-[26px] my-0 lg:text-5xl">
                   🐾 Welcome to <span className="bg-gradient-hero bg-clip-text text-transparent text-center mx-0 px-0 my-0 py-0">PURRKIN PETS</span>
                 </span>
-                <p className="font-display text-5xl text-center font-bold mx-0 my-[16px] lg:text-base">Your One Stop Pet Paradise</p>
+                <p className="font-display text-xl font-bold text-center mx-0 my-[16px]">Your One Stop Pet Paradise</p>
               </div>
-              <h1 className="font-display text-5xl font-bold leading-tight text-center mx-0 my-0 lg:text-2xl">
+              <h1 className="font-display text-2xl font-bold leading-tight text-center mx-0 my-0">
                 Everything Your Pet{" "}
                 <span className="bg-gradient-hero bg-clip-text text-transparent">
                   Needs & Loves
