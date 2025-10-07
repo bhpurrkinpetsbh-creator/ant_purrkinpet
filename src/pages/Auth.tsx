@@ -108,10 +108,10 @@ const Auth = () => {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center mb-4">
-            <img src={logo} alt="Purrkin Pets" className="h-32 w-32" />
+            <img src={logo} alt="Purrkin Pets" className="h-40 w-40" />
           </div>
           <h1 className="font-display text-3xl font-bold">Welcome to Purrkin Pets</h1>
-          <p className="text-muted-foreground mt-2">Join our pet-loving community</p>
+          <p className="text-muted-foreground mt-2">Your One Stop Pet Paradise</p>
         </div>
 
         <Card className="p-6">
