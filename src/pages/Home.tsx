@@ -2,11 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowRight, Heart, Truck, Shield, Sparkles } from "lucide-react";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-} from "@/components/ui/carousel";
+import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 import heroStorefront from "@/assets/hero-storefront.jpg";
 import hamsterFood from "@/assets/hamster-food.jpg";
@@ -29,24 +25,42 @@ import catsImage from "@/assets/category-cats.jpg";
 import dogsImage from "@/assets/category-dogs.jpg";
 import fishImage from "@/assets/category-fish.jpg";
 import rabbitsImage from "@/assets/category-rabbits.jpg";
-
 const Home = () => {
-  const categories = [
-    { name: "Cats", image: catsImage, link: "/shop?category=cats" },
-    { name: "Dogs", image: dogsImage, link: "/shop?category=dogs" },
-    { name: "Fish", image: fishImage, link: "/shop?category=fish" },
-    { name: "Small Pets", image: rabbitsImage, link: "/shop?category=rabbits" },
-  ];
-
-  const features = [
-    { icon: Heart, title: "Quality Products", desc: "Premium pet supplies from trusted brands" },
-    { icon: Truck, title: "Fast Delivery", desc: "Same-day delivery across Bahrain" },
-    { icon: Shield, title: "Safe & Secure", desc: "100% authentic products guaranteed" },
-    { icon: Sparkles, title: "Expert Grooming", desc: "Professional grooming services" },
-  ];
-
-  return (
-    <div className="min-h-screen">
+  const categories = [{
+    name: "Cats",
+    image: catsImage,
+    link: "/shop?category=cats"
+  }, {
+    name: "Dogs",
+    image: dogsImage,
+    link: "/shop?category=dogs"
+  }, {
+    name: "Fish",
+    image: fishImage,
+    link: "/shop?category=fish"
+  }, {
+    name: "Small Pets",
+    image: rabbitsImage,
+    link: "/shop?category=rabbits"
+  }];
+  const features = [{
+    icon: Heart,
+    title: "Quality Products",
+    desc: "Premium pet supplies from trusted brands"
+  }, {
+    icon: Truck,
+    title: "Fast Delivery",
+    desc: "Same-day delivery across Bahrain"
+  }, {
+    icon: Shield,
+    title: "Safe & Secure",
+    desc: "100% authentic products guaranteed"
+  }, {
+    icon: Sparkles,
+    title: "Expert Grooming",
+    desc: "Professional grooming services"
+  }];
+  return <div className="min-h-screen">
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-hero opacity-10" />
@@ -54,23 +68,23 @@ const Home = () => {
           <div className="grid lg:grid-cols-2 gap-12 items-center py-12 lg:py-20">
             <div className="space-y-6 animate-fade-in">
               <div className="inline-block space-y-2">
-                <span className="bg-accent/10 px-4 py-2 rounded-full font-display text-5xl lg:text-6xl font-bold block">
-                  🐾 Welcome to <span className="bg-gradient-hero bg-clip-text text-transparent">Purrkin Pets</span>
+                <span className="bg-accent/10 py-2 rounded-full font-display text-5xl block font-extrabold text-center mx-0 px-[26px] my-0 lg:text-5xl">
+                  🐾 Welcome to <span className="bg-gradient-hero bg-clip-text text-transparent text-center mx-0 px-0 my-0 py-0">PURRKIN PETS</span>
                 </span>
-                <p className="font-display text-5xl lg:text-6xl font-bold">Your One Stop Pet Paradise</p>
+                <p className="font-display text-5xl text-center font-bold mx-0 my-[16px] lg:text-base">Your One Stop Pet Paradise</p>
               </div>
-              <h1 className="font-display text-5xl lg:text-6xl font-bold leading-tight">
+              <h1 className="font-display text-5xl font-bold leading-tight text-center mx-0 my-0 lg:text-2xl">
                 Everything Your Pet{" "}
                 <span className="bg-gradient-hero bg-clip-text text-transparent">
                   Needs & Loves
                 </span>
               </h1>
-              <p className="text-lg text-muted-foreground max-w-lg">
+              <p className="text-lg text-muted-foreground max-w-lg text-center">
                 Discover premium pet products, book grooming appointments, and get expert care - all in one place.
               </p>
               <div className="flex flex-wrap gap-4">
                 <Button size="lg" className="bg-gradient-hero hover:opacity-90 shadow-md" asChild>
-                  <Link to="/shop">
+                  <Link to="/shop" className="mx-[54px]">
                     Shop Now <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
                 </Button>
@@ -84,164 +98,62 @@ const Home = () => {
 
             <div className="relative animate-slide-up">
               <div className="absolute inset-0 bg-gradient-hero opacity-20 rounded-3xl blur-3xl" />
-              <Carousel
-                className="relative w-full"
-                plugins={[
-                  Autoplay({
-                    delay: 4000,
-                  }),
-                ]}
-                opts={{
-                  loop: true,
-                }}
-              >
+              <Carousel className="relative w-full" plugins={[Autoplay({
+              delay: 4000
+            })]} opts={{
+              loop: true
+            }}>
                 <CarouselContent>
                   <CarouselItem>
-                    <img
-                      src={heroStorefront}
-                      alt="Purrkin Pets storefront"
-                      className="rounded-3xl shadow-lg w-full object-cover aspect-video"
-                    />
+                    <img src={heroStorefront} alt="Purrkin Pets storefront" className="rounded-3xl shadow-lg w-full object-cover aspect-video" />
                   </CarouselItem>
                   <CarouselItem>
-                    <img
-                      src={hamsterFood}
-                      alt="Premium hamster and rabbit food products"
-                      className="rounded-3xl shadow-lg w-full object-cover aspect-video"
-                    />
+                    <img src={hamsterFood} alt="Premium hamster and rabbit food products" className="rounded-3xl shadow-lg w-full object-cover aspect-video" />
                   </CarouselItem>
                   <CarouselItem>
-                    <img
-                      src={catFood}
-                      alt="Quality cat food selection"
-                      className="rounded-3xl shadow-lg w-full object-cover aspect-video"
-                    />
+                    <img src={catFood} alt="Quality cat food selection" className="rounded-3xl shadow-lg w-full object-cover aspect-video" />
                   </CarouselItem>
                   <CarouselItem>
-                    <video
-                      src={petVideo}
-                      className="rounded-3xl shadow-lg w-full object-cover aspect-video"
-                      muted
-                      loop
-                      playsInline
-                      onMouseEnter={(e) => e.currentTarget.play()}
-                      onMouseLeave={(e) => e.currentTarget.pause()}
-                    />
+                    <video src={petVideo} className="rounded-3xl shadow-lg w-full object-cover aspect-video" muted loop playsInline onMouseEnter={e => e.currentTarget.play()} onMouseLeave={e => e.currentTarget.pause()} />
                   </CarouselItem>
                   <CarouselItem>
-                    <img
-                      src={dogFood}
-                      alt="Premium dog food products"
-                      className="rounded-3xl shadow-lg w-full object-cover aspect-video"
-                    />
+                    <img src={dogFood} alt="Premium dog food products" className="rounded-3xl shadow-lg w-full object-cover aspect-video" />
                   </CarouselItem>
                   <CarouselItem>
-                    <img
-                      src={catFood2}
-                      alt="Quality cat food brands"
-                      className="rounded-3xl shadow-lg w-full object-cover aspect-video"
-                    />
+                    <img src={catFood2} alt="Quality cat food brands" className="rounded-3xl shadow-lg w-full object-cover aspect-video" />
                   </CarouselItem>
                   <CarouselItem>
-                    <video
-                      src={petVideo2}
-                      className="rounded-3xl shadow-lg w-full object-cover aspect-video"
-                      muted
-                      loop
-                      playsInline
-                      onMouseEnter={(e) => e.currentTarget.play()}
-                      onMouseLeave={(e) => e.currentTarget.pause()}
-                    />
+                    <video src={petVideo2} className="rounded-3xl shadow-lg w-full object-cover aspect-video" muted loop playsInline onMouseEnter={e => e.currentTarget.play()} onMouseLeave={e => e.currentTarget.pause()} />
                   </CarouselItem>
                   <CarouselItem>
-                    <img
-                      src={waterDispensers}
-                      alt="Pet water dispensers and feeders"
-                      className="rounded-3xl shadow-lg w-full object-cover aspect-video"
-                    />
+                    <img src={waterDispensers} alt="Pet water dispensers and feeders" className="rounded-3xl shadow-lg w-full object-cover aspect-video" />
                   </CarouselItem>
                   <CarouselItem>
-                    <img
-                      src={petCarrier}
-                      alt="Pet carrier for travel"
-                      className="rounded-3xl shadow-lg w-full object-cover aspect-video"
-                    />
+                    <img src={petCarrier} alt="Pet carrier for travel" className="rounded-3xl shadow-lg w-full object-cover aspect-video" />
                   </CarouselItem>
                   <CarouselItem>
-                    <img
-                      src={birdSeeds}
-                      alt="Bird seeds and pet food varieties"
-                      className="rounded-3xl shadow-lg w-full object-cover aspect-video"
-                    />
+                    <img src={birdSeeds} alt="Bird seeds and pet food varieties" className="rounded-3xl shadow-lg w-full object-cover aspect-video" />
                   </CarouselItem>
                   <CarouselItem>
-                    <img
-                      src={fishBowl1}
-                      alt="Beautiful betta fish in bowl"
-                      className="rounded-3xl shadow-lg w-full object-cover aspect-video"
-                    />
+                    <img src={fishBowl1} alt="Beautiful betta fish in bowl" className="rounded-3xl shadow-lg w-full object-cover aspect-video" />
                   </CarouselItem>
                   <CarouselItem>
-                    <img
-                      src={fishBowl2}
-                      alt="Betta fish aquarium"
-                      className="rounded-3xl shadow-lg w-full object-cover aspect-video"
-                    />
+                    <img src={fishBowl2} alt="Betta fish aquarium" className="rounded-3xl shadow-lg w-full object-cover aspect-video" />
                   </CarouselItem>
                   <CarouselItem>
-                    <video
-                      src={petVideo3}
-                      className="rounded-3xl shadow-lg w-full object-cover aspect-video"
-                      muted
-                      loop
-                      playsInline
-                      onMouseEnter={(e) => e.currentTarget.play()}
-                      onMouseLeave={(e) => e.currentTarget.pause()}
-                    />
+                    <video src={petVideo3} className="rounded-3xl shadow-lg w-full object-cover aspect-video" muted loop playsInline onMouseEnter={e => e.currentTarget.play()} onMouseLeave={e => e.currentTarget.pause()} />
                   </CarouselItem>
                   <CarouselItem>
-                    <video
-                      src={petVideo4}
-                      className="rounded-3xl shadow-lg w-full object-cover aspect-video"
-                      muted
-                      loop
-                      playsInline
-                      onMouseEnter={(e) => e.currentTarget.play()}
-                      onMouseLeave={(e) => e.currentTarget.pause()}
-                    />
+                    <video src={petVideo4} className="rounded-3xl shadow-lg w-full object-cover aspect-video" muted loop playsInline onMouseEnter={e => e.currentTarget.play()} onMouseLeave={e => e.currentTarget.pause()} />
                   </CarouselItem>
                   <CarouselItem>
-                    <video
-                      src={petVideo5}
-                      className="rounded-3xl shadow-lg w-full object-cover aspect-video"
-                      muted
-                      loop
-                      playsInline
-                      onMouseEnter={(e) => e.currentTarget.play()}
-                      onMouseLeave={(e) => e.currentTarget.pause()}
-                    />
+                    <video src={petVideo5} className="rounded-3xl shadow-lg w-full object-cover aspect-video" muted loop playsInline onMouseEnter={e => e.currentTarget.play()} onMouseLeave={e => e.currentTarget.pause()} />
                   </CarouselItem>
                   <CarouselItem>
-                    <video
-                      src={petVideo6}
-                      className="rounded-3xl shadow-lg w-full object-cover aspect-video"
-                      muted
-                      loop
-                      playsInline
-                      onMouseEnter={(e) => e.currentTarget.play()}
-                      onMouseLeave={(e) => e.currentTarget.pause()}
-                    />
+                    <video src={petVideo6} className="rounded-3xl shadow-lg w-full object-cover aspect-video" muted loop playsInline onMouseEnter={e => e.currentTarget.play()} onMouseLeave={e => e.currentTarget.pause()} />
                   </CarouselItem>
                   <CarouselItem>
-                    <video
-                      src={petVideo7}
-                      className="rounded-3xl shadow-lg w-full object-cover aspect-video"
-                      muted
-                      loop
-                      playsInline
-                      onMouseEnter={(e) => e.currentTarget.play()}
-                      onMouseLeave={(e) => e.currentTarget.pause()}
-                    />
+                    <video src={petVideo7} className="rounded-3xl shadow-lg w-full object-cover aspect-video" muted loop playsInline onMouseEnter={e => e.currentTarget.play()} onMouseLeave={e => e.currentTarget.pause()} />
                   </CarouselItem>
                 </CarouselContent>
               </Carousel>
@@ -258,20 +170,12 @@ const Home = () => {
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {categories.map((category, index) => (
-            <Link
-              key={category.name}
-              to={category.link}
-              className="group animate-fade-in"
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
+          {categories.map((category, index) => <Link key={category.name} to={category.link} className="group animate-fade-in" style={{
+          animationDelay: `${index * 100}ms`
+        }}>
               <Card className="overflow-hidden border-2 hover:border-primary transition-all hover:shadow-lg">
                 <div className="aspect-square overflow-hidden">
-                  <img
-                    src={category.image}
-                    alt={category.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
+                  <img src={category.image} alt={category.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                 </div>
                 <div className="p-4 text-center">
                   <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">
@@ -279,8 +183,7 @@ const Home = () => {
                   </h3>
                 </div>
               </Card>
-            </Link>
-          ))}
+            </Link>)}
         </div>
       </section>
 
@@ -288,19 +191,15 @@ const Home = () => {
       <section className="bg-muted/30 py-16">
         <div className="container">
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {features.map((feature, index) => (
-              <div
-                key={feature.title}
-                className="text-center space-y-3 animate-slide-up"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
+            {features.map((feature, index) => <div key={feature.title} className="text-center space-y-3 animate-slide-up" style={{
+            animationDelay: `${index * 100}ms`
+          }}>
                 <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-hero shadow-md">
                   <feature.icon className="h-7 w-7 text-primary-foreground" />
                 </div>
                 <h3 className="font-semibold text-lg">{feature.title}</h3>
                 <p className="text-sm text-muted-foreground">{feature.desc}</p>
-              </div>
-            ))}
+              </div>)}
           </div>
         </div>
       </section>
@@ -323,8 +222,6 @@ const Home = () => {
           </div>
         </Card>
       </section>
-    </div>
-  );
+    </div>;
 };
-
 export default Home;
