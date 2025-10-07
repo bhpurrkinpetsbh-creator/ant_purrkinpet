@@ -15,6 +15,16 @@ import petVideo from "@/assets/pet-video.mp4";
 import dogFood from "@/assets/dog-food.jpg";
 import catFood2 from "@/assets/cat-food-2.jpg";
 import petVideo2 from "@/assets/pet-video-2.mp4";
+import waterDispensers from "@/assets/water-dispensers.jpg";
+import petCarrier from "@/assets/pet-carrier.jpg";
+import birdSeeds from "@/assets/bird-seeds.jpg";
+import fishBowl1 from "@/assets/fish-bowl-1.jpg";
+import fishBowl2 from "@/assets/fish-bowl-2.jpg";
+import petVideo3 from "@/assets/pet-video-3.mp4";
+import petVideo4 from "@/assets/pet-video-4.mp4";
+import petVideo5 from "@/assets/pet-video-5.mp4";
+import petVideo6 from "@/assets/pet-video-6.mp4";
+import petVideo7 from "@/assets/pet-video-7.mp4";
 import catsImage from "@/assets/category-cats.jpg";
 import dogsImage from "@/assets/category-dogs.jpg";
 import fishImage from "@/assets/category-fish.jpg";
@@ -135,6 +145,96 @@ const Home = () => {
                   <CarouselItem>
                     <video
                       src={petVideo2}
+                      className="rounded-3xl shadow-lg w-full object-cover aspect-video"
+                      muted
+                      loop
+                      playsInline
+                      onMouseEnter={(e) => e.currentTarget.play()}
+                      onMouseLeave={(e) => e.currentTarget.pause()}
+                    />
+                  </CarouselItem>
+                  <CarouselItem>
+                    <img
+                      src={waterDispensers}
+                      alt="Pet water dispensers and feeders"
+                      className="rounded-3xl shadow-lg w-full object-cover aspect-video"
+                    />
+                  </CarouselItem>
+                  <CarouselItem>
+                    <img
+                      src={petCarrier}
+                      alt="Pet carrier for travel"
+                      className="rounded-3xl shadow-lg w-full object-cover aspect-video"
+                    />
+                  </CarouselItem>
+                  <CarouselItem>
+                    <img
+                      src={birdSeeds}
+                      alt="Bird seeds and pet food varieties"
+                      className="rounded-3xl shadow-lg w-full object-cover aspect-video"
+                    />
+                  </CarouselItem>
+                  <CarouselItem>
+                    <img
+                      src={fishBowl1}
+                      alt="Beautiful betta fish in bowl"
+                      className="rounded-3xl shadow-lg w-full object-cover aspect-video"
+                    />
+                  </CarouselItem>
+                  <CarouselItem>
+                    <img
+                      src={fishBowl2}
+                      alt="Betta fish aquarium"
+                      className="rounded-3xl shadow-lg w-full object-cover aspect-video"
+                    />
+                  </CarouselItem>
+                  <CarouselItem>
+                    <video
+                      src={petVideo3}
+                      className="rounded-3xl shadow-lg w-full object-cover aspect-video"
+                      muted
+                      loop
+                      playsInline
+                      onMouseEnter={(e) => e.currentTarget.play()}
+                      onMouseLeave={(e) => e.currentTarget.pause()}
+                    />
+                  </CarouselItem>
+                  <CarouselItem>
+                    <video
+                      src={petVideo4}
+                      className="rounded-3xl shadow-lg w-full object-cover aspect-video"
+                      muted
+                      loop
+                      playsInline
+                      onMouseEnter={(e) => e.currentTarget.play()}
+                      onMouseLeave={(e) => e.currentTarget.pause()}
+                    />
+                  </CarouselItem>
+                  <CarouselItem>
+                    <video
+                      src={petVideo5}
+                      className="rounded-3xl shadow-lg w-full object-cover aspect-video"
+                      muted
+                      loop
+                      playsInline
+                      onMouseEnter={(e) => e.currentTarget.play()}
+                      onMouseLeave={(e) => e.currentTarget.pause()}
+                    />
+                  </CarouselItem>
+                  <CarouselItem>
+                    <video
+                      src={petVideo6}
+                      className="rounded-3xl shadow-lg w-full object-cover aspect-video"
+                      muted
+                      loop
+                      playsInline
+                      onMouseEnter={(e) => e.currentTarget.play()}
+                      onMouseLeave={(e) => e.currentTarget.pause()}
+                    />
+                  </CarouselItem>
+                  <CarouselItem>
+                    <video
+                      src={petVideo7}
                       className="rounded-3xl shadow-lg w-full object-cover aspect-video"
                       muted
                       loop
