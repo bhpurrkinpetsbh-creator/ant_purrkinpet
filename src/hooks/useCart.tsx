@@ -65,9 +65,19 @@ export const useCart = () => {
       )
       .subscribe();
 
+    // Fallback cross-component sync: window event + storage event
+    const onCartUpdated = () => { fetchCartItems(); };
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'cart_updated_at') fetchCartItems();
+    };
+    window.addEventListener('cart:updated', onCartUpdated as EventListener);
+    window.addEventListener('storage', onStorage);
+
     return () => {
       subscription.unsubscribe();
       supabase.removeChannel(cartChannel);
+      window.removeEventListener('cart:updated', onCartUpdated as EventListener);
+      window.removeEventListener('storage', onStorage);
     };
   }, []);
 
@@ -131,6 +141,9 @@ export const useCart = () => {
       }
 
       await fetchCartItems();
+      // Notify other hook instances in this tab and across tabs
+      window.dispatchEvent(new Event('cart:updated'));
+      try { localStorage.setItem('cart_updated_at', Date.now().toString()); } catch {}
       return true;
     } catch (error: any) {
       console.error('Error adding to cart:', error);
@@ -152,6 +165,8 @@ export const useCart = () => {
 
       if (error) throw error;
       await fetchCartItems();
+      window.dispatchEvent(new Event('cart:updated'));
+      try { localStorage.setItem('cart_updated_at', Date.now().toString()); } catch {}
       return true;
     } catch (error: any) {
       toast({
@@ -174,6 +189,8 @@ export const useCart = () => {
 
       if (error) throw error;
       await fetchCartItems();
+      window.dispatchEvent(new Event('cart:updated'));
+      try { localStorage.setItem('cart_updated_at', Date.now().toString()); } catch {}
       return true;
     } catch (error: any) {
       toast({
