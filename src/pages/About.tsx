@@ -8,7 +8,7 @@ const About = () => {
       <section className="bg-muted/30 py-16">
         <div className="container">
           <div className="max-w-3xl mx-auto text-center space-y-4">
-            <img src={logo} alt="Purrkin Pets Logo" className="h-32 w-32 mx-auto mb-4" />
+            <img src={logo} alt="Purrkin Pets Logo" className="h-36 w-36 mx-auto mb-4" />
             <h1 className="font-display text-4xl lg:text-5xl font-bold">About Purrkin Pets</h1>
             <p className="text-xl text-muted-foreground">Your One Stop Pet Paradise</p>
           </div>
