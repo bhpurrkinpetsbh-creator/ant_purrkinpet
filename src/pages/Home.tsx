@@ -8,10 +8,10 @@ import {
   CarouselItem,
 } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
-import heroImage from "@/assets/hero-pets.jpg";
-import heroImage2 from "@/assets/hero-pets-2.jpg";
-import heroImage3 from "@/assets/hero-pets-3.jpg";
 import heroStorefront from "@/assets/hero-storefront.jpg";
+import hamsterFood from "@/assets/hamster-food.jpg";
+import catFood from "@/assets/cat-food.jpg";
+import petVideo from "@/assets/pet-video.mp4";
 import catsImage from "@/assets/category-cats.jpg";
 import dogsImage from "@/assets/category-dogs.jpg";
 import fishImage from "@/assets/category-fish.jpg";
@@ -85,30 +85,34 @@ const Home = () => {
                 <CarouselContent>
                   <CarouselItem>
                     <img
-                      src={heroImage}
-                      alt="Happy pets at Purrkin Pets"
-                      className="rounded-3xl shadow-lg w-full object-cover aspect-video"
-                    />
-                  </CarouselItem>
-                  <CarouselItem>
-                    <img
-                      src={heroImage2}
-                      alt="Pet grooming services"
-                      className="rounded-3xl shadow-lg w-full object-cover aspect-video"
-                    />
-                  </CarouselItem>
-                  <CarouselItem>
-                    <img
-                      src={heroImage3}
-                      alt="Professional pet care"
-                      className="rounded-3xl shadow-lg w-full object-cover aspect-video"
-                    />
-                  </CarouselItem>
-                  <CarouselItem>
-                    <img
                       src={heroStorefront}
                       alt="Purrkin Pets storefront"
                       className="rounded-3xl shadow-lg w-full object-cover aspect-video"
+                    />
+                  </CarouselItem>
+                  <CarouselItem>
+                    <img
+                      src={hamsterFood}
+                      alt="Premium hamster and rabbit food products"
+                      className="rounded-3xl shadow-lg w-full object-cover aspect-video"
+                    />
+                  </CarouselItem>
+                  <CarouselItem>
+                    <img
+                      src={catFood}
+                      alt="Quality cat food selection"
+                      className="rounded-3xl shadow-lg w-full object-cover aspect-video"
+                    />
+                  </CarouselItem>
+                  <CarouselItem>
+                    <video
+                      src={petVideo}
+                      className="rounded-3xl shadow-lg w-full object-cover aspect-video"
+                      muted
+                      loop
+                      playsInline
+                      onMouseEnter={(e) => e.currentTarget.play()}
+                      onMouseLeave={(e) => e.currentTarget.pause()}
                     />
                   </CarouselItem>
                 </CarouselContent>
