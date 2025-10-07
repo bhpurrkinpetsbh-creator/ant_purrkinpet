@@ -12,6 +12,9 @@ import heroStorefront from "@/assets/hero-storefront.jpg";
 import hamsterFood from "@/assets/hamster-food.jpg";
 import catFood from "@/assets/cat-food.jpg";
 import petVideo from "@/assets/pet-video.mp4";
+import dogFood from "@/assets/dog-food.jpg";
+import catFood2 from "@/assets/cat-food-2.jpg";
+import petVideo2 from "@/assets/pet-video-2.mp4";
 import catsImage from "@/assets/category-cats.jpg";
 import dogsImage from "@/assets/category-dogs.jpg";
 import fishImage from "@/assets/category-fish.jpg";
@@ -107,6 +110,31 @@ const Home = () => {
                   <CarouselItem>
                     <video
                       src={petVideo}
+                      className="rounded-3xl shadow-lg w-full object-cover aspect-video"
+                      muted
+                      loop
+                      playsInline
+                      onMouseEnter={(e) => e.currentTarget.play()}
+                      onMouseLeave={(e) => e.currentTarget.pause()}
+                    />
+                  </CarouselItem>
+                  <CarouselItem>
+                    <img
+                      src={dogFood}
+                      alt="Premium dog food products"
+                      className="rounded-3xl shadow-lg w-full object-cover aspect-video"
+                    />
+                  </CarouselItem>
+                  <CarouselItem>
+                    <img
+                      src={catFood2}
+                      alt="Quality cat food brands"
+                      className="rounded-3xl shadow-lg w-full object-cover aspect-video"
+                    />
+                  </CarouselItem>
+                  <CarouselItem>
+                    <video
+                      src={petVideo2}
                       className="rounded-3xl shadow-lg w-full object-cover aspect-video"
                       muted
                       loop
