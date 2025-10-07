@@ -18,7 +18,9 @@ const Auth = () => {
 
   useEffect(() => {
     // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       if (session) {
         navigate("/");
@@ -39,10 +41,10 @@ const Auth = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     const form = e.target as HTMLFormElement;
-    const email = (form.elements.namedItem('login-email') as HTMLInputElement).value;
-    const password = (form.elements.namedItem('login-password') as HTMLInputElement).value;
+    const email = (form.elements.namedItem("login-email") as HTMLInputElement).value;
+    const password = (form.elements.namedItem("login-password") as HTMLInputElement).value;
 
     const { error } = await supabase.auth.signInWithPassword({
       email,
@@ -61,18 +63,18 @@ const Auth = () => {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     const form = e.target as HTMLFormElement;
-    const email = (form.elements.namedItem('signup-email') as HTMLInputElement).value;
-    const password = (form.elements.namedItem('signup-password') as HTMLInputElement).value;
+    const email = (form.elements.namedItem("signup-email") as HTMLInputElement).value;
+    const password = (form.elements.namedItem("signup-password") as HTMLInputElement).value;
     const redirectUrl = `${window.location.origin}/`;
 
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: redirectUrl
-      }
+        emailRedirectTo: redirectUrl,
+      },
     });
 
     setIsLoading(false);
@@ -86,12 +88,12 @@ const Auth = () => {
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
-    
+
     const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
+      provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/`
-      }
+        redirectTo: `${window.location.origin}/`,
+      },
     });
 
     setIsLoading(false);
@@ -106,7 +108,7 @@ const Auth = () => {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center mb-4">
-            <img src={logo} alt="Purrkin Pets" className="h-22 w-22" />
+            <img src={logo} alt="Purrkin Pets" className="h-15 w-22" />
           </div>
           <h1 className="font-display text-3xl font-bold">Welcome to Purrkin Pets</h1>
           <p className="text-muted-foreground mt-2">Join our pet-loving community</p>
@@ -123,22 +125,12 @@ const Auth = () => {
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="login-email">Email</Label>
-                  <Input
-                    id="login-email"
-                    type="email"
-                    placeholder="you@example.com"
-                    required
-                  />
+                  <Input id="login-email" type="email" placeholder="you@example.com" required />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="login-password">Password</Label>
-                  <Input
-                    id="login-password"
-                    type="password"
-                    placeholder="Enter your password"
-                    required
-                  />
+                  <Input id="login-password" type="password" placeholder="Enter your password" required />
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -153,11 +145,7 @@ const Auth = () => {
                   </Button>
                 </div>
 
-                <Button
-                  type="submit"
-                  className="w-full bg-gradient-hero hover:opacity-90"
-                  disabled={isLoading}
-                >
+                <Button type="submit" className="w-full bg-gradient-hero hover:opacity-90" disabled={isLoading}>
                   {isLoading ? "Logging in..." : "Login"}
                 </Button>
 
@@ -204,42 +192,22 @@ const Auth = () => {
               <form onSubmit={handleSignup} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="signup-name">Full Name</Label>
-                  <Input
-                    id="signup-name"
-                    type="text"
-                    placeholder="John Doe"
-                    required
-                  />
+                  <Input id="signup-name" type="text" placeholder="John Doe" required />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="signup-email">Email</Label>
-                  <Input
-                    id="signup-email"
-                    type="email"
-                    placeholder="you@example.com"
-                    required
-                  />
+                  <Input id="signup-email" type="email" placeholder="you@example.com" required />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="signup-phone">Phone Number</Label>
-                  <Input
-                    id="signup-phone"
-                    type="tel"
-                    placeholder="+973..."
-                    required
-                  />
+                  <Input id="signup-phone" type="tel" placeholder="+973..." required />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="signup-password">Password</Label>
-                  <Input
-                    id="signup-password"
-                    type="password"
-                    placeholder="Create a password"
-                    required
-                  />
+                  <Input id="signup-password" type="password" placeholder="Create a password" required />
                 </div>
 
                 <div className="flex items-center space-x-2">
@@ -252,11 +220,7 @@ const Auth = () => {
                   </label>
                 </div>
 
-                <Button
-                  type="submit"
-                  className="w-full bg-gradient-hero hover:opacity-90"
-                  disabled={isLoading}
-                >
+                <Button type="submit" className="w-full bg-gradient-hero hover:opacity-90" disabled={isLoading}>
                   {isLoading ? "Creating account..." : "Create Account"}
                 </Button>
 
