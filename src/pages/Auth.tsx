@@ -106,7 +106,7 @@ const Auth = () => {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center mb-4">
-            <img src={logo} alt="Purrkin Pets" className="h-26 w-26" />
+            <img src={logo} alt="Purrkin Pets" className="h-22 w-22" />
           </div>
           <h1 className="font-display text-3xl font-bold">Welcome to Purrkin Pets</h1>
           <p className="text-muted-foreground mt-2">Join our pet-loving community</p>
