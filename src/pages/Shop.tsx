@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,27 +6,103 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Search, SlidersHorizontal, ShoppingCart } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { useCart } from "@/hooks/useCart";
 
-// Mock product data
-const products = [
-  { id: 1, name: "Premium Cat Food", category: "cats", price: "15.99 BHD", image: "/placeholder.svg", rating: 4.5, inStock: true },
-  { id: 2, name: "Interactive Cat Toy", category: "cats", price: "8.50 BHD", image: "/placeholder.svg", rating: 4.8, inStock: true },
-  { id: 3, name: "Dog Training Treats", category: "dogs", price: "12.00 BHD", image: "/placeholder.svg", rating: 4.7, inStock: true },
-  { id: 4, name: "Aquarium Filter", category: "fish", price: "25.00 BHD", image: "/placeholder.svg", rating: 4.6, inStock: false },
-  { id: 5, name: "Rabbit Hay Bundle", category: "rabbits", price: "10.00 BHD", image: "/placeholder.svg", rating: 4.9, inStock: true },
-  { id: 6, name: "Dog Collar & Leash Set", category: "dogs", price: "18.50 BHD", image: "/placeholder.svg", rating: 4.4, inStock: true },
-];
-
-const categories = ["all", "cats", "dogs", "fish", "birds", "rabbits"];
+type Product = {
+  id: string;
+  name: string;
+  price: number;
+  image_url: string;
+  stock_quantity: number;
+  category_id: string | null;
+  categories: { name: string; slug: string } | null;
+};
 
 const Shop = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryParam = searchParams.get("category") || "all";
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("featured");
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<string[]>(["all"]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+  const { addToCart } = useCart();
+
+  useEffect(() => {
+    fetchProducts();
+    fetchCategories();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("products")
+        .select(`
+          id,
+          name,
+          price,
+          image_url,
+          stock_quantity,
+          category_id,
+          categories (
+            name,
+            slug
+          )
+        `)
+        .eq("is_active", true);
+
+      if (error) throw error;
+      setProducts(data || []);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load products",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("categories")
+        .select("slug")
+        .eq("is_active", true)
+        .order("display_order");
+
+      if (error) throw error;
+      const categoryList = ["all", ...(data?.map(c => c.slug) || [])];
+      setCategories(categoryList);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  };
+
+  const handleAddToCart = async (productId: string) => {
+    try {
+      await addToCart(productId, 1);
+      toast({
+        title: "Added to cart",
+        description: "Product has been added to your cart",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add to cart. Please sign in.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const filteredProducts = products.filter(product => {
-    const matchesCategory = categoryParam === "all" || product.category === categoryParam;
+    const categorySlug = product.categories?.slug || "";
+    const matchesCategory = categoryParam === "all" || categorySlug === categoryParam;
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
@@ -83,54 +159,62 @@ const Shop = () => {
       </div>
 
       {/* Products Grid */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filteredProducts.map((product) => (
-          <Card key={product.id} className="group overflow-hidden hover:shadow-lg transition-all">
-            <Link to={`/product/${product.id}`}>
-              <div className="aspect-square bg-muted relative overflow-hidden">
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                />
-                {!product.inStock && (
-                  <Badge className="absolute top-2 right-2 bg-destructive">Out of Stock</Badge>
-                )}
-              </div>
-            </Link>
-
-            <div className="p-4 space-y-3">
-              <Link to={`/product/${product.id}`}>
-                <h3 className="font-semibold group-hover:text-primary transition-colors line-clamp-2">
-                  {product.name}
-                </h3>
-              </Link>
-
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-lg text-primary">{product.price}</span>
-                <div className="flex items-center gap-1">
-                  <span className="text-sm">⭐</span>
-                  <span className="text-sm font-medium">{product.rating}</span>
-                </div>
-              </div>
-
-              <Button
-                className="w-full"
-                variant={product.inStock ? "default" : "secondary"}
-                disabled={!product.inStock}
-              >
-                <ShoppingCart className="mr-2 h-4 w-4" />
-                {product.inStock ? "Add to Cart" : "Out of Stock"}
-              </Button>
-            </div>
-          </Card>
-        ))}
-      </div>
-
-      {filteredProducts.length === 0 && (
+      {loading ? (
         <div className="text-center py-20">
-          <p className="text-muted-foreground text-lg">No products found. Try adjusting your filters.</p>
+          <p className="text-muted-foreground text-lg">Loading products...</p>
         </div>
+      ) : (
+        <>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredProducts.map((product) => {
+              const inStock = product.stock_quantity > 0;
+              return (
+                <Card key={product.id} className="group overflow-hidden hover:shadow-lg transition-all">
+                  <Link to={`/product/${product.id}`}>
+                    <div className="aspect-square bg-muted relative overflow-hidden">
+                      <img
+                        src={product.image_url}
+                        alt={product.name}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                      {!inStock && (
+                        <Badge className="absolute top-2 right-2 bg-destructive">Out of Stock</Badge>
+                      )}
+                    </div>
+                  </Link>
+
+                  <div className="p-4 space-y-3">
+                    <Link to={`/product/${product.id}`}>
+                      <h3 className="font-semibold group-hover:text-primary transition-colors line-clamp-2">
+                        {product.name}
+                      </h3>
+                    </Link>
+
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-lg text-primary">{product.price.toFixed(2)} BHD</span>
+                    </div>
+
+                    <Button
+                      className="w-full"
+                      variant={inStock ? "default" : "secondary"}
+                      disabled={!inStock}
+                      onClick={() => handleAddToCart(product.id)}
+                    >
+                      <ShoppingCart className="mr-2 h-4 w-4" />
+                      {inStock ? "Add to Cart" : "Out of Stock"}
+                    </Button>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+
+          {filteredProducts.length === 0 && (
+            <div className="text-center py-20">
+              <p className="text-muted-foreground text-lg">No products found. Try adjusting your filters.</p>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
