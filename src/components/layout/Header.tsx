@@ -56,9 +56,6 @@ const Header = () => {
           <Link to="/appointments" className="text-sm font-medium hover:text-primary transition-colors">
             Appointments
           </Link>
-          <Link to="/about" className="text-sm font-medium hover:text-primary transition-colors">
-            About Us
-          </Link>
           <Link to="/contact" className="text-sm font-medium hover:text-primary transition-colors">
             Contact
           </Link>
