@@ -166,6 +166,31 @@ const Appointments = () => {
     setLoading(true);
 
     try {
+      // Ensure customer profile exists
+      const { data: existingCustomer } = await supabase
+        .from('customers')
+        .select('id')
+        .eq('id', user.id)
+        .single();
+
+      if (!existingCustomer) {
+        // Create customer profile if it doesn't exist
+        const { error: customerError } = await supabase
+          .from('customers')
+          .insert({
+            id: user.id,
+            full_name: formData.name,
+            phone: formData.phone,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+
+        if (customerError) {
+          console.error('Error creating customer profile:', customerError);
+          throw new Error('Failed to create customer profile');
+        }
+      }
+
       const selectedServiceData = services.find(s => s.id === selectedService);
       
       // Parse time to 24-hour format
