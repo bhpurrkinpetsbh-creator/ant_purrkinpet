@@ -102,6 +102,29 @@ const Appointments = () => {
     if (selectedDate) {
       fetchBookedSlots();
     }
+
+    // Real-time subscription for appointments
+    const channel = supabase
+      .channel('appointments-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'appointments'
+        },
+        () => {
+          // Refetch booked slots when any new appointment is created
+          if (selectedDate) {
+            fetchBookedSlots();
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [selectedDate]);
 
   const fetchBookedSlots = async () => {
