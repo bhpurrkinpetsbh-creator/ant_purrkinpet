@@ -131,18 +131,18 @@ const Appointments = () => {
     if (!selectedDate) return;
 
     const dateStr = selectedDate.toISOString().split('T')[0];
-    const { data, error } = await supabase
-      .from('appointments')
-      .select('appointment_time')
-      .eq('appointment_date', dateStr)
-      .neq('status', 'cancelled');
+    
+    // Use RPC to fetch all booked slots (bypasses RLS for availability check)
+    const { data, error } = await supabase.rpc('get_booked_slots', {
+      p_date: dateStr
+    });
 
     if (error) {
       console.error('Error fetching booked slots:', error);
       return;
     }
 
-    const bookedTimes = data.map(apt => {
+    const bookedTimes = (data || []).map((apt: { appointment_time: string }) => {
       const time = new Date(`2000-01-01T${apt.appointment_time}`);
       return time.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
     });

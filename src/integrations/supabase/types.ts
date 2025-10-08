@@ -688,6 +688,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_booked_slots: {
+        Args: { p_date: string }
+        Returns: {
+          appointment_time: string
+        }[]
+      }
       slugify: {
         Args: { txt: string }
         Returns: string
