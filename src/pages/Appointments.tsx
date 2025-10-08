@@ -103,28 +103,37 @@ const Appointments = () => {
       fetchBookedSlots();
     }
 
-    // Real-time subscription for appointments
-    const channel = supabase
-      .channel('appointments-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'appointments'
-        },
-        () => {
-          // Refetch booked slots when any new appointment is created
-          if (selectedDate) {
-            fetchBookedSlots();
-          }
+  // Real-time subscription for appointments (DB changes limited by RLS) + broadcast fallback
+  const dbChannel = supabase
+    .channel('appointments-changes')
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'appointments'
+      },
+      () => {
+        if (selectedDate) {
+          fetchBookedSlots();
         }
-      )
-      .subscribe();
+      }
+    )
+    .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+  const broadcastChannel = supabase
+    .channel('appointments-broadcast')
+    .on('broadcast', { event: 'appointment_booked' }, () => {
+      if (selectedDate) {
+        fetchBookedSlots();
+      }
+    })
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(dbChannel);
+    supabase.removeChannel(broadcastChannel);
+  };
   }, [selectedDate]);
 
   const fetchBookedSlots = async () => {
@@ -226,6 +235,23 @@ const Appointments = () => {
         });
 
       if (dbError) throw dbError;
+
+      // Broadcast to all clients so slots update immediately (bypass RLS limits)
+      try {
+        const bc = supabase.channel('appointments-broadcast');
+        await bc.subscribe();
+        await bc.send({
+          type: 'broadcast',
+          event: 'appointment_booked',
+          payload: {
+            date: selectedDate.toISOString().split('T')[0],
+            time: selectedTime
+          }
+        });
+        await supabase.removeChannel(bc);
+      } catch (e) {
+        console.warn('Broadcast failed (non-blocking):', e);
+      }
 
       // Send to n8n webhook
       const webhookData = {
