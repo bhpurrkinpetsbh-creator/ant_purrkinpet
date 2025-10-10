@@ -51,7 +51,7 @@ const Home = () => {
     image: dogsImage,
     link: "/shop?category=dogs"
   }, {
-    name: "Fish",
+    name: "Fishes and Aquarium",
     image: fishImage,
     link: "/shop?category=fish"
   }, {
