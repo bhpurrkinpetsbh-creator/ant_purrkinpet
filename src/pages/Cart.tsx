@@ -116,8 +116,8 @@ const Cart = () => {
                 <span className="font-bold text-primary">{(subtotal + 2).toFixed(2)} BHD</span>
               </div>
             </div>
-            <Button className="w-full bg-gradient-hero hover:opacity-90" size="lg">
-              Proceed to Checkout
+            <Button className="w-full bg-gradient-hero hover:opacity-90" size="lg" asChild>
+              <Link to="/checkout">Proceed to Checkout</Link>
             </Button>
           </Card>
         </div>
