@@ -26,6 +26,7 @@ type Product = {
   stock_quantity: number;
   category_id: string | null;
   categories: { name: string; slug: string } | null;
+  compare_at_price: number | null;
 };
 
 const Shop = () => {
@@ -60,6 +61,7 @@ const Shop = () => {
           image_url,
           stock_quantity,
           category_id,
+          compare_at_price,
           categories (
             name,
             slug
@@ -128,6 +130,11 @@ const Shop = () => {
 
   return (
     <div className="container py-8">
+      {/* Free Shipping Banner */}
+      <div className="bg-gradient-hero text-white px-6 py-3 rounded-lg mb-6 text-center font-semibold shadow-lg">
+        🚚 Free Shipping on All Products in Bahrain!
+      </div>
+
       {/* Breadcrumb */}
       <Breadcrumb className="mb-4">
         <BreadcrumbList>
@@ -249,7 +256,19 @@ const Shop = () => {
                     </Link>
 
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-lg text-primary">{product.price.toFixed(2)} BHD</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-lg text-primary">{product.price.toFixed(2)} BHD</span>
+                        {product.compare_at_price && (
+                          <span className="text-sm text-muted-foreground line-through">
+                            {product.compare_at_price.toFixed(2)} BHD
+                          </span>
+                        )}
+                      </div>
+                      {product.compare_at_price && (
+                        <Badge variant="destructive" className="text-xs">
+                          {Math.round((1 - product.price / product.compare_at_price) * 100)}% OFF
+                        </Badge>
+                      )}
                     </div>
 
                     <Button

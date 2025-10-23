@@ -261,7 +261,9 @@ const Orders = () => {
                         </div>
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Delivery Fee</span>
-                          <span>{order.delivery_fee.toFixed(3)} BD</span>
+                          <span className="text-secondary font-semibold">
+                            {order.delivery_fee === 0 ? 'FREE' : `${order.delivery_fee.toFixed(3)} BD`}
+                          </span>
                         </div>
                         <Separator />
                         <div className="flex justify-between font-semibold text-base">

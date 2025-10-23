@@ -47,7 +47,7 @@ const Checkout = () => {
     return sum + price * item.quantity;
   }, 0);
 
-  const deliveryFee = 2.0;
+  const deliveryFee = 0;
   const total = subtotal + deliveryFee;
 
   // Show loading state while cart is being fetched
@@ -236,7 +236,7 @@ const Checkout = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Delivery</span>
-                <span className="font-semibold">{deliveryFee.toFixed(2)} BHD</span>
+                <span className="font-semibold text-secondary">FREE</span>
               </div>
               <div className="border-t pt-2 flex justify-between text-lg">
                 <span className="font-bold">Total</span>
