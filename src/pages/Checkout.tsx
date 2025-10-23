@@ -27,7 +27,7 @@ type CheckoutFormData = z.infer<typeof checkoutSchema>;
 
 const Checkout = () => {
   const navigate = useNavigate();
-  const { cartItems, cartCount } = useCart();
+  const { cartItems, cartCount, loading } = useCart();
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -50,7 +50,17 @@ const Checkout = () => {
   const deliveryFee = 2.0;
   const total = subtotal + deliveryFee;
 
-  if (cartCount === 0) {
+  // Show loading state while cart is being fetched
+  if (loading) {
+    return (
+      <div className="container py-12 min-h-[60vh] flex items-center justify-center">
+        <p className="text-muted-foreground">Loading checkout...</p>
+      </div>
+    );
+  }
+
+  // Only redirect if cart is empty and not loading
+  if (cartCount === 0 && !loading) {
     navigate("/cart");
     return null;
   }
