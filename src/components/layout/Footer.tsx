@@ -42,6 +42,22 @@ const Footer = () => {
               <li><Link to="/about" className="text-muted-foreground hover:text-primary transition-colors">About Us</Link></li>
               <li><Link to="/delivery" className="text-muted-foreground hover:text-primary transition-colors">Delivery Info</Link></li>
             </ul>
+            
+            <div className="mt-6">
+              <h5 className="font-semibold mb-3 text-sm">Find Us</h5>
+              <div className="w-full h-[200px] rounded-lg overflow-hidden">
+                <iframe
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3577.3!2d50.6468!3d26.2472!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3e49a8e8c8c8c8c8%3A0x0!2s7JJW%2BVQ%20Galali!5e0!3m2!1sen!2sbh!4v1234567890!5m2!1sen!2sbh"
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="Purrkin Pets Location - 7JJW+VQ Galali, Bahrain"
+                />
+              </div>
+            </div>
           </div>
 
           <div>
@@ -68,22 +84,6 @@ const Footer = () => {
                 <p>Mon–Sat 10am–1pm & 4–11pm</p>
               </li>
             </ul>
-          </div>
-        </div>
-
-        <div className="border-t mt-8 pt-8">
-          <h4 className="font-semibold mb-4 text-center">Find Us</h4>
-          <div className="w-full h-[300px] rounded-lg overflow-hidden">
-            <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3577.4849!2d50.6386!3d26.2367!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjbCsDE0JzEyLjEiTiA1MMKwMzgnMTkuMCJF!5e0!3m2!1sen!2sbh!4v1234567890!5m2!1sen!2sbh"
-              width="100%"
-              height="100%"
-              style={{ border: 0 }}
-              allowFullScreen
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              title="Purrkin Pets Location"
-            />
           </div>
         </div>
 
