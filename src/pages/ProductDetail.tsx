@@ -9,6 +9,13 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/hooks/useCart";
 import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
@@ -20,8 +27,8 @@ import {
 const ProductDetail = () => {
   const { id } = useParams();
   const [quantity, setQuantity] = useState(1);
-  const [selectedImage, setSelectedImage] = useState(0);
   const [product, setProduct] = useState<any>(null);
+  const [productImages, setProductImages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { addToCart } = useCart();
 
@@ -40,6 +47,22 @@ const ProductDetail = () => {
 
         if (error) throw error;
         setProduct(data);
+
+        // Fetch product images
+        const { data: images, error: imagesError } = await supabase
+          .from('product_images')
+          .select('*')
+          .eq('product_id', id)
+          .order('display_order', { ascending: true });
+
+        if (imagesError) throw imagesError;
+        
+        // If no additional images, use the main product image
+        if (!images || images.length === 0) {
+          setProductImages([{ image_url: data.image_url, is_primary: true }]);
+        } else {
+          setProductImages(images);
+        }
       } catch (error) {
         console.error('Error fetching product:', error);
         toast.error("Failed to load product");
@@ -113,13 +136,33 @@ const ProductDetail = () => {
       <div className="grid lg:grid-cols-2 gap-12 mb-12">
         {/* Images */}
         <div className="space-y-4">
-          <Card className="overflow-hidden aspect-square">
-            <img
-              src={product.image_url || '/placeholder.svg'}
-              alt={product.name}
-              className="w-full h-full object-cover"
-            />
-          </Card>
+          {productImages.length > 1 ? (
+            <Carousel className="w-full">
+              <CarouselContent>
+                {productImages.map((image, index) => (
+                  <CarouselItem key={index}>
+                    <Card className="overflow-hidden aspect-square">
+                      <img
+                        src={image.image_url || '/placeholder.svg'}
+                        alt={`${product.name} - Image ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </Card>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="left-4" />
+              <CarouselNext className="right-4" />
+            </Carousel>
+          ) : (
+            <Card className="overflow-hidden aspect-square">
+              <img
+                src={productImages[0]?.image_url || product.image_url || '/placeholder.svg'}
+                alt={product.name}
+                className="w-full h-full object-cover"
+              />
+            </Card>
+          )}
         </div>
 
         {/* Product Info */}
