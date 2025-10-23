@@ -8,6 +8,14 @@ import { ShoppingCart, Heart, Share2, Truck, Shield, ArrowLeft } from "lucide-re
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/hooks/useCart";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -74,6 +82,27 @@ const ProductDetail = () => {
 
   return (
     <div className="container py-8">
+      {/* Breadcrumb */}
+      <Breadcrumb className="mb-4">
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link to="/">Home</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link to="/shop">Shop</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>{product.name}</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+
       <Button variant="ghost" className="mb-6" asChild>
         <Link to="/shop">
           <ArrowLeft className="mr-2 h-4 w-4" />

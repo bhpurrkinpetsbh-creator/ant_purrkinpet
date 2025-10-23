@@ -9,6 +9,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/hooks/useCart";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 
 type Product = {
   id: string;
@@ -120,14 +128,29 @@ const Shop = () => {
 
   return (
     <div className="container py-8">
-      <div className="mb-8">
-        <h1 className="font-display text-4xl font-bold mb-2">Shop All Products</h1>
+      {/* Breadcrumb */}
+      <Breadcrumb className="mb-4">
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link to="/">Home</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Shop</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+
+      <div className="mb-6">
+        <h1 className="font-display text-4xl font-bold mb-2">Shop</h1>
         <p className="text-muted-foreground">Discover premium pet products for your beloved companions</p>
       </div>
 
       {/* Filters - Sticky */}
       <div className="sticky top-20 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 pb-4 mb-4 border-b">
-        <div className="flex flex-col lg:flex-row gap-4">
+        <div className="flex flex-col lg:flex-row gap-4 mb-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -168,6 +191,28 @@ const Shop = () => {
               <SlidersHorizontal className="h-4 w-4" />
             </Button>
           </div>
+        </div>
+
+        {/* Category Quick Buttons */}
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+          <Button
+            variant={categoryParam === "all" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setSearchParams({ category: "all" })}
+          >
+            All
+          </Button>
+          {categories.filter(cat => cat !== "all").map((cat) => (
+            <Button
+              key={cat}
+              variant={categoryParam === cat ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSearchParams({ category: cat })}
+              className="whitespace-nowrap"
+            >
+              {cat.charAt(0).toUpperCase() + cat.slice(1)}
+            </Button>
+          ))}
         </div>
       </div>
 
