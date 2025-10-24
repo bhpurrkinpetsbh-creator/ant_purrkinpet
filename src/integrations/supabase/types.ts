@@ -484,6 +484,7 @@ export type Database = {
           image_url: string
           is_primary: boolean | null
           product_id: string
+          sku: string | null
           updated_at: string
         }
         Insert: {
@@ -493,6 +494,7 @@ export type Database = {
           image_url: string
           is_primary?: boolean | null
           product_id: string
+          sku?: string | null
           updated_at?: string
         }
         Update: {
@@ -502,6 +504,7 @@ export type Database = {
           image_url?: string
           is_primary?: boolean | null
           product_id?: string
+          sku?: string | null
           updated_at?: string
         }
         Relationships: [
