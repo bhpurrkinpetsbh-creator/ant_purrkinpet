@@ -8,6 +8,8 @@ import { ShoppingCart, Heart, Share2, Truck, Shield, ArrowLeft } from "lucide-re
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/hooks/useCart";
+import Zoom from "react-medium-image-zoom";
+import "react-medium-image-zoom/dist/styles.css";
 import {
   Carousel,
   CarouselContent,
@@ -31,6 +33,11 @@ const ProductDetail = () => {
   const [productImages, setProductImages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { addToCart } = useCart();
+
+  // Scroll to top when component mounts or ID changes
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [id]);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -142,11 +149,13 @@ const ProductDetail = () => {
                 {productImages.map((image, index) => (
                   <CarouselItem key={index}>
                     <Card className="overflow-hidden aspect-square bg-white">
-                      <img
-                        src={image.image_url || '/placeholder.svg'}
-                        alt={`${product.name} - Image ${index + 1}`}
-                        className="w-full h-full object-contain p-4"
-                      />
+                      <Zoom>
+                        <img
+                          src={image.image_url || '/placeholder.svg'}
+                          alt={`${product.name} - Image ${index + 1}`}
+                          className="w-full h-full object-contain p-4"
+                        />
+                      </Zoom>
                     </Card>
                   </CarouselItem>
                 ))}
@@ -156,11 +165,13 @@ const ProductDetail = () => {
             </Carousel>
           ) : (
             <Card className="overflow-hidden aspect-square bg-white">
-              <img
-                src={productImages[0]?.image_url || product.image_url || '/placeholder.svg'}
-                alt={product.name}
-                className="w-full h-full object-contain p-4"
-              />
+              <Zoom>
+                <img
+                  src={productImages[0]?.image_url || product.image_url || '/placeholder.svg'}
+                  alt={product.name}
+                  className="w-full h-full object-contain p-4"
+                />
+              </Zoom>
             </Card>
           )}
         </div>
