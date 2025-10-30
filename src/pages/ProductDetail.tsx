@@ -39,6 +39,19 @@ const ProductDetail = () => {
     window.scrollTo(0, 0);
   }, [id]);
 
+  // Disable zoom when user clicks outside the page
+  useEffect(() => {
+    const handleBlur = () => {
+      setIsZoomEnabled(false);
+    };
+
+    window.addEventListener('blur', handleBlur);
+    
+    return () => {
+      window.removeEventListener('blur', handleBlur);
+    };
+  }, []);
+
   useEffect(() => {
     const fetchProduct = async () => {
       try {
