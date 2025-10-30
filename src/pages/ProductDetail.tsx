@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ShoppingCart, Heart, Share2, Truck, Shield, ArrowLeft } from "lucide-react";
+import { ShoppingCart, Heart, Share2, Truck, Shield, ArrowLeft, ZoomIn } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/hooks/useCart";
@@ -31,6 +31,7 @@ const ProductDetail = () => {
   const [product, setProduct] = useState<any>(null);
   const [productImages, setProductImages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isZoomEnabled, setIsZoomEnabled] = useState(false);
   const { addToCart } = useCart();
 
   // Scroll to top when component mounts or ID changes
@@ -142,18 +143,37 @@ const ProductDetail = () => {
       <div className="grid lg:grid-cols-2 gap-12 mb-12">
         {/* Images */}
         <div className="space-y-4">
+          <div className="flex justify-end">
+            <Button
+              variant={isZoomEnabled ? "default" : "outline"}
+              size="sm"
+              onClick={() => setIsZoomEnabled(!isZoomEnabled)}
+              className="gap-2"
+            >
+              <ZoomIn className="h-4 w-4" />
+              {isZoomEnabled ? "Zoom Enabled" : "Enable Zoom"}
+            </Button>
+          </div>
           {productImages.length > 1 ? (
             <Carousel className="w-full">
               <CarouselContent>
                 {productImages.map((image, index) => (
                   <CarouselItem key={index}>
                     <Card className="overflow-hidden aspect-square bg-white flex items-center justify-center">
-                      <ImgZoom
-                        img={image.image_url || '/placeholder.svg'}
-                        zoomScale={2}
-                        width={600}
-                        height={600}
-                      />
+                      {isZoomEnabled ? (
+                        <ImgZoom
+                          img={image.image_url || '/placeholder.svg'}
+                          zoomScale={2}
+                          width={600}
+                          height={600}
+                        />
+                      ) : (
+                        <img
+                          src={image.image_url || '/placeholder.svg'}
+                          alt={`${product.name} - Image ${index + 1}`}
+                          className="w-full h-full object-contain p-4"
+                        />
+                      )}
                     </Card>
                   </CarouselItem>
                 ))}
@@ -163,12 +183,20 @@ const ProductDetail = () => {
             </Carousel>
           ) : (
             <Card className="overflow-hidden aspect-square bg-white flex items-center justify-center">
-              <ImgZoom
-                img={productImages[0]?.image_url || product.image_url || '/placeholder.svg'}
-                zoomScale={2}
-                width={600}
-                height={600}
-              />
+              {isZoomEnabled ? (
+                <ImgZoom
+                  img={productImages[0]?.image_url || product.image_url || '/placeholder.svg'}
+                  zoomScale={2}
+                  width={600}
+                  height={600}
+                />
+              ) : (
+                <img
+                  src={productImages[0]?.image_url || product.image_url || '/placeholder.svg'}
+                  alt={product.name}
+                  className="w-full h-full object-contain p-4"
+                />
+              )}
             </Card>
           )}
         </div>
