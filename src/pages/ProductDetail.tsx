@@ -141,11 +141,11 @@ const ProductDetail = () => {
               <CarouselContent>
                 {productImages.map((image, index) => (
                   <CarouselItem key={index}>
-                    <Card className="overflow-hidden aspect-square">
+                    <Card className="overflow-hidden aspect-square bg-white">
                       <img
                         src={image.image_url || '/placeholder.svg'}
                         alt={`${product.name} - Image ${index + 1}`}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain p-4"
                       />
                     </Card>
                   </CarouselItem>
@@ -155,11 +155,11 @@ const ProductDetail = () => {
               <CarouselNext className="right-4" />
             </Carousel>
           ) : (
-            <Card className="overflow-hidden aspect-square">
+            <Card className="overflow-hidden aspect-square bg-white">
               <img
                 src={productImages[0]?.image_url || product.image_url || '/placeholder.svg'}
                 alt={product.name}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain p-4"
               />
             </Card>
           )}

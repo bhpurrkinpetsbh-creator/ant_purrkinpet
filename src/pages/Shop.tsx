@@ -236,11 +236,11 @@ const Shop = () => {
               return (
                 <Card key={product.id} className="group overflow-hidden hover:shadow-lg transition-all">
                   <Link to={`/product/${product.id}`}>
-                    <div className="aspect-square bg-muted relative overflow-hidden">
+                    <div className="aspect-square bg-white relative overflow-hidden">
                       <img
                         src={product.image_url}
                         alt={product.name}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
                       />
                       {!inStock && (
                         <Badge className="absolute top-2 right-2 bg-destructive">Out of Stock</Badge>
