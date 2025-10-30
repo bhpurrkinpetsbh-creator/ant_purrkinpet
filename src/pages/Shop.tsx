@@ -182,9 +182,38 @@ const Shop = () => {
 
   return (
     <div className="container py-8">
-      {/* Free Shipping Banner */}
-      <div className="bg-gradient-hero text-white px-6 py-3 rounded-lg mb-6 text-center font-semibold shadow-lg">
-        🚚 Free Shipping on All Products in Bahrain!
+      {/* Free Shipping Banner - Creative & Animated */}
+      <div 
+        className="shipping-banner relative px-8 py-6 rounded-lg mb-6 text-center animate-slide-in-top animate-glow-pulse overflow-hidden"
+        role="banner"
+        aria-label="Free shipping announcement"
+      >
+        {/* Animated Border Effect (applied via CSS ::before) */}
+        <div className="absolute inset-0 animate-border-spin opacity-75 pointer-events-none" style={{ borderRadius: 'inherit' }}></div>
+        
+        {/* Floating Sparkles */}
+        <div className="sparkle text-yellow-300 top-4 left-[10%] animate-sparkle-float" style={{ animationDelay: '0s' }}>✨</div>
+        <div className="sparkle text-yellow-300 top-4 right-[15%] animate-sparkle-float" style={{ animationDelay: '0.5s' }}>⭐</div>
+        <div className="sparkle text-yellow-300 top-4 left-[80%] animate-sparkle-float hidden sm:block" style={{ animationDelay: '1s' }}>✨</div>
+        <div className="sparkle text-yellow-300 top-4 left-[25%] animate-sparkle-float hidden md:block" style={{ animationDelay: '1.5s' }}>💫</div>
+        <div className="sparkle text-yellow-300 top-4 right-[60%] animate-sparkle-float hidden lg:block" style={{ animationDelay: '2s' }}>⭐</div>
+        
+        {/* Animated Truck */}
+        <div className="absolute top-1/2 left-0 -translate-y-1/2 text-4xl animate-truck-drive pointer-events-none">
+          🚚
+        </div>
+        
+        {/* Main Content */}
+        <div className="relative z-10">
+          <p className="text-white font-bold text-xl sm:text-2xl drop-shadow-lg">
+            <span className="inline-block">🇧🇭</span>
+            {" "}FREE SHIPPING ON ALL PRODUCTS IN BAHRAIN!{" "}
+            <span className="inline-block">🎉</span>
+          </p>
+          <p className="text-white/90 text-sm sm:text-base mt-1 font-medium">
+            No minimum order • Fast delivery • Island-wide coverage
+          </p>
+        </div>
       </div>
 
       {/* Breadcrumb */}
