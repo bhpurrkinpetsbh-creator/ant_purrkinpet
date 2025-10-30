@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -34,6 +34,7 @@ const Checkout = () => {
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<CheckoutFormData>({
     resolver: zodResolver(checkoutSchema),
@@ -41,6 +42,34 @@ const Checkout = () => {
       city: "Manama",
     },
   });
+
+  // Load saved customer address on mount
+  useEffect(() => {
+    const loadCustomerData = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: customer } = await supabase
+        .from("customers")
+        .select("*")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (customer) {
+        reset({
+          full_name: customer.full_name || "",
+          email: user.email || "",
+          phone: customer.phone || "",
+          address_line1: customer.address_line1 || "",
+          address_line2: customer.address_line2 || "",
+          city: customer.city || "Manama",
+          postal_code: customer.postal_code || "",
+        });
+      }
+    };
+
+    loadCustomerData();
+  }, [reset]);
 
   const subtotal = cartItems.reduce((sum, item) => {
     const price = parseFloat(item.products?.price || 0);
@@ -68,6 +97,22 @@ const Checkout = () => {
   const onSubmit = async (data: CheckoutFormData) => {
     setIsProcessing(true);
     try {
+      // Save/update customer address
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase
+          .from("customers")
+          .upsert({
+            id: user.id,
+            full_name: data.full_name,
+            phone: data.phone,
+            address_line1: data.address_line1,
+            address_line2: data.address_line2,
+            city: data.city,
+            postal_code: data.postal_code,
+          });
+      }
+
       // Store checkout data in sessionStorage for payment page
       sessionStorage.setItem("checkoutData", JSON.stringify({
         ...data,
