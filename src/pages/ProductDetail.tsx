@@ -158,14 +158,15 @@ const ProductDetail = () => {
                             },
                             largeImage: {
                               src: image.image_url || '/placeholder.svg',
-                              width: 1200,
-                              height: 1200,
+                              width: 1800,
+                              height: 1800,
                             },
                             enlargedImageContainerDimensions: {
-                              width: '150%',
-                              height: '150%',
+                              width: '200%',
+                              height: '100%',
                             },
-                            enlargedImagePosition: 'over',
+                            enlargedImagePosition: 'beside',
+                            enlargedImageContainerClassName: 'z-50 border border-border rounded-lg shadow-lg bg-background',
                             isHintEnabled: true,
                             shouldHideHintAfterFirstActivation: false,
                           }}
@@ -190,14 +191,15 @@ const ProductDetail = () => {
                     },
                     largeImage: {
                       src: productImages[0]?.image_url || product.image_url || '/placeholder.svg',
-                      width: 1200,
-                      height: 1200,
+                      width: 1800,
+                      height: 1800,
                     },
                     enlargedImageContainerDimensions: {
-                      width: '150%',
-                      height: '150%',
+                      width: '200%',
+                      height: '100%',
                     },
-                    enlargedImagePosition: 'over',
+                    enlargedImagePosition: 'beside',
+                    enlargedImageContainerClassName: 'z-50 border border-border rounded-lg shadow-lg bg-background',
                     isHintEnabled: true,
                     shouldHideHintAfterFirstActivation: false,
                   }}
