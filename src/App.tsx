@@ -14,8 +14,6 @@ import About from "./pages/About";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import Payment from "./pages/Payment";
-import PaymentSuccess from "./pages/PaymentSuccess";
-import PaymentFailure from "./pages/PaymentFailure";
 import Orders from "./pages/Orders";
 import AdminOrders from "./pages/AdminOrders";
 import NotFound from "./pages/NotFound";
@@ -40,9 +38,7 @@ const App = () => (
               <Route path="/about" element={<About />} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/checkout" element={<Checkout />} />
-          <Route path="/payment" element={<Payment />} />
-          <Route path="/payment-success" element={<PaymentSuccess />} />
-          <Route path="/payment-failure" element={<PaymentFailure />} />
+              <Route path="/payment" element={<Payment />} />
               <Route path="/orders" element={<Orders />} />
               <Route path="/admin/orders" element={<AdminOrders />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
