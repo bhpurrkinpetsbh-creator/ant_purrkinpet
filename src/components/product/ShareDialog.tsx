@@ -21,7 +21,7 @@ export const ShareDialog = ({ open, onOpenChange, product }: ShareDialogProps) =
     {
       name: "WhatsApp",
       icon: MessageCircle,
-      color: "hover:bg-green-500/10 hover:text-green-600",
+      color: "text-green-600 hover:bg-green-500/10",
       action: () => {
         const message = `Check out ${product.name} for ${product.price} BHD! ${productUrl}`;
         const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
@@ -31,7 +31,7 @@ export const ShareDialog = ({ open, onOpenChange, product }: ShareDialogProps) =
     {
       name: "Facebook",
       icon: Facebook,
-      color: "hover:bg-blue-500/10 hover:text-blue-600",
+      color: "text-blue-600 hover:bg-blue-500/10",
       action: () => {
         const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productUrl)}`;
         window.open(facebookUrl, '_blank', 'width=600,height=400');
@@ -40,7 +40,7 @@ export const ShareDialog = ({ open, onOpenChange, product }: ShareDialogProps) =
     {
       name: "Twitter",
       icon: Twitter,
-      color: "hover:bg-sky-500/10 hover:text-sky-600",
+      color: "text-sky-500 hover:bg-sky-500/10",
       action: () => {
         const tweetText = `Check out ${product.name} for ${product.price} BHD!`;
         const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent(productUrl)}`;
@@ -50,7 +50,7 @@ export const ShareDialog = ({ open, onOpenChange, product }: ShareDialogProps) =
     {
       name: "Copy Link",
       icon: Link2,
-      color: "hover:bg-purple-500/10 hover:text-purple-600",
+      color: "text-purple-600 hover:bg-purple-500/10",
       action: async () => {
         try {
           await navigator.clipboard.writeText(productUrl);
@@ -64,7 +64,7 @@ export const ShareDialog = ({ open, onOpenChange, product }: ShareDialogProps) =
     {
       name: "Email",
       icon: Mail,
-      color: "hover:bg-orange-500/10 hover:text-orange-600",
+      color: "text-orange-600 hover:bg-orange-500/10",
       action: () => {
         const subject = `Check out ${product.name}`;
         const body = `I found this amazing product:\n\n${product.name}\nPrice: ${product.price} BHD\n\n${productUrl}`;
@@ -76,7 +76,7 @@ export const ShareDialog = ({ open, onOpenChange, product }: ShareDialogProps) =
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Share Product</DialogTitle>
           <DialogDescription>
@@ -85,15 +85,15 @@ export const ShareDialog = ({ open, onOpenChange, product }: ShareDialogProps) =
         </DialogHeader>
         
         <div className="flex flex-col gap-4 py-4">
-          <div className="flex items-center gap-4 p-4 rounded-lg bg-muted">
+          <div className="flex items-center gap-4 p-4 rounded-lg bg-muted border shadow-sm">
             <img 
               src={product.image_url} 
               alt={product.name}
-              className="w-16 h-16 object-cover rounded"
+              className="w-20 h-20 object-cover rounded"
             />
             <div className="flex-1 min-w-0">
-              <p className="font-medium truncate">{product.name}</p>
-              <p className="text-sm text-muted-foreground">{product.price} BHD</p>
+              <p className="font-medium line-clamp-2">{product.name}</p>
+              <p className="text-sm text-muted-foreground mt-1">{product.price} BHD</p>
             </div>
           </div>
 
@@ -104,11 +104,11 @@ export const ShareDialog = ({ open, onOpenChange, product }: ShareDialogProps) =
                 <Button
                   key={option.name}
                   variant="outline"
-                  className={`flex flex-col gap-2 h-auto py-4 transition-colors ${option.color}`}
+                  className={`flex flex-col gap-2 h-auto py-6 transition-all duration-200 ${option.color}`}
                   onClick={option.action}
                 >
-                  <Icon className="h-5 w-5" />
-                  <span className="text-xs">{option.name}</span>
+                  <Icon className="h-6 w-6" />
+                  <span className="text-sm font-medium">{option.name}</span>
                 </Button>
               );
             })}
