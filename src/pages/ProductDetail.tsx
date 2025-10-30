@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ShoppingCart, Heart, Share2, Truck, Shield, ArrowLeft, ZoomIn } from "lucide-react";
+import { ShoppingCart, Heart, Share2, Truck, Shield, ArrowLeft, ZoomIn, Check } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/hooks/useCart";
@@ -35,6 +35,8 @@ const ProductDetail = () => {
   const [loading, setLoading] = useState(true);
   const [isZoomEnabled, setIsZoomEnabled] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const { addToCart } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
 
@@ -101,13 +103,60 @@ const ProductDetail = () => {
   }, [id]);
 
   const handleAddToCart = async () => {
-    if (!product) return;
+    if (!product || isAdding) return;
+    
+    setIsAdding(true);
+    
+    // Create flying cart animation
+    const buttonRect = buttonRef.current?.getBoundingClientRect();
+    const cartIcon = document.querySelector('[data-cart-icon]');
+    const cartRect = cartIcon?.getBoundingClientRect();
+    
+    if (buttonRect && cartRect) {
+      const flyingCart = document.createElement('div');
+      flyingCart.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/>
+          <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
+        </svg>
+      `;
+      flyingCart.style.cssText = `
+        position: fixed;
+        left: ${buttonRect.left + buttonRect.width / 2}px;
+        top: ${buttonRect.top + buttonRect.height / 2}px;
+        z-index: 9999;
+        pointer-events: none;
+        color: hsl(var(--primary));
+      `;
+      
+      const xDistance = cartRect.left + cartRect.width / 2 - (buttonRect.left + buttonRect.width / 2);
+      const yDistance = cartRect.top + cartRect.height / 2 - (buttonRect.top + buttonRect.height / 2);
+      
+      flyingCart.style.setProperty('--x-mid', `${xDistance * 0.4}px`);
+      flyingCart.style.setProperty('--y-mid', `${yDistance * 0.4 - 50}px`);
+      flyingCart.style.setProperty('--x-end', `${xDistance}px`);
+      flyingCart.style.setProperty('--y-end', `${yDistance}px`);
+      
+      flyingCart.classList.add('animate-fly-to-cart');
+      document.body.appendChild(flyingCart);
+      
+      setTimeout(() => {
+        flyingCart.remove();
+        window.dispatchEvent(new CustomEvent('cart:item-added'));
+      }, 800);
+    }
     
     const success = await addToCart(product.id, quantity);
     if (success) {
       toast.success("Added to cart!", {
         description: `${quantity} x ${product.name}`,
       });
+      
+      setTimeout(() => {
+        setIsAdding(false);
+      }, 1200);
+    } else {
+      setIsAdding(false);
     }
   };
 
@@ -280,12 +329,25 @@ const ProductDetail = () => {
 
             <div className="flex gap-3">
               <Button
+                ref={buttonRef}
                 size="lg"
-                className="flex-1 bg-gradient-hero hover:opacity-90"
+                className={`flex-1 bg-gradient-hero hover:opacity-90 transition-all duration-300 ${
+                  isAdding ? 'animate-button-success' : ''
+                }`}
                 onClick={handleAddToCart}
+                disabled={isAdding}
               >
-                <ShoppingCart className="mr-2 h-5 w-5" />
-                Add to Cart
+                {isAdding ? (
+                  <>
+                    <Check className="mr-2 h-5 w-5" />
+                    Added!
+                  </>
+                ) : (
+                  <>
+                    <ShoppingCart className="mr-2 h-5 w-5" />
+                    Add to Cart
+                  </>
+                )}
               </Button>
               <Button 
                 size="lg" 

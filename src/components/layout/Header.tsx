@@ -19,6 +19,7 @@ const Header = () => {
   const [userProfile, setUserProfile] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [headerSearch, setHeaderSearch] = useState("");
+  const [cartPulse, setCartPulse] = useState(false);
   const navigate = useNavigate();
   useEffect(() => {
     supabase.auth.getUser().then(({
@@ -44,6 +45,16 @@ const Header = () => {
       }
     });
     return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const handleCartUpdate = () => {
+      setCartPulse(true);
+      setTimeout(() => setCartPulse(false), 600);
+    };
+    
+    window.addEventListener('cart:item-added', handleCartUpdate);
+    return () => window.removeEventListener('cart:item-added', handleCartUpdate);
   }, []);
 
   const fetchUserProfile = async (userId: string) => {
@@ -122,10 +133,12 @@ const Header = () => {
             </Link>
           </Button>
 
-          <Button variant="ghost" size="icon" className="relative" asChild>
+          <Button variant="ghost" size="icon" className="relative" asChild data-cart-icon>
             <Link to="/cart">
               <ShoppingCart className="h-5 w-5" />
-              {cartCount > 0 && <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold">
+              {cartCount > 0 && <span className={`absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold ${
+                cartPulse ? 'animate-bounce-scale' : ''
+              }`}>
                   {cartCount}
                 </span>}
             </Link>
