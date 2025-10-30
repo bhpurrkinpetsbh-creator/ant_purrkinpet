@@ -8,6 +8,8 @@ import { ShoppingCart, Heart, Share2, Truck, Shield, ArrowLeft, ZoomIn } from "l
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/hooks/useCart";
+import { useWishlist } from "@/hooks/useWishlist";
+import { ShareDialog } from "@/components/product/ShareDialog";
 import ImgZoom from "react-img-zoom";
 import {
   Carousel,
@@ -32,7 +34,9 @@ const ProductDetail = () => {
   const [productImages, setProductImages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isZoomEnabled, setIsZoomEnabled] = useState(false);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const { addToCart } = useCart();
+  const { isInWishlist, toggleWishlist } = useWishlist();
 
   // Scroll to top when component mounts or ID changes
   useEffect(() => {
@@ -106,6 +110,13 @@ const ProductDetail = () => {
       });
     }
   };
+
+  const handleToggleWishlist = async () => {
+    if (!product) return;
+    await toggleWishlist(product.id);
+  };
+
+  const isProductInWishlist = product ? isInWishlist(product.id) : false;
 
   if (loading) {
     return (
@@ -276,10 +287,22 @@ const ProductDetail = () => {
                 <ShoppingCart className="mr-2 h-5 w-5" />
                 Add to Cart
               </Button>
-              <Button size="lg" variant="outline">
-                <Heart className="h-5 w-5" />
+              <Button 
+                size="lg" 
+                variant="outline"
+                onClick={handleToggleWishlist}
+              >
+                <Heart 
+                  className={`h-5 w-5 transition-colors ${
+                    isProductInWishlist ? 'fill-red-500 text-red-500' : ''
+                  }`}
+                />
               </Button>
-              <Button size="lg" variant="outline">
+              <Button 
+                size="lg" 
+                variant="outline"
+                onClick={() => setShareDialogOpen(true)}
+              >
                 <Share2 className="h-5 w-5" />
               </Button>
             </div>
@@ -344,6 +367,19 @@ const ProductDetail = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {product && (
+        <ShareDialog 
+          open={shareDialogOpen} 
+          onOpenChange={setShareDialogOpen}
+          product={{
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            image_url: product.image_url
+          }}
+        />
+      )}
     </div>
   );
 };

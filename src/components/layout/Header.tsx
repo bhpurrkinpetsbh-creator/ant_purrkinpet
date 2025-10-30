@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { ShoppingCart, User, Search, Calendar, LogOut, Package, Shield } from "lucide-react";
+import { ShoppingCart, User, Search, Calendar, LogOut, Package, Shield, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -7,12 +7,14 @@ import { Badge } from "@/components/ui/badge";
 import logo from "@/assets/purrkin-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/hooks/useCart";
+import { useWishlist } from "@/hooks/useWishlist";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 const Header = () => {
   const {
     cartCount
   } = useCart();
+  const { wishlistCount } = useWishlist();
   const [user, setUser] = useState<any>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -110,6 +112,15 @@ const Header = () => {
               />
             </div>
           </form>
+
+          <Button variant="ghost" size="icon" className="relative" asChild>
+            <Link to="/wishlist">
+              <Heart className="h-5 w-5" />
+              {wishlistCount > 0 && <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold">
+                  {wishlistCount}
+                </span>}
+            </Link>
+          </Button>
 
           <Button variant="ghost" size="icon" className="relative" asChild>
             <Link to="/cart">
