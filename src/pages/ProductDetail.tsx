@@ -149,8 +149,8 @@ const ProductDetail = () => {
                   <CarouselItem key={index}>
                     <Card className="overflow-hidden aspect-square bg-white flex items-center justify-center">
                       <ImgZoom
-                        src={image.image_url || '/placeholder.svg'}
-                        zoom={200}
+                        img={image.image_url || '/placeholder.svg'}
+                        zoomScale={2}
                         width={600}
                         height={600}
                       />
@@ -164,8 +164,8 @@ const ProductDetail = () => {
           ) : (
             <Card className="overflow-hidden aspect-square bg-white flex items-center justify-center">
               <ImgZoom
-                src={productImages[0]?.image_url || product.image_url || '/placeholder.svg'}
-                zoom={200}
+                img={productImages[0]?.image_url || product.image_url || '/placeholder.svg'}
+                zoomScale={2}
                 width={600}
                 height={600}
               />
