@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, SlidersHorizontal, ShoppingCart } from "lucide-react";
+import { Search, SlidersHorizontal, ShoppingCart, Check } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -38,6 +38,8 @@ const Shop = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<string[]>(["all"]);
   const [loading, setLoading] = useState(true);
+  const [addingProductId, setAddingProductId] = useState<string | null>(null);
+  const buttonRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({});
   const { toast } = useToast();
   const { addToCart } = useCart();
 
@@ -99,13 +101,63 @@ const Shop = () => {
     }
   };
 
-  const handleAddToCart = async (productId: string) => {
+  const handleAddToCart = async (productId: string, productName: string) => {
+    if (addingProductId) return;
+    
+    setAddingProductId(productId);
+    
+    // Create flying cart animation
+    const button = buttonRefs.current[productId];
+    const buttonRect = button?.getBoundingClientRect();
+    const cartIcon = document.querySelector('[data-cart-icon]');
+    const cartRect = cartIcon?.getBoundingClientRect();
+    
+    if (buttonRect && cartRect) {
+      const flyingCart = document.createElement('div');
+      flyingCart.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/>
+          <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
+        </svg>
+      `;
+      flyingCart.style.cssText = `
+        position: fixed;
+        left: ${buttonRect.left + buttonRect.width / 2}px;
+        top: ${buttonRect.top + buttonRect.height / 2}px;
+        z-index: 9999;
+        pointer-events: none;
+        color: hsl(var(--primary));
+      `;
+      
+      const xDistance = cartRect.left + cartRect.width / 2 - (buttonRect.left + buttonRect.width / 2);
+      const yDistance = cartRect.top + cartRect.height / 2 - (buttonRect.top + buttonRect.height / 2);
+      
+      flyingCart.style.setProperty('--x-mid', `${xDistance * 0.4}px`);
+      flyingCart.style.setProperty('--y-mid', `${yDistance * 0.4 - 50}px`);
+      flyingCart.style.setProperty('--x-end', `${xDistance}px`);
+      flyingCart.style.setProperty('--y-end', `${yDistance}px`);
+      
+      flyingCart.classList.add('animate-fly-to-cart');
+      document.body.appendChild(flyingCart);
+      
+      setTimeout(() => {
+        flyingCart.remove();
+        window.dispatchEvent(new CustomEvent('cart:item-added'));
+      }, 800);
+    }
+    
     const success = await addToCart(productId, 1);
     if (success) {
       toast({
         title: "Added to cart",
-        description: "Product has been added to your cart",
+        description: productName,
       });
+      
+      setTimeout(() => {
+        setAddingProductId(null);
+      }, 1200);
+    } else {
+      setAddingProductId(null);
     }
   };
 
@@ -272,13 +324,25 @@ const Shop = () => {
                     </div>
 
                     <Button
-                      className="w-full"
+                      ref={(el) => buttonRefs.current[product.id] = el}
+                      className={`w-full transition-all duration-300 ${
+                        addingProductId === product.id ? 'animate-button-success' : ''
+                      }`}
                       variant={inStock ? "default" : "secondary"}
-                      disabled={!inStock}
-                      onClick={() => handleAddToCart(product.id)}
+                      disabled={!inStock || addingProductId === product.id}
+                      onClick={() => handleAddToCart(product.id, product.name)}
                     >
-                      <ShoppingCart className="mr-2 h-4 w-4" />
-                      {inStock ? "Add to Cart" : "Out of Stock"}
+                      {addingProductId === product.id ? (
+                        <>
+                          <Check className="mr-2 h-4 w-4" />
+                          Added!
+                        </>
+                      ) : (
+                        <>
+                          <ShoppingCart className="mr-2 h-4 w-4" />
+                          {inStock ? "Add to Cart" : "Out of Stock"}
+                        </>
+                      )}
                     </Button>
                   </div>
                 </Card>
