@@ -42,8 +42,14 @@ serve(async (req) => {
     }
 
     const checkoutSecretKey = Deno.env.get('CHECKOUT_COM_SECRET_KEY');
+    const processingChannelId = Deno.env.get('CHECKOUT_COM_PROCESSING_CHANNEL_ID');
+    
     if (!checkoutSecretKey) {
       throw new Error('Checkout.com secret key not configured');
+    }
+    
+    if (!processingChannelId) {
+      throw new Error('Checkout.com processing channel ID not configured');
     }
 
     // Create payment session with Checkout.com
@@ -57,6 +63,7 @@ serve(async (req) => {
         amount,
         currency,
         reference,
+        processing_channel_id: processingChannelId,
         display_name: 'Purrkin Pets',
         billing: {
           address: {

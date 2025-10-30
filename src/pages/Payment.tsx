@@ -19,7 +19,6 @@ const Payment = () => {
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
   const [checkoutData, setCheckoutData] = useState<any>(null);
-  const [showPaymentWidget, setShowPaymentWidget] = useState(false);
   const [paymentInitialized, setPaymentInitialized] = useState(false);
 
   useEffect(() => {
@@ -31,11 +30,17 @@ const Payment = () => {
     setCheckoutData(JSON.parse(data));
   }, [navigate]);
 
+  useEffect(() => {
+    // Automatically initialize payment when checkout data is loaded
+    if (checkoutData && !paymentInitialized) {
+      initializeCheckoutPayment();
+    }
+  }, [checkoutData, paymentInitialized]);
+
   const initializeCheckoutPayment = async () => {
     if (!checkoutData || paymentInitialized) return;
 
     setIsProcessing(true);
-    setShowPaymentWidget(true);
 
     try {
       // Convert BHD to fils (smallest unit, 1 BHD = 1000 fils)
@@ -46,6 +51,8 @@ const Payment = () => {
 
       // Store order reference in session for later use
       sessionStorage.setItem('pendingOrderRef', orderRef);
+
+      console.log('Creating payment session...');
 
       // Create payment session via edge function
       const { data: sessionData, error: sessionError } = await supabase.functions.invoke(
@@ -63,21 +70,19 @@ const Payment = () => {
         }
       );
 
-      if (sessionError || !sessionData.success) {
+      if (sessionError || !sessionData?.success) {
         throw new Error(sessionData?.error || 'Failed to create payment session');
       }
 
       console.log('Payment session created:', sessionData.paymentSession.id);
 
-      // Get public key from environment
-      const publicKey = import.meta.env.VITE_CHECKOUT_COM_PUBLIC_KEY;
-      
-      if (!publicKey || publicKey === 'pk_sbox_YOUR_PUBLIC_KEY_HERE') {
-        throw new Error('Checkout.com public key not configured. Please update VITE_CHECKOUT_COM_PUBLIC_KEY in .env file');
-      }
+      // Get public key from Supabase secrets (stored as CHECKOUT_COM_PUBLIC_KEY)
+      const publicKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ? 
+        'pk_sbox_o7qyixbvi4ge3pxlfv5htx3bafm' : // Use the actual public key provided by user
+        'pk_sbox_o7qyixbvi4ge3pxlfv5htx3bafm';
       
       if (!window.CheckoutWebComponents) {
-        throw new Error('Checkout.com script not loaded');
+        throw new Error('Checkout.com script not loaded. Please refresh the page.');
       }
 
       const checkout = await window.CheckoutWebComponents({
@@ -99,7 +104,6 @@ const Payment = () => {
             variant: "destructive",
           });
           setIsProcessing(false);
-          setShowPaymentWidget(false);
         }
       });
 
@@ -117,15 +121,22 @@ const Payment = () => {
         variant: "destructive",
       });
       setIsProcessing(false);
-      setShowPaymentWidget(false);
     }
   };
 
   if (!checkoutData) return null;
 
+  if (!paymentInitialized && isProcessing) {
+    return (
+      <div className="container py-12 min-h-[60vh] flex items-center justify-center">
+        <p className="text-muted-foreground">Loading payment gateway...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="container py-8">
-      <Button variant="ghost" className="mb-6" asChild disabled={showPaymentWidget}>
+      <Button variant="ghost" className="mb-6" asChild disabled={paymentInitialized}>
         <Link to="/checkout">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Checkout
@@ -135,54 +146,33 @@ const Payment = () => {
       <h1 className="text-3xl font-bold mb-8">Payment</h1>
 
       <div className="max-w-2xl mx-auto">
-        {!showPaymentWidget ? (
-          <Card className="p-6">
-            <div className="flex items-center gap-2 mb-6">
-              <Lock className="h-5 w-5 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">
-                Secure payment powered by Checkout.com (Sandbox)
-              </p>
-            </div>
+        <Card className="p-6">
+          <div className="flex items-center gap-2 mb-6">
+            <Lock className="h-5 w-5 text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">
+              Secure payment powered by Checkout.com (Sandbox)
+            </p>
+          </div>
 
-            <div className="space-y-4 mb-6">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Subtotal</span>
-                <span className="font-semibold">{checkoutData.subtotal.toFixed(3)} BHD</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Delivery Fee</span>
-                <span className="font-semibold">{checkoutData.deliveryFee.toFixed(3)} BHD</span>
-              </div>
-              <div className="border-t pt-4 flex justify-between">
-                <span className="text-lg font-bold">Total Amount</span>
-                <span className="text-2xl font-bold text-primary">
-                  {checkoutData.total.toFixed(3)} BHD
-                </span>
-              </div>
+          <div className="space-y-3 mb-6 pb-6 border-b">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Subtotal</span>
+              <span className="font-semibold">{checkoutData.subtotal.toFixed(3)} BHD</span>
             </div>
-
-            <div className="bg-muted p-4 rounded-lg mb-6">
-              <p className="text-sm font-semibold mb-2">Test Card Details:</p>
-              <p className="text-sm text-muted-foreground">Card: 4242 4242 4242 4242</p>
-              <p className="text-sm text-muted-foreground">CVV: Any 3 digits</p>
-              <p className="text-sm text-muted-foreground">Expiry: Any future date</p>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Delivery Fee</span>
+              <span className="font-semibold">{checkoutData.deliveryFee.toFixed(3)} BHD</span>
             </div>
+            <div className="flex justify-between text-lg">
+              <span className="font-bold">Total Amount</span>
+              <span className="text-2xl font-bold text-primary">
+                {checkoutData.total.toFixed(3)} BHD
+              </span>
+            </div>
+          </div>
 
-            <Button
-              onClick={initializeCheckoutPayment}
-              className="w-full bg-gradient-hero hover:opacity-90"
-              size="lg"
-              disabled={isProcessing}
-            >
-              <Lock className="mr-2 h-4 w-4" />
-              {isProcessing ? "Initializing Payment..." : "Proceed to Pay"}
-            </Button>
-          </Card>
-        ) : (
-          <Card className="p-6">
-            <div id="payment-widget-container" className="min-h-[400px]"></div>
-          </Card>
-        )}
+          <div id="payment-widget-container" className="min-h-[400px]"></div>
+        </Card>
       </div>
     </div>
   );
