@@ -8,7 +8,7 @@ import { ShoppingCart, Heart, Share2, Truck, Shield, ArrowLeft } from "lucide-re
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/hooks/useCart";
-import ReactImageMagnify from "react-image-magnify";
+import ImgZoom from "react-img-zoom";
 import {
   Carousel,
   CarouselContent,
@@ -148,29 +148,12 @@ const ProductDetail = () => {
                 {productImages.map((image, index) => (
                   <CarouselItem key={index}>
                     <Card className="overflow-hidden aspect-square bg-white flex items-center justify-center">
-                      <div className="w-full h-full flex items-center justify-center p-4">
-                        <ReactImageMagnify
-                          {...{
-                            smallImage: {
-                              alt: `${product.name} - Image ${index + 1}`,
-                              isFluidWidth: true,
-                              src: image.image_url || '/placeholder.svg',
-                            },
-                            largeImage: {
-                              src: image.image_url || '/placeholder.svg',
-                              width: 1200,
-                              height: 1200,
-                            },
-                            enlargedImageContainerDimensions: {
-                              width: '150%',
-                              height: '150%',
-                            },
-                            enlargedImagePosition: 'over',
-                            isHintEnabled: true,
-                            shouldHideHintAfterFirstActivation: false,
-                          }}
-                        />
-                      </div>
+                      <ImgZoom
+                        src={image.image_url || '/placeholder.svg'}
+                        zoom={200}
+                        width={600}
+                        height={600}
+                      />
                     </Card>
                   </CarouselItem>
                 ))}
@@ -180,29 +163,12 @@ const ProductDetail = () => {
             </Carousel>
           ) : (
             <Card className="overflow-hidden aspect-square bg-white flex items-center justify-center">
-              <div className="w-full h-full flex items-center justify-center p-4">
-                <ReactImageMagnify
-                  {...{
-                    smallImage: {
-                      alt: product.name,
-                      isFluidWidth: true,
-                      src: productImages[0]?.image_url || product.image_url || '/placeholder.svg',
-                    },
-                    largeImage: {
-                      src: productImages[0]?.image_url || product.image_url || '/placeholder.svg',
-                      width: 1200,
-                      height: 1200,
-                    },
-                    enlargedImageContainerDimensions: {
-                      width: '150%',
-                      height: '150%',
-                    },
-                    enlargedImagePosition: 'over',
-                    isHintEnabled: true,
-                    shouldHideHintAfterFirstActivation: false,
-                  }}
-                />
-              </div>
+              <ImgZoom
+                src={productImages[0]?.image_url || product.image_url || '/placeholder.svg'}
+                zoom={200}
+                width={600}
+                height={600}
+              />
             </Card>
           )}
         </div>
