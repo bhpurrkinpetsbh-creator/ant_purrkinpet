@@ -198,9 +198,75 @@ const Shop = () => {
         <div className="sparkle text-yellow-300 top-4 left-[25%] animate-sparkle-float hidden md:block" style={{ animationDelay: '1.5s' }}>💫</div>
         <div className="sparkle text-yellow-300 top-4 right-[60%] animate-sparkle-float hidden lg:block" style={{ animationDelay: '2s' }}>⭐</div>
         
-        {/* Animated Truck */}
-        <div className="absolute top-1/2 left-0 -translate-y-1/2 text-4xl animate-truck-drive pointer-events-none">
-          🚚
+        {/* Realistic Animated Truck carrying "SHIPPING" */}
+        <div className="absolute top-1/2 left-0 -translate-y-1/2 animate-truck-drive-realistic pointer-events-none z-20">
+          <svg className="w-24 h-12 sm:w-28 sm:h-14 lg:w-32 lg:h-16" viewBox="0 0 160 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+            {/* Exhaust smoke trail */}
+            <g className="exhaust-trail">
+              <circle cx="15" cy="55" r="4" fill="hsl(0 0% 60%)" opacity="0" className="animate-exhaust-puff" style={{ animationDelay: '0s' }} />
+              <circle cx="10" cy="53" r="3" fill="hsl(0 0% 60%)" opacity="0" className="animate-exhaust-puff" style={{ animationDelay: '0.2s' }} />
+              <circle cx="5" cy="54" r="3.5" fill="hsl(0 0% 60%)" opacity="0" className="animate-exhaust-puff" style={{ animationDelay: '0.4s' }} />
+            </g>
+            
+            {/* Truck shadow */}
+            <ellipse cx="80" cy="65" rx="45" ry="4" fill="hsl(0 0% 0%)" opacity="0.15" />
+            
+            {/* Cargo bed with "SHIPPING" text */}
+            <rect x="45" y="28" width="65" height="30" rx="3" fill="url(#cargoGradient)" stroke="hsl(24 100% 50%)" strokeWidth="2" className="animate-cargo-bounce" />
+            <text x="77" y="47" fontSize="12" fontWeight="bold" fill="white" textAnchor="middle" className="animate-cargo-bounce" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>SHIPPING</text>
+            
+            {/* Truck cab body */}
+            <path d="M 20 35 L 20 55 L 45 55 L 45 28 L 35 28 L 30 35 Z" fill="url(#truckGradient)" stroke="hsl(24 100% 50%)" strokeWidth="2" />
+            
+            {/* Cab details */}
+            <path d="M 30 35 L 35 35 L 35 28 L 30 35 Z" fill="hsl(24 80% 50%)" opacity="0.6" />
+            
+            {/* Window */}
+            <rect x="23" y="37" width="12" height="10" rx="1.5" fill="url(#windowGradient)" stroke="hsl(200 80% 70%)" strokeWidth="1" />
+            
+            {/* Headlight */}
+            <circle cx="19" cy="45" r="2.5" fill="hsl(50 100% 60%)" className="animate-headlight-blink" opacity="0.9" />
+            
+            {/* Front bumper */}
+            <rect x="16" y="53" width="4" height="3" rx="1" fill="hsl(0 0% 30%)" />
+            
+            {/* Wheels base */}
+            <circle cx="35" cy="58" r="8" fill="hsl(0 0% 20%)" />
+            <circle cx="95" cy="58" r="8" fill="hsl(0 0% 20%)" />
+            
+            {/* Wheel rims */}
+            <circle cx="35" cy="58" r="5" fill="hsl(0 0% 40%)" className="animate-wheel-spin" />
+            <circle cx="95" cy="58" r="5" fill="hsl(0 0% 40%)" className="animate-wheel-spin" />
+            
+            {/* Wheel spokes */}
+            <g className="animate-wheel-spin" style={{ transformOrigin: '35px 58px' }}>
+              <line x1="35" y1="53" x2="35" y2="63" stroke="hsl(0 0% 60%)" strokeWidth="1.5" />
+              <line x1="30" y1="58" x2="40" y2="58" stroke="hsl(0 0% 60%)" strokeWidth="1.5" />
+            </g>
+            <g className="animate-wheel-spin" style={{ transformOrigin: '95px 58px' }}>
+              <line x1="95" y1="53" x2="95" y2="63" stroke="hsl(0 0% 60%)" strokeWidth="1.5" />
+              <line x1="90" y1="58" x2="100" y2="58" stroke="hsl(0 0% 60%)" strokeWidth="1.5" />
+            </g>
+            
+            {/* Connection between cab and cargo */}
+            <rect x="43" y="40" width="4" height="15" fill="hsl(24 100% 55%)" />
+            
+            {/* Gradients */}
+            <defs>
+              <linearGradient id="truckGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="hsl(24 100% 63%)" />
+                <stop offset="100%" stopColor="hsl(24 100% 53%)" />
+              </linearGradient>
+              <linearGradient id="cargoGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="hsl(30 100% 70%)" />
+                <stop offset="100%" stopColor="hsl(24 100% 60%)" />
+              </linearGradient>
+              <linearGradient id="windowGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="hsl(200 80% 85%)" />
+                <stop offset="100%" stopColor="hsl(200 80% 70%)" />
+              </linearGradient>
+            </defs>
+          </svg>
         </div>
         
         {/* Main Content */}
