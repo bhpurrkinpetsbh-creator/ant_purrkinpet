@@ -143,17 +143,6 @@ const ProductDetail = () => {
       <div className="grid lg:grid-cols-2 gap-12 mb-12">
         {/* Images */}
         <div className="space-y-4">
-          <div className="flex justify-end">
-            <Button
-              variant={isZoomEnabled ? "default" : "outline"}
-              size="sm"
-              onClick={() => setIsZoomEnabled(!isZoomEnabled)}
-              className="gap-2"
-            >
-              <ZoomIn className="h-4 w-4" />
-              {isZoomEnabled ? "Zoom Enabled" : "Enable Zoom"}
-            </Button>
-          </div>
           {productImages.length > 1 ? (
             <Carousel className="w-full">
               <CarouselContent>
@@ -199,6 +188,18 @@ const ProductDetail = () => {
               )}
             </Card>
           )}
+          
+          <div className="flex justify-center pt-2">
+            <Button
+              variant={isZoomEnabled ? "default" : "outline"}
+              size="sm"
+              onClick={() => setIsZoomEnabled(!isZoomEnabled)}
+              className="gap-2"
+            >
+              <ZoomIn className="h-4 w-4" />
+              {isZoomEnabled ? "Zoom Enabled" : "Enable Zoom"}
+            </Button>
+          </div>
         </div>
 
         {/* Product Info */}
