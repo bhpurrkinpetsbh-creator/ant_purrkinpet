@@ -1,40 +1,26 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { CreditCard, Lock, ArrowLeft } from "lucide-react";
+import { Lock, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 
-const paymentSchema = z.object({
-  card_number: z.string().min(16, "Card number must be 16 digits").max(19),
-  card_name: z.string().min(2, "Name on card is required").max(100),
-  expiry: z.string().regex(/^(0[1-9]|1[0-2])\/([0-9]{2})$/, "Format: MM/YY"),
-  cvv: z.string().min(3, "CVV must be 3 digits").max(4),
-});
-
-type PaymentFormData = z.infer<typeof paymentSchema>;
+// Declare Checkout.com types
+declare global {
+  interface Window {
+    CheckoutWebComponents: any;
+  }
+}
 
 const Payment = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
   const [checkoutData, setCheckoutData] = useState<any>(null);
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    setValue,
-  } = useForm<PaymentFormData>({
-    resolver: zodResolver(paymentSchema),
-  });
+  const [showPaymentWidget, setShowPaymentWidget] = useState(false);
+  const [paymentInitialized, setPaymentInitialized] = useState(false);
 
   useEffect(() => {
     const data = sessionStorage.getItem("checkoutData");
@@ -45,145 +31,93 @@ const Payment = () => {
     setCheckoutData(JSON.parse(data));
   }, [navigate]);
 
-  const formatCardNumber = (value: string) => {
-    const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
-    const matches = v.match(/\d{4,16}/g);
-    const match = (matches && matches[0]) || "";
-    const parts = [];
-
-    for (let i = 0, len = match.length; i < len; i += 4) {
-      parts.push(match.substring(i, i + 4));
-    }
-
-    if (parts.length) {
-      return parts.join(" ");
-    } else {
-      return value;
-    }
-  };
-
-  const formatExpiry = (value: string) => {
-    const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
-    if (v.length >= 2) {
-      return v.slice(0, 2) + "/" + v.slice(2, 4);
-    }
-    return v;
-  };
-
-  const onSubmit = async (data: PaymentFormData) => {
-    if (!checkoutData) return;
+  const initializeCheckoutPayment = async () => {
+    if (!checkoutData || paymentInitialized) return;
 
     setIsProcessing(true);
+    setShowPaymentWidget(true);
+
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      // Convert BHD to fils (smallest unit, 1 BHD = 1000 fils)
+      const amountInFils = Math.round(checkoutData.total * 1000);
       
-      if (!user) {
-        toast({
-          title: "Authentication required",
-          description: "Please sign in to complete your order.",
-          variant: "destructive",
-        });
-        navigate("/auth");
-        return;
+      // Generate order reference
+      const orderRef = `ORD-${Date.now()}`;
+
+      // Store order reference in session for later use
+      sessionStorage.setItem('pendingOrderRef', orderRef);
+
+      // Create payment session via edge function
+      const { data: sessionData, error: sessionError } = await supabase.functions.invoke(
+        'create-payment-session',
+        {
+          body: {
+            amount: amountInFils,
+            currency: 'BHD',
+            reference: orderRef,
+            customerName: checkoutData.full_name,
+            customerEmail: checkoutData.email,
+            successUrl: `${window.location.origin}/payment-success`,
+            failureUrl: `${window.location.origin}/payment-failure`,
+          },
+        }
+      );
+
+      if (sessionError || !sessionData.success) {
+        throw new Error(sessionData?.error || 'Failed to create payment session');
       }
 
-      // Ensure customer profile exists
-      const { data: customerData } = await supabase
-        .from("customers")
-        .select("id")
-        .eq("id", user.id)
-        .single();
+      console.log('Payment session created:', sessionData.paymentSession.id);
 
-      if (!customerData) {
-        await supabase.from("customers").insert({
-          id: user.id,
-          full_name: checkoutData.full_name,
-          phone: checkoutData.phone,
-          address_line1: checkoutData.address_line1,
-          address_line2: checkoutData.address_line2,
-          city: checkoutData.city,
-          postal_code: checkoutData.postal_code,
-        });
-      }
-
-      // Create order
-      const orderNumber = `ORD-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
+      // Get public key from environment
+      const publicKey = import.meta.env.VITE_CHECKOUT_COM_PUBLIC_KEY;
       
-      const { data: orderData, error: orderError } = await supabase
-        .from("orders")
-        .insert([{
-          order_number: orderNumber,
-          customer_id: user.id,
-          customer_email: checkoutData.email,
-          customer_phone: checkoutData.phone,
-          shipping_name: checkoutData.full_name,
-          shipping_address_line1: checkoutData.address_line1,
-          shipping_address_line2: checkoutData.address_line2 || null,
-          shipping_city: checkoutData.city,
-          shipping_postal_code: checkoutData.postal_code || null,
-          subtotal: checkoutData.subtotal,
-          delivery_fee: checkoutData.deliveryFee,
-          total: checkoutData.total,
-          payment_method: "card",
-          payment_status: "paid",
-          status: "confirmed",
-        }])
-        .select()
-        .single();
-
-      if (orderError) throw orderError;
-
-      // Create order items
-      const orderItems = checkoutData.cartItems.map((item: any) => ({
-        order_id: orderData.id,
-        product_id: item.product_id,
-        product_name: item.product_name,
-        product_sku: item.product_sku,
-        quantity: item.quantity,
-        unit_price: item.unit_price,
-        total_price: item.total_price,
-      }));
-
-      const { error: itemsError } = await supabase
-        .from("order_items")
-        .insert(orderItems);
-
-      if (itemsError) throw itemsError;
-
-      // Clear cart
-      const { data: cartData } = await supabase
-        .from("cart_items")
-        .select("id")
-        .eq("customer_id", user.id);
-
-      if (cartData && cartData.length > 0) {
-        await supabase
-          .from("cart_items")
-          .delete()
-          .eq("customer_id", user.id);
+      if (!publicKey || publicKey === 'pk_sbox_YOUR_PUBLIC_KEY_HERE') {
+        throw new Error('Checkout.com public key not configured. Please update VITE_CHECKOUT_COM_PUBLIC_KEY in .env file');
+      }
+      
+      if (!window.CheckoutWebComponents) {
+        throw new Error('Checkout.com script not loaded');
       }
 
-      // Clear checkout data
-      sessionStorage.removeItem("checkoutData");
-
-      // Dispatch cart update event
-      window.dispatchEvent(new Event("cart:updated"));
-
-      toast({
-        title: "Order placed successfully!",
-        description: `Your order #${orderData.order_number} has been confirmed.`,
+      const checkout = await window.CheckoutWebComponents({
+        paymentSession: sessionData.paymentSession,
+        publicKey: publicKey,
+        environment: 'sandbox',
+        onPaymentCompleted: async (self: any, paymentResponse: any) => {
+          console.log('Payment completed:', paymentResponse.id);
+          
+          // Store payment ID and redirect
+          sessionStorage.setItem('paymentId', paymentResponse.id);
+          window.location.href = `${window.location.origin}/payment-success?cko-payment-id=${paymentResponse.id}`;
+        },
+        onError: (error: any) => {
+          console.error('Payment error:', error);
+          toast({
+            title: "Payment Error",
+            description: "An error occurred during payment. Please try again.",
+            variant: "destructive",
+          });
+          setIsProcessing(false);
+          setShowPaymentWidget(false);
+        }
       });
 
-      navigate("/orders");
+      const flowComponent = checkout.create('flow');
+      flowComponent.mount('#payment-widget-container');
+      
+      setPaymentInitialized(true);
+      setIsProcessing(false);
+
     } catch (error) {
-      console.error("Error processing payment:", error);
+      console.error("Error initializing payment:", error);
       toast({
-        title: "Payment failed",
-        description: "Failed to process payment. Please try again.",
+        title: "Payment initialization failed",
+        description: error instanceof Error ? error.message : "Please try again.",
         variant: "destructive",
       });
-    } finally {
       setIsProcessing(false);
+      setShowPaymentWidget(false);
     }
   };
 
@@ -191,7 +125,7 @@ const Payment = () => {
 
   return (
     <div className="container py-8">
-      <Button variant="ghost" className="mb-6" asChild>
+      <Button variant="ghost" className="mb-6" asChild disabled={showPaymentWidget}>
         <Link to="/checkout">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Checkout
@@ -201,108 +135,54 @@ const Payment = () => {
       <h1 className="text-3xl font-bold mb-8">Payment</h1>
 
       <div className="max-w-2xl mx-auto">
-        <Card className="p-6 mb-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Lock className="h-5 w-5 text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">
-              This is a demo payment page. No real charges will be made.
-            </p>
-          </div>
-          
-          <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-            <CreditCard className="h-5 w-5" />
-            Card Details
-          </h2>
-
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div>
-              <Label htmlFor="card_number">Card Number *</Label>
-              <Input
-                id="card_number"
-                {...register("card_number")}
-                placeholder="1234 5678 9012 3456"
-                maxLength={19}
-                onChange={(e) => {
-                  const formatted = formatCardNumber(e.target.value);
-                  setValue("card_number", formatted);
-                }}
-              />
-              {errors.card_number && (
-                <p className="text-sm text-destructive mt-1">
-                  {errors.card_number.message}
-                </p>
-              )}
+        {!showPaymentWidget ? (
+          <Card className="p-6">
+            <div className="flex items-center gap-2 mb-6">
+              <Lock className="h-5 w-5 text-muted-foreground" />
+              <p className="text-sm text-muted-foreground">
+                Secure payment powered by Checkout.com (Sandbox)
+              </p>
             </div>
 
-            <div>
-              <Label htmlFor="card_name">Name on Card *</Label>
-              <Input
-                id="card_name"
-                {...register("card_name")}
-                placeholder="JOHN DOE"
-              />
-              {errors.card_name && (
-                <p className="text-sm text-destructive mt-1">
-                  {errors.card_name.message}
-                </p>
-              )}
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="expiry">Expiry Date *</Label>
-                <Input
-                  id="expiry"
-                  {...register("expiry")}
-                  placeholder="MM/YY"
-                  maxLength={5}
-                  onChange={(e) => {
-                    const formatted = formatExpiry(e.target.value);
-                    setValue("expiry", formatted);
-                  }}
-                />
-                {errors.expiry && (
-                  <p className="text-sm text-destructive mt-1">
-                    {errors.expiry.message}
-                  </p>
-                )}
+            <div className="space-y-4 mb-6">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Subtotal</span>
+                <span className="font-semibold">{checkoutData.subtotal.toFixed(3)} BHD</span>
               </div>
-
-              <div>
-                <Label htmlFor="cvv">CVV *</Label>
-                <Input
-                  id="cvv"
-                  type="password"
-                  {...register("cvv")}
-                  placeholder="123"
-                  maxLength={4}
-                />
-                {errors.cvv && (
-                  <p className="text-sm text-destructive mt-1">
-                    {errors.cvv.message}
-                  </p>
-                )}
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Delivery Fee</span>
+                <span className="font-semibold">{checkoutData.deliveryFee.toFixed(3)} BHD</span>
               </div>
-            </div>
-
-            <div className="border-t pt-4 mt-6">
-              <div className="flex justify-between mb-4">
-                <span className="font-semibold">Total Amount</span>
+              <div className="border-t pt-4 flex justify-between">
+                <span className="text-lg font-bold">Total Amount</span>
                 <span className="text-2xl font-bold text-primary">
-                  {checkoutData.total.toFixed(2)} BHD
+                  {checkoutData.total.toFixed(3)} BHD
                 </span>
               </div>
-              <Button
-                type="submit"
-                className="w-full bg-gradient-hero hover:opacity-90"
-                size="lg"
-                disabled={isProcessing}
-              >
-                {isProcessing ? "Processing..." : "Pay Now"}
-              </Button>
             </div>
-          </form>
-        </Card>
+
+            <div className="bg-muted p-4 rounded-lg mb-6">
+              <p className="text-sm font-semibold mb-2">Test Card Details:</p>
+              <p className="text-sm text-muted-foreground">Card: 4242 4242 4242 4242</p>
+              <p className="text-sm text-muted-foreground">CVV: Any 3 digits</p>
+              <p className="text-sm text-muted-foreground">Expiry: Any future date</p>
+            </div>
+
+            <Button
+              onClick={initializeCheckoutPayment}
+              className="w-full bg-gradient-hero hover:opacity-90"
+              size="lg"
+              disabled={isProcessing}
+            >
+              <Lock className="mr-2 h-4 w-4" />
+              {isProcessing ? "Initializing Payment..." : "Proceed to Pay"}
+            </Button>
+          </Card>
+        ) : (
+          <Card className="p-6">
+            <div id="payment-widget-container" className="min-h-[400px]"></div>
+          </Card>
+        )}
       </div>
     </div>
   );

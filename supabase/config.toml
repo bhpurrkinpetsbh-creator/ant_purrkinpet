@@ -1,1 +1,4 @@
 project_id = "cutwflpcyiuguoggwxwo"
+
+[functions.create-payment-session]
+verify_jwt = false
