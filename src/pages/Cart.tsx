@@ -1,11 +1,29 @@
 import { Link } from "react-router-dom";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Trash2, ShoppingBag } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const Cart = () => {
-  const { cartItems, cartCount, loading, removeFromCart, updateQuantity } = useCart();
+  const { cartItems, cartCount, loading, removeFromCart, updateQuantity, clearCart } = useCart();
+  const [showClearDialog, setShowClearDialog] = useState(false);
+
+  const handleClearCart = async () => {
+    await clearCart();
+    setShowClearDialog(false);
+  };
 
   if (loading) {
     return (
@@ -42,7 +60,31 @@ const Cart = () => {
         </Link>
       </Button>
 
-      <h1 className="text-3xl font-bold mb-8">Shopping Cart ({cartCount} items)</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <h1 className="text-3xl font-bold">Shopping Cart ({cartCount} items)</h1>
+        <AlertDialog open={showClearDialog} onOpenChange={setShowClearDialog}>
+          <AlertDialogTrigger asChild>
+            <Button variant="outline" className="text-destructive hover:text-destructive">
+              <Trash2 className="mr-2 h-4 w-4" />
+              Clear Cart
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Clear Cart?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will remove all items from your cart. This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleClearCart} className="bg-destructive hover:bg-destructive/90">
+                Clear Cart
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
 
       <div className="grid lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-4">

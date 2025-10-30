@@ -202,6 +202,37 @@ export const useCart = () => {
     }
   };
 
+  const clearCart = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return false;
+
+      const { error } = await supabase
+        .from('cart_items')
+        .delete()
+        .eq('customer_id', user.id);
+
+      if (error) throw error;
+      
+      await fetchCartItems();
+      window.dispatchEvent(new Event('cart:updated'));
+      try { localStorage.setItem('cart_updated_at', Date.now().toString()); } catch {}
+      
+      toast({
+        title: "Cart cleared",
+        description: "All items have been removed from your cart"
+      });
+      return true;
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to clear cart",
+        variant: "destructive"
+      });
+      return false;
+    }
+  };
+
   const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   return {
@@ -211,6 +242,7 @@ export const useCart = () => {
     addToCart,
     removeFromCart,
     updateQuantity,
+    clearCart,
     refreshCart: fetchCartItems
   };
 };
