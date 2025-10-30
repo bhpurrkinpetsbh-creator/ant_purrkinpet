@@ -1,40 +1,19 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { CreditCard, Lock, ArrowLeft } from "lucide-react";
+import { ArrowLeft, QrCode } from "lucide-react";
 import { Link } from "react-router-dom";
-
-const paymentSchema = z.object({
-  card_number: z.string().min(16, "Card number must be 16 digits").max(19),
-  card_name: z.string().min(2, "Name on card is required").max(100),
-  expiry: z.string().regex(/^(0[1-9]|1[0-2])\/([0-9]{2})$/, "Format: MM/YY"),
-  cvv: z.string().min(3, "CVV must be 3 digits").max(4),
-});
-
-type PaymentFormData = z.infer<typeof paymentSchema>;
+import QRCode from "react-qr-code";
 
 const Payment = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
   const [checkoutData, setCheckoutData] = useState<any>(null);
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    setValue,
-  } = useForm<PaymentFormData>({
-    resolver: zodResolver(paymentSchema),
-  });
+  const [showQR, setShowQR] = useState(false);
 
   useEffect(() => {
     const data = sessionStorage.getItem("checkoutData");
@@ -45,32 +24,11 @@ const Payment = () => {
     setCheckoutData(JSON.parse(data));
   }, [navigate]);
 
-  const formatCardNumber = (value: string) => {
-    const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
-    const matches = v.match(/\d{4,16}/g);
-    const match = (matches && matches[0]) || "";
-    const parts = [];
-
-    for (let i = 0, len = match.length; i < len; i += 4) {
-      parts.push(match.substring(i, i + 4));
-    }
-
-    if (parts.length) {
-      return parts.join(" ");
-    } else {
-      return value;
-    }
+  const handleProceedToPay = () => {
+    setShowQR(true);
   };
 
-  const formatExpiry = (value: string) => {
-    const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
-    if (v.length >= 2) {
-      return v.slice(0, 2) + "/" + v.slice(2, 4);
-    }
-    return v;
-  };
-
-  const onSubmit = async (data: PaymentFormData) => {
+  const onSubmit = async () => {
     if (!checkoutData) return;
 
     setIsProcessing(true);
@@ -189,6 +147,11 @@ const Payment = () => {
 
   if (!checkoutData) return null;
 
+  const qrData = JSON.stringify({
+    iban: "BH30ALSA00354347100100",
+    amount: checkoutData.total.toFixed(3)
+  });
+
   return (
     <div className="container py-8">
       <Button variant="ghost" className="mb-6" asChild>
@@ -202,106 +165,79 @@ const Payment = () => {
 
       <div className="max-w-2xl mx-auto">
         <Card className="p-6 mb-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Lock className="h-5 w-5 text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">
-              This is a demo payment page. No real charges will be made.
-            </p>
-          </div>
-          
-          <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-            <CreditCard className="h-5 w-5" />
-            Card Details
-          </h2>
-
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div>
-              <Label htmlFor="card_number">Card Number *</Label>
-              <Input
-                id="card_number"
-                {...register("card_number")}
-                placeholder="1234 5678 9012 3456"
-                maxLength={19}
-                onChange={(e) => {
-                  const formatted = formatCardNumber(e.target.value);
-                  setValue("card_number", formatted);
-                }}
-              />
-              {errors.card_number && (
-                <p className="text-sm text-destructive mt-1">
-                  {errors.card_number.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <Label htmlFor="card_name">Name on Card *</Label>
-              <Input
-                id="card_name"
-                {...register("card_name")}
-                placeholder="JOHN DOE"
-              />
-              {errors.card_name && (
-                <p className="text-sm text-destructive mt-1">
-                  {errors.card_name.message}
-                </p>
-              )}
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="expiry">Expiry Date *</Label>
-                <Input
-                  id="expiry"
-                  {...register("expiry")}
-                  placeholder="MM/YY"
-                  maxLength={5}
-                  onChange={(e) => {
-                    const formatted = formatExpiry(e.target.value);
-                    setValue("expiry", formatted);
-                  }}
-                />
-                {errors.expiry && (
-                  <p className="text-sm text-destructive mt-1">
-                    {errors.expiry.message}
-                  </p>
-                )}
+          {!showQR ? (
+            <>
+              <h2 className="text-xl font-bold mb-6">Order Summary</h2>
+              
+              <div className="space-y-4 mb-6">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Subtotal</span>
+                  <span>{checkoutData.subtotal.toFixed(3)} BHD</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Delivery Fee</span>
+                  <span>{checkoutData.deliveryFee.toFixed(3)} BHD</span>
+                </div>
+                <div className="border-t pt-4 flex justify-between">
+                  <span className="font-semibold text-lg">Total Amount</span>
+                  <span className="text-2xl font-bold text-primary">
+                    {checkoutData.total.toFixed(3)} BHD
+                  </span>
+                </div>
               </div>
 
-              <div>
-                <Label htmlFor="cvv">CVV *</Label>
-                <Input
-                  id="cvv"
-                  type="password"
-                  {...register("cvv")}
-                  placeholder="123"
-                  maxLength={4}
-                />
-                {errors.cvv && (
-                  <p className="text-sm text-destructive mt-1">
-                    {errors.cvv.message}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div className="border-t pt-4 mt-6">
-              <div className="flex justify-between mb-4">
-                <span className="font-semibold">Total Amount</span>
-                <span className="text-2xl font-bold text-primary">
-                  {checkoutData.total.toFixed(2)} BHD
-                </span>
-              </div>
               <Button
-                type="submit"
+                onClick={handleProceedToPay}
                 className="w-full bg-gradient-hero hover:opacity-90"
                 size="lg"
-                disabled={isProcessing}
               >
-                {isProcessing ? "Processing..." : "Pay Now"}
+                Proceed to Pay
               </Button>
-            </div>
-          </form>
+            </>
+          ) : (
+            <>
+              <div className="flex items-center gap-2 mb-6 justify-center">
+                <QrCode className="h-6 w-6 text-primary" />
+                <h2 className="text-xl font-bold">Scan to Pay</h2>
+              </div>
+
+              <div className="flex flex-col items-center justify-center space-y-6">
+                <div className="bg-white p-6 rounded-lg">
+                  <QRCode value={qrData} size={256} />
+                </div>
+
+                <div className="text-center space-y-2">
+                  <p className="text-lg font-semibold">
+                    Amount: {checkoutData.total.toFixed(3)} BHD
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Scan the QR code with your banking app to complete the payment
+                  </p>
+                  <div className="mt-4 p-4 bg-muted rounded-lg">
+                    <p className="text-xs text-muted-foreground mb-1">IBAN</p>
+                    <p className="font-mono text-sm">BH30ALSA00354347100100</p>
+                  </div>
+                </div>
+
+                <Button
+                  onClick={onSubmit}
+                  className="w-full bg-gradient-hero hover:opacity-90"
+                  size="lg"
+                  disabled={isProcessing}
+                >
+                  {isProcessing ? "Processing..." : "I've Completed the Payment"}
+                </Button>
+
+                <Button
+                  variant="outline"
+                  onClick={() => setShowQR(false)}
+                  className="w-full"
+                >
+                  Back
+                </Button>
+              </div>
+            </>
+          )}
         </Card>
       </div>
     </div>
