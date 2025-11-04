@@ -10,6 +10,13 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Form,
   FormControl,
   FormField,
@@ -31,6 +38,8 @@ import { useCart } from "@/hooks/useCart";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Lock, Plus, Edit2, Trash2 } from "lucide-react";
+
+const ADDRESS_LABELS = ["Home", "Work", "Office", "Custom"] as const;
 
 const checkoutSchema = z.object({
   label: z.string().min(2, "Label must be at least 2 characters").max(100),
@@ -70,6 +79,8 @@ const Checkout = () => {
   const [editingAddressId, setEditingAddressId] = useState<string | null>(null);
   const [deleteAddressId, setDeleteAddressId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [showCustomLabel, setShowCustomLabel] = useState(false);
+  const [customLabelValue, setCustomLabelValue] = useState("");
 
   const form = useForm<CheckoutFormData>({
     resolver: zodResolver(checkoutSchema),
@@ -143,8 +154,10 @@ const Checkout = () => {
     setEditingAddressId(null);
     setSelectedAddressId(null);
     setShowForm(true);
+    setShowCustomLabel(false);
+    setCustomLabelValue("");
     form.reset({
-      label: "",
+      label: "Home",
       full_name: "",
       email: form.getValues("email"),
       phone: "",
@@ -160,8 +173,14 @@ const Checkout = () => {
     setEditingAddressId(address.id);
     setIsAddingNew(false);
     setShowForm(true);
+    
+    // Check if address label is custom (not in predefined list)
+    const isCustomLabel = !ADDRESS_LABELS.slice(0, -1).includes(address.label as any);
+    setShowCustomLabel(isCustomLabel);
+    setCustomLabelValue(isCustomLabel ? address.label : "");
+    
     form.reset({
-      label: address.label,
+      label: isCustomLabel ? "Custom" : address.label,
       full_name: address.full_name,
       email: form.getValues("email"),
       phone: address.phone,
@@ -215,6 +234,8 @@ const Checkout = () => {
     setShowForm(false);
     setIsAddingNew(false);
     setEditingAddressId(null);
+    setShowCustomLabel(false);
+    setCustomLabelValue("");
     if (savedAddresses.length > 0 && !selectedAddressId) {
       const defaultAddress = savedAddresses.find(a => a.is_default) || savedAddresses[0];
       setSelectedAddressId(defaultAddress.id);
@@ -235,6 +256,17 @@ const Checkout = () => {
         return;
       }
 
+      // Validate custom label if selected
+      if (data.label === "Custom" && !customLabelValue.trim()) {
+        toast({
+          title: "Error",
+          description: "Please enter a custom label",
+          variant: "destructive",
+        });
+        setIsProcessing(false);
+        return;
+      }
+
       let shippingData;
 
       if (isAddingNew || editingAddressId) {
@@ -246,9 +278,11 @@ const Checkout = () => {
             .eq("customer_id", user.id);
         }
 
+        const finalLabel = data.label === "Custom" ? customLabelValue : data.label;
+
         const addressData = {
           customer_id: user.id,
-          label: data.label,
+          label: finalLabel,
           full_name: data.full_name,
           phone: data.phone,
           address_line1: data.address_line1,
@@ -454,13 +488,48 @@ const Checkout = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Address Label *</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g., Home, Work, Office" {...field} />
-                        </FormControl>
+                        <Select
+                          value={field.value}
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            if (value === "Custom") {
+                              setShowCustomLabel(true);
+                            } else {
+                              setShowCustomLabel(false);
+                              setCustomLabelValue("");
+                            }
+                          }}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select address type" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {ADDRESS_LABELS.map((label) => (
+                              <SelectItem key={label} value={label}>
+                                {label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+
+                  {showCustomLabel && (
+                    <div>
+                      <Label htmlFor="custom-label">Custom Label *</Label>
+                      <Input
+                        id="custom-label"
+                        placeholder="Enter custom label"
+                        value={customLabelValue}
+                        onChange={(e) => setCustomLabelValue(e.target.value)}
+                        className="mt-2"
+                      />
+                    </div>
+                  )}
 
                   <FormField
                     control={form.control}

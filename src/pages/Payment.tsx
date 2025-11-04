@@ -55,7 +55,7 @@ const Payment = () => {
       if (!customerData) {
         await supabase.from("customers").insert({
           id: user.id,
-          full_name: checkoutData.full_name,
+          full_name: checkoutData.name,
           phone: checkoutData.phone,
           address_line1: checkoutData.address_line1,
           address_line2: checkoutData.address_line2,
@@ -74,7 +74,7 @@ const Payment = () => {
           customer_id: user.id,
           customer_email: checkoutData.email,
           customer_phone: checkoutData.phone,
-          shipping_name: checkoutData.full_name,
+          shipping_name: checkoutData.name,
           shipping_address_line1: checkoutData.address_line1,
           shipping_address_line2: checkoutData.address_line2 || null,
           shipping_city: checkoutData.city,
