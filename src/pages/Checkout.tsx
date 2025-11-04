@@ -242,6 +242,77 @@ const Checkout = () => {
     }
   };
 
+  const handleProceedToPayment = async () => {
+    if (!selectedAddressId) {
+      toast({
+        title: "Error",
+        description: "Please select an address",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Error",
+          description: "Please sign in to continue",
+          variant: "destructive",
+        });
+        navigate("/auth");
+        return;
+      }
+
+      const selectedAddress = savedAddresses.find(a => a.id === selectedAddressId);
+      if (!selectedAddress) {
+        toast({
+          title: "Error",
+          description: "Selected address not found",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const shippingData = {
+        name: selectedAddress.full_name,
+        email: user.email || form.getValues("email"),
+        phone: selectedAddress.phone,
+        address_line1: selectedAddress.address_line1,
+        address_line2: selectedAddress.address_line2,
+        city: selectedAddress.city,
+        postal_code: selectedAddress.postal_code,
+      };
+
+      sessionStorage.setItem("checkoutData", JSON.stringify({
+        ...shippingData,
+        subtotal,
+        deliveryFee,
+        total,
+        cartItems: cartItems.map(item => ({
+          product_id: item.product_id,
+          product_name: item.products?.name,
+          product_sku: item.products?.sku,
+          quantity: item.quantity,
+          unit_price: item.products?.price,
+          total_price: parseFloat(item.products?.price || 0) * item.quantity,
+        })),
+      }));
+
+      navigate("/payment");
+    } catch (error) {
+      console.error("Error processing checkout:", error);
+      toast({
+        title: "Error",
+        description: "Failed to process checkout. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const onSubmit = async (data: CheckoutFormData) => {
     setIsProcessing(true);
     try {
@@ -455,7 +526,7 @@ const Checkout = () => {
               </RadioGroup>
 
               <Button
-                onClick={form.handleSubmit(onSubmit)}
+                onClick={handleProceedToPayment}
                 className="w-full bg-gradient-hero hover:opacity-90 mt-6"
                 size="lg"
                 disabled={!selectedAddressId || isProcessing}
