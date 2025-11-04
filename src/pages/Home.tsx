@@ -6,7 +6,6 @@ import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carouse
 import Autoplay from "embla-carousel-autoplay";
 import heroStorefront from "@/assets/hero-storefront.jpg";
 import petVideo from "@/assets/pet-video.mp4";
-import waterDispensers from "@/assets/water-dispensers.jpg";
 import petCarrier from "@/assets/pet-carrier.jpg";
 import birdSeeds from "@/assets/bird-seeds.jpg";
 import fishBowl1 from "@/assets/fish-bowl-1.jpg";
@@ -121,9 +120,9 @@ const Home = () => {
                   <CarouselItem>
                     <video src={petVideo} className="rounded-3xl shadow-lg w-full object-cover aspect-video" muted loop playsInline onMouseEnter={e => e.currentTarget.play()} onMouseLeave={e => e.currentTarget.pause()} />
                   </CarouselItem>
-                  <CarouselItem>
+                  {/* <CarouselItem>
                     <img src={waterDispensers} alt="Pet water dispensers and feeders" className="rounded-3xl shadow-lg w-full object-cover aspect-video" />
-                  </CarouselItem>
+                  </CarouselItem> */}
                   <CarouselItem>
                     <img src={petCarrier} alt="Pet carrier for travel" className="rounded-3xl shadow-lg w-full object-cover aspect-video" />
                   </CarouselItem>
