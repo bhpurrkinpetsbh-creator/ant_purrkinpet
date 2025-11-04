@@ -5,12 +5,7 @@ import { ArrowRight, Heart, Truck, Shield, Sparkles } from "lucide-react";
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 import heroStorefront from "@/assets/hero-storefront.jpg";
-import hamsterFood from "@/assets/hamster-food.jpg";
-import catFood from "@/assets/cat-food.jpg";
 import petVideo from "@/assets/pet-video.mp4";
-import dogFood from "@/assets/dog-food.jpg";
-import catFood2 from "@/assets/cat-food-2.jpg";
-import petVideo2 from "@/assets/pet-video-2.mp4";
 import waterDispensers from "@/assets/water-dispensers.jpg";
 import petCarrier from "@/assets/pet-carrier.jpg";
 import birdSeeds from "@/assets/bird-seeds.jpg";
@@ -124,22 +119,7 @@ const Home = () => {
                     <img src={heroStorefront} alt="Purrkin Pets storefront" className="rounded-3xl shadow-lg w-full object-cover aspect-video" />
                   </CarouselItem>
                   <CarouselItem>
-                    <img src={hamsterFood} alt="Premium hamster and rabbit food products" className="rounded-3xl shadow-lg w-full object-cover aspect-video" />
-                  </CarouselItem>
-                  <CarouselItem className="text-base mx-0 my-[21px]">
-                    <img src={catFood} alt="Quality cat food selection" className="rounded-3xl shadow-lg w-full object-cover aspect-video" />
-                  </CarouselItem>
-                  <CarouselItem>
                     <video src={petVideo} className="rounded-3xl shadow-lg w-full object-cover aspect-video" muted loop playsInline onMouseEnter={e => e.currentTarget.play()} onMouseLeave={e => e.currentTarget.pause()} />
-                  </CarouselItem>
-                  <CarouselItem>
-                    <img src={dogFood} alt="Premium dog food products" className="rounded-3xl shadow-lg w-full object-cover aspect-video" />
-                  </CarouselItem>
-                  <CarouselItem>
-                    <img src={catFood2} alt="Quality cat food brands" className="rounded-3xl shadow-lg w-full object-cover aspect-video" />
-                  </CarouselItem>
-                  <CarouselItem>
-                    <video src={petVideo2} className="rounded-3xl shadow-lg w-full object-cover aspect-video" muted loop playsInline onMouseEnter={e => e.currentTarget.play()} onMouseLeave={e => e.currentTarget.pause()} />
                   </CarouselItem>
                   <CarouselItem>
                     <img src={waterDispensers} alt="Pet water dispensers and feeders" className="rounded-3xl shadow-lg w-full object-cover aspect-video" />
@@ -156,7 +136,8 @@ const Home = () => {
                   <CarouselItem>
                     <img src={fishBowl2} alt="Betta fish aquarium" className="rounded-3xl shadow-lg w-full object-cover aspect-video" />
                   </CarouselItem>
-                  <CarouselItem>
+                  {/* DISABLED: Extra video carousels temporarily hidden */}
+                  {/* <CarouselItem>
                     <video src={petVideo3} className="rounded-3xl shadow-lg w-full object-cover aspect-video" muted loop playsInline onMouseEnter={e => e.currentTarget.play()} onMouseLeave={e => e.currentTarget.pause()} />
                   </CarouselItem>
                   <CarouselItem>
@@ -170,7 +151,7 @@ const Home = () => {
                   </CarouselItem>
                   <CarouselItem>
                     <video src={petVideo7} className="rounded-3xl shadow-lg w-full object-cover aspect-video" muted loop playsInline onMouseEnter={e => e.currentTarget.play()} onMouseLeave={e => e.currentTarget.pause()} />
-                  </CarouselItem>
+                  </CarouselItem> */}
                 </CarouselContent>
               </Carousel>
             </div>
