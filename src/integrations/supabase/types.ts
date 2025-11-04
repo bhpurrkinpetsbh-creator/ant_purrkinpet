@@ -205,6 +205,54 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_addresses: {
+        Row: {
+          address_line1: string
+          address_line2: string | null
+          city: string
+          country: string
+          created_at: string | null
+          customer_id: string
+          full_name: string
+          id: string
+          is_default: boolean | null
+          label: string
+          phone: string
+          postal_code: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          address_line1: string
+          address_line2?: string | null
+          city?: string
+          country?: string
+          created_at?: string | null
+          customer_id: string
+          full_name: string
+          id?: string
+          is_default?: boolean | null
+          label: string
+          phone: string
+          postal_code?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          address_line1?: string
+          address_line2?: string | null
+          city?: string
+          country?: string
+          created_at?: string | null
+          customer_id?: string
+          full_name?: string
+          id?: string
+          is_default?: boolean | null
+          label?: string
+          phone?: string
+          postal_code?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       customer_pets: {
         Row: {
           age_months: number | null
