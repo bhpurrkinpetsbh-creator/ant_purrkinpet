@@ -57,7 +57,7 @@ const Home = () => {
   }, {
     name: "Small Pets",
     image: rabbitsImage,
-    link: "/shop?category=rabbits"
+    link: "/shop?category=small pets"
   }];
   const features = [{
     icon: Heart,
