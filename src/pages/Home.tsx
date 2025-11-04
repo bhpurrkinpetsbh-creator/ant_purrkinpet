@@ -89,7 +89,7 @@ const Home = () => {
                   Needs & Loves
                 </span>
               </h1>
-              <p className="text-lg text-muted-foreground max-w-lg text-center">
+              <p className="text-lg text-muted-foreground max-w-lg mx-auto text-center">
                 Discover premium pet products and get expert care - all in one place.
               </p>
               <div className="flex flex-col sm:flex-row sm:justify-center flex-wrap gap-4">
