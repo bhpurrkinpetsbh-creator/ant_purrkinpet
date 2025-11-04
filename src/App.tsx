@@ -8,7 +8,7 @@ import Footer from "./components/layout/Footer";
 import Home from "./pages/Home";
 import Shop from "./pages/Shop";
 import ProductDetail from "./pages/ProductDetail";
-import Appointments from "./pages/Appointments";
+// import Appointments from "./pages/Appointments"; // DISABLED: Grooming services temporarily closed
 import Auth from "./pages/Auth";
 import About from "./pages/About";
 import Cart from "./pages/Cart";
@@ -34,7 +34,7 @@ const App = () => (
               <Route path="/" element={<Home />} />
               <Route path="/shop" element={<Shop />} />
               <Route path="/product/:id" element={<ProductDetail />} />
-              <Route path="/appointments" element={<Appointments />} />
+              {/* <Route path="/appointments" element={<Appointments />} /> */} {/* DISABLED: Grooming services temporarily closed */}
               <Route path="/auth" element={<Auth />} />
               <Route path="/about" element={<About />} />
               <Route path="/cart" element={<Cart />} />

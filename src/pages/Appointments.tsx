@@ -1,3 +1,7 @@
+// ⚠️ APPOINTMENTS/GROOMING SERVICES TEMPORARILY DISABLED
+// This page is commented out from routes and navigation
+// To re-enable: uncomment references in App.tsx, Header.tsx, Footer.tsx, About.tsx, and Home.tsx
+
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

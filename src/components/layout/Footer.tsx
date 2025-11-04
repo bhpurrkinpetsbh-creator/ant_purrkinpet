@@ -38,7 +38,7 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold mb-4">Services & Info</h4>
             <ul className="space-y-2 text-sm">
-              <li><Link to="/appointments" className="text-muted-foreground hover:text-primary transition-colors">Book Appointment</Link></li>
+              {/* <li><Link to="/appointments" className="text-muted-foreground hover:text-primary transition-colors">Book Appointment</Link></li> */} {/* DISABLED: Grooming services temporarily closed */}
               <li><Link to="/about" className="text-muted-foreground hover:text-primary transition-colors">About Us</Link></li>
               <li><Link to="/delivery" className="text-muted-foreground hover:text-primary transition-colors">Delivery Info</Link></li>
             </ul>
@@ -79,10 +79,10 @@ const Footer = () => {
                 <p className="font-medium mb-1">🛍 Shop Hours:</p>
                 <p>Daily 10am–1pm & 4–11pm</p>
               </li>
-              <li className="text-muted-foreground">
+              {/* <li className="text-muted-foreground">
                 <p className="font-medium mb-1">✂️ Grooming:</p>
                 <p>Mon–Sat 10am–1pm & 4–11pm</p>
-              </li>
+              </li> */} {/* DISABLED: Grooming services temporarily closed */}
             </ul>
           </div>
         </div>

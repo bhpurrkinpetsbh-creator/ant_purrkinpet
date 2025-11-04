@@ -25,7 +25,7 @@ const About = () => {
                 providing premium quality products and exceptional services for your beloved companions.
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                From nutritious food to engaging toys, comfortable accessories to expert grooming services, we offer
+                From nutritious food to engaging toys, and comfortable accessories, we offer
                 everything your pets need to live happy, healthy lives.
               </p>
             </Card>
@@ -40,10 +40,10 @@ const About = () => {
                   <p className="font-medium mb-1">🛍 Shop Hours</p>
                   <p className="text-muted-foreground">Daily: 10am–1pm & 4–11pm</p>
                 </div>
-                <div>
+                {/* <div>
                   <p className="font-medium mb-1">✂️ Grooming Services</p>
                   <p className="text-muted-foreground">Monday–Saturday: 10am–1pm & 4–11pm</p>
-                </div>
+                </div> */} {/* DISABLED: Grooming services temporarily closed */}
               </div>
             </Card>
 
@@ -126,17 +126,17 @@ const About = () => {
                   <span className="text-lg">✓</span>
                   <span>Premium quality products from trusted brands</span>
                 </li>
-                <li className="flex items-start gap-2">
+                {/* <li className="flex items-start gap-2">
                   <span className="text-lg">✓</span>
                   <span>Expert grooming services by professionals</span>
-                </li>
+                </li> */} {/* DISABLED: Grooming services temporarily closed */}
                 <li className="flex items-start gap-2">
                   <span className="text-lg">✓</span>
                   <span>Same-day delivery across Bahrain</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-lg">✓</span>
-                  <span>Convenient shop and grooming hours</span>
+                  <span>Convenient shop hours</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-lg">✓</span>

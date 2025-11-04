@@ -102,9 +102,9 @@ const Header = () => {
           <Link to="/shop" className="text-sm font-medium hover:text-primary transition-colors">
             Shop
           </Link>
-          <Link to="/appointments" className="text-sm font-medium hover:text-primary transition-colors">
+          {/* <Link to="/appointments" className="text-sm font-medium hover:text-primary transition-colors">
             Appointments
-          </Link>
+          </Link> */} {/* DISABLED: Grooming services temporarily closed */}
           <Link to="/about" className="text-sm font-medium hover:text-primary transition-colors">
             Contact Us
           </Link>
@@ -144,11 +144,11 @@ const Header = () => {
             </Link>
           </Button>
 
-          <Button variant="ghost" size="icon" asChild>
+          {/* <Button variant="ghost" size="icon" asChild>
             <Link to="/appointments">
               <Calendar className="h-5 w-5" />
             </Link>
-          </Button>
+          </Button> */} {/* DISABLED: Grooming services temporarily closed */}
 
           {user ? <DropdownMenu>
               <DropdownMenuTrigger asChild>

@@ -71,11 +71,11 @@ const Home = () => {
     icon: Shield,
     title: "Safe & Secure",
     desc: "100% authentic products guaranteed"
-  }, {
+  }/* , {
     icon: Sparkles,
     title: "Expert Grooming",
     desc: "Professional grooming services"
-  }];
+  } */]; // DISABLED: Grooming services temporarily closed
   return <div className="min-h-screen">
       {/* Hero Section */}
       <section className="relative overflow-hidden">
@@ -96,7 +96,7 @@ const Home = () => {
                 </span>
               </h1>
               <p className="text-lg text-muted-foreground max-w-lg text-center">
-                Discover premium pet products, book grooming appointments, and get expert care - all in one place.
+                Discover premium pet products and get expert care - all in one place.
               </p>
               <div className="flex flex-col sm:flex-row sm:justify-center flex-wrap gap-4">
                 <Button size="lg" className="bg-gradient-hero hover:opacity-90 shadow-md w-full sm:w-auto" asChild>
@@ -104,11 +104,11 @@ const Home = () => {
                     Shop Now <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
                 </Button>
-                <Button size="lg" variant="outline" className="w-full sm:w-auto" asChild>
+                {/* <Button size="lg" variant="outline" className="w-full sm:w-auto" asChild>
                   <Link to="/appointments">
                     Book Appointment
                   </Link>
-                </Button>
+                </Button> */} {/* DISABLED: Grooming services temporarily closed */}
               </div>
             </div>
 
