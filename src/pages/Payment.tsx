@@ -7,6 +7,15 @@ import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, QrCode } from "lucide-react";
 import { Link } from "react-router-dom";
 import QRCode from "react-qr-code";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const Payment = () => {
   const navigate = useNavigate();
@@ -14,6 +23,7 @@ const Payment = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [checkoutData, setCheckoutData] = useState<any>(null);
   const [showQR, setShowQR] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   useEffect(() => {
     const data = sessionStorage.getItem("checkoutData");
@@ -26,6 +36,15 @@ const Payment = () => {
 
   const handleProceedToPay = () => {
     setShowQR(true);
+  };
+
+  const handlePaymentSubmission = () => {
+    setShowConfirmDialog(true);
+  };
+
+  const handleConfirmPayment = async () => {
+    setShowConfirmDialog(false);
+    await onSubmit();
   };
 
   const onSubmit = async () => {
@@ -83,8 +102,8 @@ const Payment = () => {
           delivery_fee: checkoutData.deliveryFee,
           total: checkoutData.total,
           payment_method: "card",
-          payment_status: "paid",
-          status: "confirmed",
+          payment_status: "pending",
+          status: "pending",
         }])
         .select()
         .single();
@@ -128,8 +147,8 @@ const Payment = () => {
       window.dispatchEvent(new Event("cart:updated"));
 
       toast({
-        title: "Order placed successfully!",
-        description: `Your order #${orderData.order_number} has been confirmed.`,
+        title: "Order submitted successfully!",
+        description: `Your order #${orderData.order_number} has been submitted for review.`,
       });
 
       navigate("/orders");
@@ -220,7 +239,7 @@ const Payment = () => {
                 </div>
 
                 <Button
-                  onClick={onSubmit}
+                  onClick={handlePaymentSubmission}
                   className="w-full bg-gradient-hero hover:opacity-90"
                   size="lg"
                   disabled={isProcessing}
@@ -240,6 +259,23 @@ const Payment = () => {
           )}
         </Card>
       </div>
+
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Payment Confirmation</AlertDialogTitle>
+            <AlertDialogDescription className="text-base leading-relaxed">
+              We will review your payment and confirm the order once payment gets credited. 
+              You may check your orders page for the order confirmation status.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={handleConfirmPayment} disabled={isProcessing}>
+              {isProcessing ? "Processing..." : "I Understand"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
