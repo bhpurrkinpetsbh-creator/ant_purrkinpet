@@ -1,5 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@4.0.0";
+
+// Using ESM CDN for Resend to avoid npm resolution in local build
+const Resend = (await import("https://esm.sh/resend@4.0.0")).Resend;
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
