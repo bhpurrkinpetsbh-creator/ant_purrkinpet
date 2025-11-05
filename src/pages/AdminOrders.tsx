@@ -141,6 +141,27 @@ const AdminOrders = () => {
     }
   };
 
+  const rejectOrderPayment = async (orderId: string) => {
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({
+          payment_status: 'failed',
+          status: 'cancelled',
+          admin_notes: 'Payment not credited - Order cancelled by admin'
+        })
+        .eq('id', orderId);
+
+      if (error) throw error;
+
+      toast.success("Order cancelled. Payment rejected.");
+      fetchOrders(); // Refresh orders list
+    } catch (error: any) {
+      console.error("Error rejecting order:", error);
+      toast.error("Failed to reject order");
+    }
+  };
+
   const viewOrderDetails = (order: any) => {
     setSelectedOrder(order);
     setIsDialogOpen(true);
@@ -151,6 +172,7 @@ const AdminOrders = () => {
       pending: "secondary",
       confirmed: "default",
       delivered: "outline",
+      cancelled: "destructive",
     };
 
     return (
@@ -287,14 +309,24 @@ const AdminOrders = () => {
                       </TableCell>
                       <TableCell>
                         {order.status === 'pending' && order.payment_status === 'pending' ? (
-                          <Button
-                            variant="default"
-                            size="sm"
-                            onClick={() => confirmOrderPayment(order.id)}
-                            className="mr-2"
-                          >
-                            Confirm Order
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="default"
+                              size="sm"
+                              onClick={() => confirmOrderPayment(order.id)}
+                            >
+                              Confirm Payment
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => rejectOrderPayment(order.id)}
+                            >
+                              Reject Payment
+                            </Button>
+                          </div>
+                        ) : order.status === 'cancelled' ? (
+                          <span className="text-sm text-muted-foreground">Cancelled</span>
                         ) : (
                           <Select
                             value={order.status}
@@ -307,6 +339,7 @@ const AdminOrders = () => {
                               <SelectItem value="pending">Pending</SelectItem>
                               <SelectItem value="confirmed">Confirmed</SelectItem>
                               <SelectItem value="delivered">Delivered</SelectItem>
+                              <SelectItem value="cancelled">Cancelled</SelectItem>
                             </SelectContent>
                           </Select>
                         )}
