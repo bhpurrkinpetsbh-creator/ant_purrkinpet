@@ -151,6 +151,28 @@ const Payment = () => {
         description: `Your order #${orderData.order_number} has been submitted for review.`,
       });
 
+      // Send email notification (non-blocking)
+      try {
+        await supabase.functions.invoke('send-order-email', {
+          body: {
+            type: 'payment_submitted',
+            customerEmail: checkoutData.email,
+            customerName: checkoutData.name,
+            orderNumber: orderData.order_number,
+            orderTotal: checkoutData.total.toFixed(3),
+            orderDate: new Date(orderData.created_at).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            })
+          }
+        });
+        console.log('Order confirmation email sent');
+      } catch (emailError) {
+        console.error('Failed to send email:', emailError);
+        // Don't block the flow if email fails
+      }
+
       navigate("/orders");
     } catch (error) {
       console.error("Error processing payment:", error);

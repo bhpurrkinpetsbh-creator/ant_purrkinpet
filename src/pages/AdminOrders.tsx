@@ -122,6 +122,16 @@ const AdminOrders = () => {
 
   const confirmOrderPayment = async (orderId: string) => {
     try {
+      // First, fetch order details for email
+      const { data: orderData, error: fetchError } = await supabase
+        .from('orders')
+        .select('order_number, customer_email, shipping_name, total, created_at')
+        .eq('id', orderId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      // Update order status
       const { error } = await supabase
         .from('orders')
         .update({
@@ -133,7 +143,28 @@ const AdminOrders = () => {
 
       if (error) throw error;
 
-      toast.success("Order confirmed! Payment verified.");
+      // Send confirmation email (non-blocking)
+      try {
+        await supabase.functions.invoke('send-order-email', {
+          body: {
+            type: 'payment_confirmed',
+            customerEmail: orderData.customer_email,
+            customerName: orderData.shipping_name,
+            orderNumber: orderData.order_number,
+            orderTotal: Number(orderData.total).toFixed(3),
+            orderDate: new Date(orderData.created_at).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            })
+          }
+        });
+        console.log('Payment confirmation email sent');
+      } catch (emailError) {
+        console.error('Failed to send confirmation email:', emailError);
+      }
+
+      toast.success("Order confirmed! Payment verified and customer notified.");
       fetchOrders(); // Refresh orders list
     } catch (error: any) {
       console.error("Error confirming order:", error);
@@ -143,6 +174,16 @@ const AdminOrders = () => {
 
   const rejectOrderPayment = async (orderId: string) => {
     try {
+      // First, fetch order details for email
+      const { data: orderData, error: fetchError } = await supabase
+        .from('orders')
+        .select('order_number, customer_email, shipping_name, total, created_at')
+        .eq('id', orderId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      // Update order status
       const { error } = await supabase
         .from('orders')
         .update({
@@ -154,7 +195,28 @@ const AdminOrders = () => {
 
       if (error) throw error;
 
-      toast.success("Order cancelled. Payment rejected.");
+      // Send rejection email (non-blocking)
+      try {
+        await supabase.functions.invoke('send-order-email', {
+          body: {
+            type: 'payment_rejected',
+            customerEmail: orderData.customer_email,
+            customerName: orderData.shipping_name,
+            orderNumber: orderData.order_number,
+            orderTotal: Number(orderData.total).toFixed(3),
+            orderDate: new Date(orderData.created_at).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            })
+          }
+        });
+        console.log('Payment rejection email sent');
+      } catch (emailError) {
+        console.error('Failed to send rejection email:', emailError);
+      }
+
+      toast.success("Order cancelled. Payment rejected and customer notified.");
       fetchOrders(); // Refresh orders list
     } catch (error: any) {
       console.error("Error rejecting order:", error);
