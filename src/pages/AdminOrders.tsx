@@ -120,6 +120,27 @@ const AdminOrders = () => {
     }
   };
 
+  const confirmOrderPayment = async (orderId: string) => {
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({
+          payment_status: 'paid',
+          status: 'confirmed',
+          confirmed_at: new Date().toISOString()
+        })
+        .eq('id', orderId);
+
+      if (error) throw error;
+
+      toast.success("Order confirmed! Payment verified.");
+      fetchOrders(); // Refresh orders list
+    } catch (error: any) {
+      console.error("Error confirming order:", error);
+      toast.error("Failed to confirm order");
+    }
+  };
+
   const viewOrderDetails = (order: any) => {
     setSelectedOrder(order);
     setIsDialogOpen(true);
@@ -135,6 +156,20 @@ const AdminOrders = () => {
     return (
       <Badge variant={variants[status] || "default"}>
         {status.charAt(0).toUpperCase() + status.slice(1)}
+      </Badge>
+    );
+  };
+
+  const getPaymentStatusBadge = (paymentStatus: string) => {
+    const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+      pending: "secondary",
+      paid: "default",
+      failed: "destructive",
+    };
+
+    return (
+      <Badge variant={variants[paymentStatus] || "secondary"}>
+        {paymentStatus.charAt(0).toUpperCase() + paymentStatus.slice(1)}
       </Badge>
     );
   };
@@ -223,6 +258,7 @@ const AdminOrders = () => {
                   <TableHead>Email</TableHead>
                   <TableHead>Items</TableHead>
                   <TableHead>Total</TableHead>
+                  <TableHead>Payment Status</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Date</TableHead>
                   <TableHead>Actions</TableHead>
@@ -232,7 +268,7 @@ const AdminOrders = () => {
               <TableBody>
                 {orders.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8">
+                    <TableCell colSpan={10} className="text-center py-8">
                       No orders found
                     </TableCell>
                   </TableRow>
@@ -244,24 +280,36 @@ const AdminOrders = () => {
                       <TableCell>{order.customer_email}</TableCell>
                       <TableCell>{order.order_items?.length || 0}</TableCell>
                       <TableCell>{Number(order.total).toFixed(3)} BD</TableCell>
+                      <TableCell>{getPaymentStatusBadge(order.payment_status)}</TableCell>
                       <TableCell>{getStatusBadge(order.status)}</TableCell>
                       <TableCell>
                         {new Date(order.created_at).toLocaleDateString()}
                       </TableCell>
                       <TableCell>
-                        <Select
-                          value={order.status}
-                          onValueChange={(value) => updateOrderStatus(order.id, value)}
-                        >
-                          <SelectTrigger className="w-[140px]">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="pending">Pending</SelectItem>
-                            <SelectItem value="confirmed">Confirmed</SelectItem>
-                            <SelectItem value="delivered">Delivered</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        {order.status === 'pending' && order.payment_status === 'pending' ? (
+                          <Button
+                            variant="default"
+                            size="sm"
+                            onClick={() => confirmOrderPayment(order.id)}
+                            className="mr-2"
+                          >
+                            Confirm Order
+                          </Button>
+                        ) : (
+                          <Select
+                            value={order.status}
+                            onValueChange={(value) => updateOrderStatus(order.id, value)}
+                          >
+                            <SelectTrigger className="w-[140px]">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="pending">Pending</SelectItem>
+                              <SelectItem value="confirmed">Confirmed</SelectItem>
+                              <SelectItem value="delivered">Delivered</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
                       </TableCell>
                       <TableCell>
                         <Button
@@ -306,7 +354,7 @@ const AdminOrders = () => {
                   <h3 className="font-semibold mb-2">Order Status</h3>
                   <div className="space-y-1 text-sm">
                     <p><span className="text-muted-foreground">Status:</span> {getStatusBadge(selectedOrder.status)}</p>
-                    <p><span className="text-muted-foreground">Payment:</span> {selectedOrder.payment_status}</p>
+                    <p><span className="text-muted-foreground">Payment:</span> {getPaymentStatusBadge(selectedOrder.payment_status)}</p>
                     <p><span className="text-muted-foreground">Method:</span> {selectedOrder.payment_method || 'N/A'}</p>
                   </div>
                 </div>
