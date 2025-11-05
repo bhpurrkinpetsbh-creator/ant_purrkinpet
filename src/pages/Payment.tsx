@@ -101,7 +101,7 @@ const Payment = () => {
           subtotal: checkoutData.subtotal,
           delivery_fee: checkoutData.deliveryFee,
           total: checkoutData.total,
-          payment_method: "card",
+          payment_method: "benefit_bank_scan",
           payment_status: "pending",
           status: "pending",
         }])

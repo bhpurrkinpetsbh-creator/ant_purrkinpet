@@ -168,10 +168,10 @@ const Orders = () => {
                     <div className="flex flex-wrap items-center gap-3">
                       <h3 className="font-semibold text-lg">{order.order_number}</h3>
                       <Badge className={getStatusColor(order.status)}>
-                        {order.status}
+                        Delivery: {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                       </Badge>
                       <Badge className={getPaymentStatusColor(order.payment_status)}>
-                        {order.payment_status}
+                        Payment: {order.payment_status.charAt(0).toUpperCase() + order.payment_status.slice(1)}
                       </Badge>
                     </div>
                     
@@ -186,7 +186,11 @@ const Orders = () => {
                       </div>
                       <div className="flex items-center gap-1">
                         <CreditCard className="h-4 w-4" />
-                        <span>{order.payment_method || 'Not specified'}</span>
+                        <span>
+                          {order.payment_method === 'card' 
+                            ? 'Benefit Bank Scan' 
+                            : order.payment_method || 'Not specified'}
+                        </span>
                       </div>
                     </div>
                   </div>
