@@ -286,9 +286,14 @@ const Payment = () => {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Payment Confirmation</AlertDialogTitle>
-            <AlertDialogDescription className="text-base leading-relaxed">
-              We will review your payment and confirm the order once payment gets credited. 
-              You may check your orders page for the order confirmation status.
+            <AlertDialogDescription className="text-base leading-relaxed space-y-2">
+              <p className="font-semibold text-foreground">Thank you for placing your order! 🎉</p>
+              
+              <p>We will review your payment and confirm your order once the payment is credited to our account.</p>
+              
+              <p>You will receive an email confirmation with your order details. Please check your inbox (and spam folder if you don't see it) for updates on your order status.</p>
+              
+              <p>You can also track your order anytime on the Orders page.</p>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
