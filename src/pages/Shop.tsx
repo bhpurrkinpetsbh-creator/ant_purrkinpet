@@ -184,7 +184,7 @@ const Shop = () => {
     <div className="container py-8">
       {/* Free Shipping Banner */}
       <div className="bg-gradient-hero text-white px-6 py-3 rounded-lg mb-6 text-center font-semibold shadow-lg">
-        🚚 Free Shipping on All Products in Bahrain!
+        🚚 Free Shipping on All Products in Bahrain for orders above BD 20.000!
       </div>
 
       {/* Breadcrumb */}
