@@ -53,6 +53,11 @@ const Shop = () => {
     fetchCategories();
   }, []);
 
+  // Scroll to top when category changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [categoryParam]);
+
   const fetchProducts = async () => {
     try {
       const { data, error } = await supabase
