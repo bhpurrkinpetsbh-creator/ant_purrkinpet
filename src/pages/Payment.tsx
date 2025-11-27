@@ -2,9 +2,12 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, QrCode } from "lucide-react";
+import { ArrowLeft, QrCode, CreditCard } from "lucide-react";
 import { Link } from "react-router-dom";
 import QRCode from "react-qr-code";
 import {
@@ -16,6 +19,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const Payment = () => {
   const navigate = useNavigate();
@@ -24,6 +28,13 @@ const Payment = () => {
   const [checkoutData, setCheckoutData] = useState<any>(null);
   const [showQR, setShowQR] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("qr"); // "qr" or "benefit"
+  const [cardDetails, setCardDetails] = useState({
+    cardNumber: "",
+    cardName: "",
+    expiryDate: "",
+    cvv: "",
+  });
 
   useEffect(() => {
     const data = sessionStorage.getItem("checkoutData");
@@ -53,7 +64,7 @@ const Payment = () => {
     setIsProcessing(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      
+
       if (!user) {
         toast({
           title: "Authentication required",
@@ -85,7 +96,7 @@ const Payment = () => {
 
       // Create order
       const orderNumber = `ORD-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
-      
+
       const { data: orderData, error: orderError } = await supabase
         .from("orders")
         .insert([{
@@ -209,7 +220,7 @@ const Payment = () => {
           {!showQR ? (
             <>
               <h2 className="text-xl font-bold mb-6">Order Summary</h2>
-              
+
               <div className="space-y-4 mb-6">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Subtotal</span>
@@ -227,12 +238,117 @@ const Payment = () => {
                 </div>
               </div>
 
+              {/* Payment Method Selection */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold mb-4">Select Payment Method</h3>
+                <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
+                  <div className="space-y-3">
+                    {/* QR Payment Option */}
+                    <Card className={`p-4 cursor-pointer transition-colors ${paymentMethod === 'qr' ? 'border-primary' : ''}`}>
+                      <div className="flex items-center space-x-3">
+                        <RadioGroupItem value="qr" id="qr" />
+                        <Label htmlFor="qr" className="flex items-center gap-3 cursor-pointer flex-1">
+                          <div className="p-2 bg-primary/10 rounded-lg">
+                            <QrCode className="h-5 w-5 text-primary" />
+                          </div>
+                          <div>
+                            <p className="font-semibold">QR Code Payment</p>
+                            <p className="text-sm text-muted-foreground">Pay via bank transfer using QR code</p>
+                          </div>
+                        </Label>
+                      </div>
+                    </Card>
+
+                    {/* Benefit Card Payment Option */}
+                    <Card className={`p-4 cursor-pointer transition-colors ${paymentMethod === 'benefit' ? 'border-primary' : ''}`}>
+                      <div className="flex items-center space-x-3">
+                        <RadioGroupItem value="benefit" id="benefit" />
+                        <Label htmlFor="benefit" className="flex items-center gap-3 cursor-pointer flex-1">
+                          <div className="p-2 bg-primary/10 rounded-lg">
+                            <CreditCard className="h-5 w-5 text-primary" />
+                          </div>
+                          <div>
+                            <p className="font-semibold">Benefit Card Payment</p>
+                            <p className="text-sm text-muted-foreground">Pay securely with your Benefit card</p>
+                          </div>
+                        </Label>
+                      </div>
+                    </Card>
+                  </div>
+                </RadioGroup>
+              </div>
+
+              {/* Alert for Benefit Payment Integration Pending */}
+              {paymentMethod === 'benefit' && (
+                <Alert className="mb-6 border-orange-500 bg-orange-50 dark:bg-orange-950">
+                  <AlertDescription className="text-orange-800 dark:text-orange-200">
+                    ⚠️ <strong>Benefit payment integration is pending.</strong> Please select QR payment method to proceed with your order.
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {/* Card Details Form - Only show when Benefit is selected */}
+              {paymentMethod === 'benefit' && (
+                <div className="space-y-4 mb-6">
+                  <h3 className="text-lg font-semibold">Card Details</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="cardNumber">Card Number</Label>
+                      <Input
+                        id="cardNumber"
+                        placeholder="1234 5678 9012 3456"
+                        value={cardDetails.cardNumber}
+                        onChange={(e) => setCardDetails({ ...cardDetails, cardNumber: e.target.value })}
+                        maxLength={19}
+                        disabled
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="cardName">Cardholder Name</Label>
+                      <Input
+                        id="cardName"
+                        placeholder="JOHN DOE"
+                        value={cardDetails.cardName}
+                        onChange={(e) => setCardDetails({ ...cardDetails, cardName: e.target.value })}
+                        disabled
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="expiryDate">Expiry Date</Label>
+                        <Input
+                          id="expiryDate"
+                          placeholder="MM/YY"
+                          value={cardDetails.expiryDate}
+                          onChange={(e) => setCardDetails({ ...cardDetails, expiryDate: e.target.value })}
+                          maxLength={5}
+                          disabled
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="cvv">CVV</Label>
+                        <Input
+                          id="cvv"
+                          placeholder="123"
+                          type="password"
+                          value={cardDetails.cvv}
+                          onChange={(e) => setCardDetails({ ...cardDetails, cvv: e.target.value })}
+                          maxLength={3}
+                          disabled
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <Button
                 onClick={handleProceedToPay}
                 className="w-full bg-gradient-hero hover:opacity-90"
                 size="lg"
+                disabled={paymentMethod === 'benefit'}
               >
-                Proceed to Pay
+                {paymentMethod === 'benefit' ? 'Payment Method Unavailable' : 'Proceed to Pay'}
               </Button>
             </>
           ) : (
@@ -288,11 +404,11 @@ const Payment = () => {
             <AlertDialogTitle>Payment Confirmation</AlertDialogTitle>
             <AlertDialogDescription className="text-base leading-relaxed space-y-2">
               <p className="font-semibold text-foreground">Thank you for placing your order! 🎉</p>
-              
+
               <p>We will review your payment and confirm your order once the payment is credited to our account.</p>
-              
+
               <p>You will receive an email confirmation with your order details. Please check your inbox (and spam folder if you don't see it) for updates on your order status.</p>
-              
+
               <p>You can also track your order anytime on the Orders page.</p>
             </AlertDialogDescription>
           </AlertDialogHeader>
