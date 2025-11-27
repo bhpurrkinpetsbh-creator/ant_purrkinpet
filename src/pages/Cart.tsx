@@ -51,6 +51,10 @@ const Cart = () => {
     return sum + (price * item.quantity);
   }, 0);
 
+  const deliveryFee = subtotal >= 20 ? 0 : 1.5;
+  const total = subtotal + deliveryFee;
+  const isBelowMinimum = subtotal < 7;
+
   return (
     <div className="container py-8">
       <Button variant="ghost" className="mb-6" asChild>
@@ -147,18 +151,36 @@ const Cart = () => {
             <div className="space-y-3 mb-6">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Subtotal</span>
-                <span className="font-semibold">{subtotal.toFixed(2)} BHD</span>
+                <span className="font-semibold">{subtotal.toFixed(3)} BHD</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Delivery</span>
-                <span className="font-semibold">2.00 BHD</span>
+                <span className="font-semibold">
+                  {deliveryFee === 0 ? (
+                    <span className="text-green-600">Free</span>
+                  ) : (
+                    `${deliveryFee.toFixed(3)} BHD`
+                  )}
+                </span>
               </div>
               <div className="border-t pt-3 flex justify-between text-lg">
                 <span className="font-bold">Total</span>
-                <span className="font-bold text-primary">{(subtotal + 2).toFixed(2)} BHD</span>
+                <span className="font-bold text-primary">{total.toFixed(3)} BHD</span>
               </div>
             </div>
-            <Button className="w-full bg-gradient-hero hover:opacity-90" size="lg" asChild>
+            {isBelowMinimum && (
+              <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg mb-4">
+                <p className="text-destructive text-sm font-medium">
+                  Minimum order amount is BD 7.000.
+                </p>
+              </div>
+            )}
+            <Button 
+              className="w-full bg-gradient-hero hover:opacity-90" 
+              size="lg" 
+              asChild
+              disabled={isBelowMinimum}
+            >
               <Link to="/checkout">Proceed to Checkout</Link>
             </Button>
           </Card>
