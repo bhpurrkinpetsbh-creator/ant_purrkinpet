@@ -1,3 +1,4 @@
+// Version: 1.0.1 - Updated shipping banner
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
@@ -103,15 +104,15 @@ const Shop = () => {
 
   const handleAddToCart = async (productId: string, productName: string) => {
     if (addingProductId) return;
-    
+
     setAddingProductId(productId);
-    
+
     // Create flying cart animation
     const button = buttonRefs.current[productId];
     const buttonRect = button?.getBoundingClientRect();
     const cartIcon = document.querySelector('[data-cart-icon]');
     const cartRect = cartIcon?.getBoundingClientRect();
-    
+
     if (buttonRect && cartRect) {
       const flyingCart = document.createElement('div');
       flyingCart.innerHTML = `
@@ -128,31 +129,31 @@ const Shop = () => {
         pointer-events: none;
         color: hsl(var(--primary));
       `;
-      
+
       const xDistance = cartRect.left + cartRect.width / 2 - (buttonRect.left + buttonRect.width / 2);
       const yDistance = cartRect.top + cartRect.height / 2 - (buttonRect.top + buttonRect.height / 2);
-      
+
       flyingCart.style.setProperty('--x-mid', `${xDistance * 0.4}px`);
       flyingCart.style.setProperty('--y-mid', `${yDistance * 0.4 - 50}px`);
       flyingCart.style.setProperty('--x-end', `${xDistance}px`);
       flyingCart.style.setProperty('--y-end', `${yDistance}px`);
-      
+
       flyingCart.classList.add('animate-fly-to-cart');
       document.body.appendChild(flyingCart);
-      
+
       setTimeout(() => {
         flyingCart.remove();
         window.dispatchEvent(new CustomEvent('cart:item-added'));
       }, 800);
     }
-    
+
     const success = await addToCart(productId, 1);
     if (success) {
       toast({
         title: "Added to cart",
         description: productName,
       });
-      
+
       setTimeout(() => {
         setAddingProductId(null);
       }, 1200);
@@ -325,9 +326,8 @@ const Shop = () => {
 
                     <Button
                       ref={(el) => buttonRefs.current[product.id] = el}
-                      className={`w-full transition-all duration-300 ${
-                        addingProductId === product.id ? 'animate-button-success' : ''
-                      }`}
+                      className={`w-full transition-all duration-300 ${addingProductId === product.id ? 'animate-button-success' : ''
+                        }`}
                       variant={inStock ? "default" : "secondary"}
                       disabled={!inStock || addingProductId === product.id}
                       onClick={() => handleAddToCart(product.id, product.name)}
