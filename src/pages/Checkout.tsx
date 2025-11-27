@@ -133,8 +133,9 @@ const Checkout = () => {
     return sum + price * item.quantity;
   }, 0);
 
-  const deliveryFee = 0;
+  const deliveryFee = subtotal >= 20 ? 0 : 1.5;
   const total = subtotal + deliveryFee;
+  const isBelowMinimum = subtotal < 7;
 
   if (loading) {
     return (
@@ -145,6 +146,17 @@ const Checkout = () => {
   }
 
   if (cartCount === 0 && !loading) {
+    navigate("/cart");
+    return null;
+  }
+
+  // Redirect if below minimum order
+  if (isBelowMinimum && !loading) {
+    toast({
+      title: "Minimum Order Required",
+      description: "Minimum order amount is BD 7.000.",
+      variant: "destructive",
+    });
     navigate("/cart");
     return null;
   }
@@ -745,7 +757,7 @@ const Checkout = () => {
                     {item.products?.name} x {item.quantity}
                   </span>
                   <span className="font-semibold">
-                    {(parseFloat(item.products?.price || 0) * item.quantity).toFixed(2)} BHD
+                    {(parseFloat(item.products?.price || 0) * item.quantity).toFixed(3)} BHD
                   </span>
                 </div>
               ))}
@@ -753,15 +765,21 @@ const Checkout = () => {
             <div className="border-t pt-3 space-y-2 mb-4">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Subtotal</span>
-                <span className="font-semibold">{subtotal.toFixed(2)} BHD</span>
+                <span className="font-semibold">{subtotal.toFixed(3)} BHD</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Delivery</span>
-                <span className="font-semibold text-secondary">FREE</span>
+                <span className="font-semibold">
+                  {deliveryFee === 0 ? (
+                    <span className="text-green-600">Free</span>
+                  ) : (
+                    `${deliveryFee.toFixed(3)} BHD`
+                  )}
+                </span>
               </div>
               <div className="border-t pt-2 flex justify-between text-lg">
                 <span className="font-bold">Total</span>
-                <span className="font-bold text-primary">{total.toFixed(2)} BHD</span>
+                <span className="font-bold text-primary">{total.toFixed(3)} BHD</span>
               </div>
             </div>
           </Card>
