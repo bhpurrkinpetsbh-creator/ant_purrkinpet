@@ -16,6 +16,9 @@ import Checkout from "./pages/Checkout";
 import Payment from "./pages/Payment";
 import Orders from "./pages/Orders";
 import AdminOrders from "./pages/AdminOrders";
+import AdminInventory from "./pages/AdminInventory";
+import AdminProducts from "./pages/AdminProducts";
+import AdminDeletedProducts from "./pages/AdminDeletedProducts";
 import Wishlist from "./pages/Wishlist";
 import NotFound from "./pages/NotFound";
 
@@ -43,6 +46,9 @@ const App = () => (
               <Route path="/orders" element={<Orders />} />
               <Route path="/wishlist" element={<Wishlist />} />
               <Route path="/admin/orders" element={<AdminOrders />} />
+              <Route path="/admin/inventory" element={<AdminInventory />} />
+              <Route path="/admin/products" element={<AdminProducts />} />
+              <Route path="/admin/deleted-products" element={<AdminDeletedProducts />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

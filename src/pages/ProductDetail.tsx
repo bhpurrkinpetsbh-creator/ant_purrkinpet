@@ -281,9 +281,13 @@ const ProductDetail = () => {
             <Badge className="mb-2">{product.categories?.name || 'Product'}</Badge>
             <h1 className="font-display text-3xl font-bold mb-2">{product.name}</h1>
             <div className="flex items-center gap-4">
-              {product.stock_quantity > 0 && (
+              {(product.stock_quantity ?? 0) > 0 ? (
                 <Badge variant="secondary" className="bg-secondary/20 text-secondary-foreground">
                   In Stock: {product.stock_quantity} units
+                </Badge>
+              ) : (
+                <Badge variant="destructive">
+                  Out of Stock
                 </Badge>
               )}
             </div>
@@ -306,26 +310,28 @@ const ProductDetail = () => {
           <p className="text-muted-foreground">{product.description}</p>
 
           <div className="space-y-4">
-            <div className="flex items-center gap-4">
-              <label className="font-medium">Quantity:</label>
-              <div className="flex items-center border rounded-lg">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                >
-                  -
-                </Button>
-                <span className="px-6 py-2 font-semibold">{quantity}</span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setQuantity(Math.min(product.stock_quantity, quantity + 1))}
-                >
-                  +
-                </Button>
+            {(product.stock_quantity ?? 0) > 0 && (
+              <div className="flex items-center gap-4">
+                <label className="font-medium">Quantity:</label>
+                <div className="flex items-center border rounded-lg">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  >
+                    -
+                  </Button>
+                  <span className="px-6 py-2 font-semibold">{quantity}</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setQuantity(Math.min(product.stock_quantity ?? 1, quantity + 1))}
+                  >
+                    +
+                  </Button>
+                </div>
               </div>
-            </div>
+            )}
 
             <div className="flex gap-3">
               <Button
@@ -335,12 +341,17 @@ const ProductDetail = () => {
                   isAdding ? 'animate-button-success' : ''
                 }`}
                 onClick={handleAddToCart}
-                disabled={isAdding}
+                disabled={isAdding || (product.stock_quantity ?? 0) <= 0}
               >
                 {isAdding ? (
                   <>
                     <Check className="mr-2 h-5 w-5" />
                     Added!
+                  </>
+                ) : (product.stock_quantity ?? 0) <= 0 ? (
+                  <>
+                    <ShoppingCart className="mr-2 h-5 w-5" />
+                    Out of Stock
                   </>
                 ) : (
                   <>

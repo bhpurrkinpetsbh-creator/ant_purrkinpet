@@ -390,6 +390,99 @@ export type Database = {
         }
         Relationships: []
       }
+      deleted_products: {
+        Row: {
+          id: string
+          product_id: string
+          product_data: Json
+          deleted_at: string | null
+          deleted_by: string | null
+          deletion_reason: string | null
+          auto_purge_date: string | null
+        }
+        Insert: {
+          id?: string
+          product_id: string
+          product_data: Json
+          deleted_at?: string | null
+          deleted_by?: string | null
+          deletion_reason?: string | null
+        }
+        Update: {
+          id?: string
+          product_id?: string
+          product_data?: Json
+          deleted_at?: string | null
+          deleted_by?: string | null
+          deletion_reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deleted_products_deleted_by_fkey"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventory_transactions: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string
+          new_quantity: number
+          notes: string | null
+          previous_quantity: number
+          product_id: string
+          quantity_change: number
+          reference_id: string | null
+          reference_type: string | null
+          transaction_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          new_quantity: number
+          notes?: string | null
+          previous_quantity: number
+          product_id: string
+          quantity_change: number
+          reference_id?: string | null
+          reference_type?: string | null
+          transaction_type: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          new_quantity?: number
+          notes?: string | null
+          previous_quantity?: number
+          product_id?: string
+          quantity_change?: number
+          reference_id?: string | null
+          reference_type?: string | null
+          transaction_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_transactions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_transactions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           created_at: string | null
@@ -798,7 +891,20 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      low_stock_products: {
+        Row: {
+          brand_name: string | null
+          category_name: string | null
+          id: string
+          image_url: string
+          low_stock_threshold: number | null
+          name: string
+          price: number
+          sku: string | null
+          stock_quantity: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       get_booked_slots: {
@@ -813,6 +919,48 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      log_inventory_transaction: {
+        Args: {
+          p_product_id: string
+          p_transaction_type: string
+          p_quantity_change: number
+          p_reference_id?: string | null
+          p_reference_type?: string | null
+          p_notes?: string | null
+        }
+        Returns: void
+      }
+      soft_delete_product: {
+        Args: {
+          p_product_id: string
+          p_deletion_reason?: string | null
+        }
+        Returns: boolean
+      }
+      restore_deleted_product: {
+        Args: {
+          p_deleted_product_id: string
+        }
+        Returns: boolean
+      }
+      permanently_delete_product: {
+        Args: {
+          p_deleted_product_id: string
+        }
+        Returns: boolean
+      }
+      auto_purge_old_deleted_products: {
+        Args: Record<string, never>
+        Returns: number
+      }
+      generate_next_sku: {
+        Args: Record<string, never>
+        Returns: string
+      }
+      generate_next_sku_safe: {
+        Args: Record<string, never>
+        Returns: string
       }
       slugify: { Args: { txt: string }; Returns: string }
       unaccent: { Args: { "": string }; Returns: string }
