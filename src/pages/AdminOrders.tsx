@@ -27,7 +27,8 @@ import {
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Package, User, Calendar, DollarSign, Shield, Eye } from "lucide-react";
+import { Package, User, Calendar, DollarSign, Shield, Eye, ArrowLeft } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const AdminOrders = () => {
   const [orders, setOrders] = useState<any[]>([]);
@@ -44,7 +45,7 @@ const AdminOrders = () => {
   const checkAdminAccess = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      
+
       if (!user) {
         toast.error("Please login to access this page");
         navigate("/auth");
@@ -99,7 +100,7 @@ const AdminOrders = () => {
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
     try {
       const updateData: any = { status: newStatus };
-      
+
       // Set delivered_at timestamp when marking as delivered
       if (newStatus === 'delivered') {
         updateData.delivered_at = new Date().toISOString();
@@ -275,11 +276,17 @@ const AdminOrders = () => {
   return (
     <div className="container py-12">
       <div className="mb-8">
+        <Link
+          to="/admin"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary mb-4 transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Admin Dashboard
+        </Link>
         <div className="flex items-center gap-3 mb-2">
           <Shield className="h-8 w-8 text-primary" />
-          <h1 className="font-display text-4xl font-bold">Admin Dashboard</h1>
+          <h1 className="font-display text-4xl font-bold">Order Management - Payment confirmation check</h1>
         </div>
-        <p className="text-muted-foreground">Manage all customer orders</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-4 mb-8">
@@ -432,7 +439,7 @@ const AdminOrders = () => {
               Complete information for order {selectedOrder?.order_number}
             </DialogDescription>
           </DialogHeader>
-          
+
           {selectedOrder && (
             <div className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
@@ -444,7 +451,7 @@ const AdminOrders = () => {
                     <p><span className="text-muted-foreground">Phone:</span> {selectedOrder.customer_phone || 'N/A'}</p>
                   </div>
                 </div>
-                
+
                 <div>
                   <h3 className="font-semibold mb-2">Order Status</h3>
                   <div className="space-y-1 text-sm">

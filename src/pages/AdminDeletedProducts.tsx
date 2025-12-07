@@ -6,8 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
-import { Undo2, Trash2, Search, AlertTriangle, Clock } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Undo2, Trash2, Search, AlertTriangle, Clock, ArrowLeft } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
 
 interface DeletedProduct {
   id: string;
@@ -145,6 +145,13 @@ const AdminDeletedProducts = () => {
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="mb-8">
+        <Link
+          to="/admin"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary mb-4 transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Admin Dashboard
+        </Link>
         <h1 className="text-3xl font-bold mb-2">Deleted Products</h1>
         <p className="text-muted-foreground">
           Products are kept for 30 days before automatic deletion. You can restore or permanently delete them.

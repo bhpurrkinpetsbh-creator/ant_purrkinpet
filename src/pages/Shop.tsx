@@ -1,4 +1,4 @@
-// Version: 1.0.1 - Updated shipping banner
+// Version: 1.0.2 - Added intelligent search
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/hooks/useCart";
+import { intelligentProductSearch } from "@/utils/intelligentSearch";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -22,12 +23,15 @@ import {
 type Product = {
   id: string;
   name: string;
+  description: string | null;
   price: number;
   image_url: string;
   stock_quantity: number;
   category_id: string | null;
+  brand_id: string | null;
   categories: { name: string; slug: string } | null;
   compare_at_price: number | null;
+  sku: string | null;
 };
 
 const Shop = () => {
@@ -35,7 +39,7 @@ const Shop = () => {
   const categoryParam = searchParams.get("category") || "all";
   const searchParamQuery = searchParams.get("search") || "";
   const [searchQuery, setSearchQuery] = useState(searchParamQuery);
-  const [sortBy, setSortBy] = useState("featured");
+  const [sortBy, setSortBy] = useState("sku-asc");
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<string[]>(["all"]);
   const [loading, setLoading] = useState(true);
@@ -65,10 +69,13 @@ const Shop = () => {
         .select(`
           id,
           name,
+          description,
           price,
+          sku,
           image_url,
           stock_quantity,
           category_id,
+          brand_id,
           compare_at_price,
           categories (
             name,
@@ -78,7 +85,7 @@ const Shop = () => {
         .eq("is_active", true);
 
       if (error) throw error;
-      setProducts(data || []);
+      setProducts((data || []) as Product[]);
     } catch (error) {
       console.error("Error fetching products:", error);
       toast({
@@ -167,32 +174,35 @@ const Shop = () => {
     }
   };
 
-  const filteredProducts = products
-    .filter(product => {
-      const categorySlug = product.categories?.slug || "";
-      const matchesCategory = categoryParam === "all" || categorySlug === categoryParam;
-      const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesCategory && matchesSearch;
-    })
-    .sort((a, b) => {
-      switch (sortBy) {
-        case "price-low":
-          return a.price - b.price;
-        case "price-high":
-          return b.price - a.price;
-        case "featured":
-        default:
-          return 0;
-      }
-    });
+  // Filter products by category first
+  const categoryFilteredProducts = products.filter(product => {
+    const categorySlug = product.categories?.slug || "";
+    return categoryParam === "all" || categorySlug === categoryParam;
+  });
+
+  // Apply intelligent search on category-filtered products
+  const searchedProducts = intelligentProductSearch(categoryFilteredProducts, searchQuery);
+
+  // Apply sorting only when NOT searching (preserve relevance order when searching)
+  const filteredProducts = searchQuery.trim().length > 0
+    ? searchedProducts // Keep relevance-based order from intelligent search
+    : searchedProducts.sort((a, b) => {
+        switch (sortBy) {
+          case "price-low":
+            return a.price - b.price;
+          case "price-high":
+            return b.price - a.price;
+          case "sku-asc":
+            return (a.sku || "").localeCompare(b.sku || "");
+          case "featured":
+          default:
+            // Default fallback to SKU if no other sort matches (though default state is sku-asc)
+            return (a.sku || "").localeCompare(b.sku || "");
+        }
+      });
 
   return (
     <div className="container py-8">
-      {/* Free Shipping Banner */}
-      <div className="bg-gradient-hero text-white px-6 py-3 rounded-lg mb-6 text-center font-semibold shadow-lg">
-        🚚 Free Shipping on All Products in Bahrain for cart value above 20 BD
-      </div>
-
       {/* Breadcrumb */}
       <Breadcrumb className="mb-4">
         <BreadcrumbList>
@@ -245,6 +255,7 @@ const Shop = () => {
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="sku-asc">Default (SKU A-Z)</SelectItem>
                 <SelectItem value="featured">Featured</SelectItem>
                 <SelectItem value="price-low">Price: Low to High</SelectItem>
                 <SelectItem value="price-high">Price: High to Low</SelectItem>

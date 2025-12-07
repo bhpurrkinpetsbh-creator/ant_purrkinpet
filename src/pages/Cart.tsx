@@ -2,7 +2,8 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Trash2, ShoppingBag } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { ArrowLeft, Trash2, ShoppingBag, Truck } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import {
   AlertDialog,
@@ -55,6 +56,11 @@ const Cart = () => {
   const total = subtotal + deliveryFee;
   const isBelowMinimum = subtotal < 7;
 
+  // Free Shipping Progress Logic
+  const freeShippingThreshold = 20;
+  const progressPercentage = Math.min(100, (subtotal / freeShippingThreshold) * 100);
+  const remainingForFreeShipping = Math.max(0, freeShippingThreshold - subtotal);
+
   return (
     <div className="container py-8">
       <Button variant="ghost" className="mb-6" asChild>
@@ -64,7 +70,7 @@ const Cart = () => {
         </Link>
       </Button>
 
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <h1 className="text-3xl font-bold">Shopping Cart ({cartCount} items)</h1>
         <AlertDialog open={showClearDialog} onOpenChange={setShowClearDialog}>
           <AlertDialogTrigger asChild>
@@ -89,6 +95,33 @@ const Cart = () => {
           </AlertDialogContent>
         </AlertDialog>
       </div>
+
+      {/* Free Shipping Progress Banner */}
+      <Card className="mb-8 p-6 bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-primary font-medium">
+              <Truck className={`h-5 w-5 ${remainingForFreeShipping <= 0 ? "animate-bounce" : ""}`} />
+              {remainingForFreeShipping > 0 ? (
+                <span>
+                  Add <span className="font-bold">{remainingForFreeShipping.toFixed(3)} BHD</span> more for <span className="font-bold">Free Shipping</span>
+                </span>
+              ) : (
+                <span className="font-bold text-green-600 flex items-center gap-2">
+                  🎉 You've unlocked Free Shipping!
+                </span>
+              )}
+            </div>
+            <span className="text-sm font-semibold text-primary">{Math.round(progressPercentage)}%</span>
+          </div>
+          <Progress value={progressPercentage} className="h-3 bg-primary/20" />
+          {remainingForFreeShipping > 0 && (
+            <p className="text-xs text-muted-foreground text-right">
+              Explore more items to unlock free delivery across Bahrain
+            </p>
+          )}
+        </div>
+      </Card>
 
       <div className="grid lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-4">
@@ -175,9 +208,9 @@ const Cart = () => {
                 </p>
               </div>
             )}
-            <Button 
-              className="w-full bg-gradient-hero hover:opacity-90" 
-              size="lg" 
+            <Button
+              className="w-full bg-gradient-hero hover:opacity-90"
+              size="lg"
               asChild
               disabled={isBelowMinimum}
             >

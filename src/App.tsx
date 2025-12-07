@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Header from "./components/layout/Header";
 import Footer from "./components/layout/Footer";
+import FreeShippingBanner from "./components/FreeShippingBanner";
 import Home from "./pages/Home";
 import Shop from "./pages/Shop";
 import ProductDetail from "./pages/ProductDetail";
@@ -15,6 +16,7 @@ import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import Payment from "./pages/Payment";
 import Orders from "./pages/Orders";
+import AdminDashboard from "./pages/AdminDashboard";
 import AdminOrders from "./pages/AdminOrders";
 import AdminInventory from "./pages/AdminInventory";
 import AdminProducts from "./pages/AdminProducts";
@@ -28,10 +30,28 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
-      <Sonner />
+      <Sonner
+        position="top-right"
+        toastOptions={{
+          style: {
+            background: 'hsl(var(--card))',
+            border: '2px solid hsl(var(--primary) / 0.5)',
+            color: 'hsl(var(--foreground))',
+            boxShadow: '0 10px 40px -10px rgba(0,0,0,0.3)',
+            marginTop: '5.5rem',
+          },
+          className: 'group toast-notification',
+          duration: 2500,
+          closeButton: true,
+        }}
+        theme="light"
+        richColors
+        closeButton
+      />
       <BrowserRouter>
         <div className="flex flex-col min-h-screen">
           <Header />
+          <FreeShippingBanner />
           <main className="flex-1">
             <Routes>
               <Route path="/" element={<Home />} />
@@ -45,6 +65,7 @@ const App = () => (
               <Route path="/payment" element={<Payment />} />
               <Route path="/orders" element={<Orders />} />
               <Route path="/wishlist" element={<Wishlist />} />
+              <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/admin/orders" element={<AdminOrders />} />
               <Route path="/admin/inventory" element={<AdminInventory />} />
               <Route path="/admin/products" element={<AdminProducts />} />

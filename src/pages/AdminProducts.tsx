@@ -14,7 +14,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Edit, Search, Trash2 } from "lucide-react";
+import { Plus, Edit, Search, Trash2, ArrowLeft } from "lucide-react";
+import { Link } from "react-router-dom";
 import { ProductForm } from "@/components/admin/ProductForm";
 
 interface Product {
@@ -160,6 +161,13 @@ const AdminProducts = () => {
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="mb-8">
+        <Link
+          to="/admin"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary mb-4 transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Admin Dashboard
+        </Link>
         <h1 className="text-3xl font-bold mb-2">Product Management</h1>
         <p className="text-muted-foreground">
           Add, edit, and manage your product catalog

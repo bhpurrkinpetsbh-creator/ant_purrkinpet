@@ -115,13 +115,48 @@ export default {
             transform: "translateY(-10px)",
           },
         },
+        shimmer: {
+          "100%": {
+            transform: "translateX(100%)",
+          },
+        },
+        swing: {
+          "0%, 100%": { transform: "rotate(-5deg)" },
+          "50%": { transform: "rotate(5deg)" },
+        },
+        "float-slow": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-15px)" },
+        },
+        "bounce-subtle": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-8px)" },
+        },
+        wiggle: {
+          "0%, 100%": { transform: "rotate(-3deg)" },
+          "50%": { transform: "rotate(3deg)" },
+        },
+        "marquee-left": {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" },
+        },
+        "marquee-right": {
+          "0%": { transform: "translateX(-50%)" },
+          "100%": { transform: "translateX(0)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "fade-in": "fade-in 0.5s ease-out",
         "slide-up": "slide-up 0.4s ease-out",
-        "bounce-soft": "bounce-soft 1s ease-in-out infinite",
+        shimmer: "shimmer 2s infinite",
+        "swing-slow": "swing 4s ease-in-out infinite",
+        "float-slow": "float-slow 6s ease-in-out infinite",
+        "bounce-subtle": "bounce-subtle 3s ease-in-out infinite",
+        wiggle: "wiggle 3s ease-in-out infinite",
+        "marquee-left": "marquee-left 10s linear infinite",
+        "marquee-right": "marquee-right 10s linear infinite",
       },
     },
   },

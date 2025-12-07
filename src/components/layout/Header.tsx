@@ -194,27 +194,9 @@ const Header = () => {
                   <>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                      <Link to="/admin/orders" className="cursor-pointer">
+                      <Link to="/admin" className="cursor-pointer">
                         <Shield className="mr-2 h-4 w-4" />
-                        Admin Orders
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/admin/products" className="cursor-pointer">
-                        <PackagePlus className="mr-2 h-4 w-4" />
-                        Products
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/admin/inventory" className="cursor-pointer">
-                        <Warehouse className="mr-2 h-4 w-4" />
-                        Inventory
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/admin/deleted-products" className="cursor-pointer">
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Deleted Products
+                        Admin Dashboard
                       </Link>
                     </DropdownMenuItem>
                   </>

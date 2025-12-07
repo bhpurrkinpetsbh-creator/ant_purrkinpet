@@ -15,7 +15,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Package, Search, Edit } from "lucide-react";
+import { Package, Search, Edit, ArrowLeft } from "lucide-react";
+import { Link } from "react-router-dom";
 import { LowStockProducts } from "@/components/admin/LowStockProducts";
 import { InventoryTransactions } from "@/components/admin/InventoryTransactions";
 import { StockAdjustment } from "@/components/admin/StockAdjustment";
@@ -138,6 +139,13 @@ const AdminInventory = () => {
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="mb-8">
+        <Link
+          to="/admin"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary mb-4 transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Admin Dashboard
+        </Link>
         <h1 className="text-3xl font-bold mb-2">Inventory Management</h1>
         <p className="text-muted-foreground">
           Monitor stock levels, view transactions, and manage inventory
