@@ -217,26 +217,56 @@ function calculateRelevanceScore(
  *
  * @param products - Array of products to search
  * @param query - Search query string
+ * @param intent - Optional parsed SearchIntent from Natural Language Parser
  * @param minScore - Minimum relevance score to include in results (default: 10)
  * @returns Filtered and sorted products by relevance
  */
 export function intelligentProductSearch<T extends ProductForSearch>(
   products: T[],
   query: string,
+  intent?: any, // Using any to avoid circular dependency or import issues if SearchIntent is complex
   minScore: number = 10
 ): T[] {
-  // Empty query returns all products
-  if (!query || query.trim().length === 0) {
+  // Empty query returns all products if no intent
+  if ((!query || query.trim().length === 0) && !intent) {
     return products;
   }
 
   const context = extractSearchContext(query);
 
   // Calculate scores for all products
-  const scoredProducts = products.map(product => ({
-    product,
-    score: calculateRelevanceScore(product, query, context),
-  }));
+  const scoredProducts = products.map(product => {
+    let score = calculateRelevanceScore(product, query, context);
+
+    // Boost score if intent matches
+    if (intent) {
+      // Brand boost
+      if (intent.brands && intent.brands.length > 0) {
+        intent.brands.forEach((brand: string) => {
+          if (product.name.toLowerCase().includes(brand.toLowerCase())) {
+            score += 60;
+          }
+        });
+      }
+
+      // Keyword/Benefit boost
+      if (intent.keywords && intent.keywords.length > 0) {
+        intent.keywords.forEach((keyword: string) => {
+          if (product.name.toLowerCase().includes(keyword.toLowerCase()) ||
+            (product.description && product.description.toLowerCase().includes(keyword.toLowerCase()))) {
+            score += 30;
+          }
+        });
+      }
+
+      // Subcategory boost
+      if (intent.subcategory && product.name.toLowerCase().includes(intent.subcategory.toLowerCase())) {
+        score += 40;
+      }
+    }
+
+    return { product, score };
+  });
 
   // Filter by minimum score and sort by score descending
   return scoredProducts

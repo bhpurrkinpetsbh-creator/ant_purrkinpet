@@ -29,6 +29,8 @@ import brandHills from "@/assets/brand-hills-real.png";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import ProductCard, { Product } from "@/components/ProductCard";
+import { motion } from "framer-motion";
+import { SmartSearch } from "@/components/home/SmartSearch";
 const Home = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -241,8 +243,15 @@ const Home = () => {
 
 
 
+
     {/* Categories Section - Bento Grid */}
-    <section className="container py-20">
+    <motion.section
+      initial={{ opacity: 0, y: 50 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-100px" }}
+      transition={{ duration: 0.8, ease: "easeOut" }}
+      className="container py-20"
+    >
       <div className="text-center mb-12">
         <span className="text-primary font-medium text-sm uppercase tracking-wider">Explore</span>
         <h2 className="font-display text-4xl md:text-5xl font-bold mt-2 mb-4">Shop by Pet</h2>
@@ -250,9 +259,29 @@ const Home = () => {
       </div>
 
       {/* 2x2 Grid Layout - Equal Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 max-w-5xl mx-auto">
+      <motion.div
+        variants={{
+          hidden: { opacity: 0 },
+          visible: {
+            opacity: 1,
+            transition: {
+              staggerChildren: 0.15
+            }
+          }
+        }}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 max-w-5xl mx-auto"
+      >
         {/* Dogs Card */}
-        <div className="group relative overflow-hidden hover:overflow-visible rounded-3xl shadow-lg hover:shadow-2xl hover:shadow-primary/20 transition-all duration-500 hover:-translate-y-2 hover:z-30 aspect-[4/3]">
+        <motion.div
+          variants={{
+            hidden: { opacity: 0, y: 30 },
+            visible: { opacity: 1, y: 0 }
+          }}
+          className="group relative overflow-hidden hover:overflow-visible rounded-3xl shadow-lg hover:shadow-2xl hover:shadow-primary/20 transition-all duration-500 hover:-translate-y-2 hover:z-30 aspect-[4/3]"
+        >
           <Link to="/shop?category=dogs" className="block w-full h-full">
             <img
               src={dogsImage}
@@ -414,10 +443,16 @@ const Home = () => {
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Cats Card */}
-        <div className="group relative overflow-hidden hover:overflow-visible rounded-3xl shadow-lg hover:shadow-2xl hover:shadow-primary/20 transition-all duration-500 hover:-translate-y-2 hover:z-30 aspect-[4/3]">
+        <motion.div
+          variants={{
+            hidden: { opacity: 0, y: 30 },
+            visible: { opacity: 1, y: 0 }
+          }}
+          className="group relative overflow-hidden hover:overflow-visible rounded-3xl shadow-lg hover:shadow-2xl hover:shadow-primary/20 transition-all duration-500 hover:-translate-y-2 hover:z-30 aspect-[4/3]"
+        >
           <Link to="/shop?category=cats" className="block w-full h-full">
             <img
               src={catsImage}
@@ -574,10 +609,16 @@ const Home = () => {
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Fish Card */}
-        <div className="group relative overflow-hidden hover:overflow-visible rounded-3xl shadow-lg hover:shadow-2xl hover:shadow-primary/20 transition-all duration-500 hover:-translate-y-2 hover:z-30 aspect-[4/3]">
+        <motion.div
+          variants={{
+            hidden: { opacity: 0, y: 30 },
+            visible: { opacity: 1, y: 0 }
+          }}
+          className="group relative overflow-hidden hover:overflow-visible rounded-3xl shadow-lg hover:shadow-2xl hover:shadow-primary/20 transition-all duration-500 hover:-translate-y-2 hover:z-30 aspect-[4/3]"
+        >
           <Link to="/shop?category=fish" className="block w-full h-full">
             <img
               src={fishImage}
@@ -735,10 +776,16 @@ const Home = () => {
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Small Pets Card */}
-        <div className="group relative overflow-hidden hover:overflow-visible rounded-3xl shadow-lg hover:shadow-2xl hover:shadow-primary/20 transition-all duration-500 hover:-translate-y-2 hover:z-30 aspect-[4/3]">
+        <motion.div
+          variants={{
+            hidden: { opacity: 0, y: 30 },
+            visible: { opacity: 1, y: 0 }
+          }}
+          className="group relative overflow-hidden hover:overflow-visible rounded-3xl shadow-lg hover:shadow-2xl hover:shadow-primary/20 transition-all duration-500 hover:-translate-y-2 hover:z-30 aspect-[4/3]"
+        >
           <Link to="/shop?category=small-pets" className="block w-full h-full">
             <img
               src={rabbitsImage}
@@ -899,14 +946,22 @@ const Home = () => {
               </div>
             </div>
           </div>
-        </div>
-      </div >
-    </section >
+        </motion.div>
+      </motion.div>
+    </motion.section>
+
+    <SmartSearch />
 
     {/* Featured Products Section - Only show if we have data */}
     {
       featuredProducts.length > 0 && (
-        <section className="py-16 bg-white/50 border-t">
+        <motion.section
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.8 }}
+          className="py-16 bg-white/50 border-t"
+        >
           <div className="container">
             <div className="text-center mb-10">
               <span className="text-primary font-medium text-sm uppercase tracking-wider">Top Picks</span>
@@ -932,14 +987,20 @@ const Home = () => {
               </Carousel>
             </div>
           </div>
-        </section>
+        </motion.section>
       )
     }
 
     {/* Discounted Products Section - Only show if we have data */}
     {
       discountedProducts.length > 0 && (
-        <section className="py-16 bg-purple-50">
+        <motion.section
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.8 }}
+          className="py-16 bg-purple-50"
+        >
           <div className="container">
             <div className="flex justify-between items-end mb-10">
               <div>
@@ -975,12 +1036,18 @@ const Home = () => {
               </Button>
             </div>
           </div>
-        </section>
+        </motion.section>
       )
     }
 
     {/* Pet Care Tips Section */}
-    <section className="py-20 bg-gradient-to-b from-white to-accent/5">
+    <motion.section
+      initial={{ opacity: 0, y: 50 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-100px" }}
+      transition={{ duration: 0.8 }}
+      className="py-20 bg-gradient-to-b from-white to-accent/5"
+    >
       <div className="container">
         <div className="text-center mb-12">
           <span className="text-primary font-medium text-sm uppercase tracking-wider">Pet Care Tips</span>
@@ -1064,9 +1131,15 @@ const Home = () => {
           </Card>
         </div>
       </div>
-    </section>
+    </motion.section>
     {/* Brands Section */}
-    <section className="py-12 bg-white border-y">
+    <motion.section
+      initial={{ opacity: 0, scale: 0.95 }}
+      whileInView={{ opacity: 1, scale: 1 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.8 }}
+      className="py-12 bg-white border-y"
+    >
       <div className="container">
         <div className="text-center mb-10">
           <h2 className="font-display text-3xl font-bold">Trusted Brands</h2>
@@ -1092,10 +1165,25 @@ const Home = () => {
           </CarouselContent>
         </Carousel>
       </div>
-    </section>
+    </motion.section>
 
     {/* Features Section */}
-    <section className="py-20 relative overflow-hidden bg-muted/30">
+    <motion.section
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: "-50px" }}
+      variants={{
+        hidden: { opacity: 0 },
+        visible: {
+          opacity: 1,
+          transition: {
+            staggerChildren: 0.1,
+            delayChildren: 0.2
+          }
+        }
+      }}
+      className="py-20 relative overflow-hidden bg-muted/30"
+    >
       <div className="container relative z-10">
         <div className="text-center mb-12">
           <span className="text-primary font-medium text-sm uppercase tracking-wider">Why Choose Us</span>
@@ -1103,26 +1191,35 @@ const Home = () => {
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
-          {features.map((feature, index) => (
-            <div
+          {features.map((feature) => (
+            <motion.div
               key={feature.title}
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0 }
+              }}
               className="group bg-white border border-border rounded-2xl p-8 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
-              style={{ animationDelay: `${index * 100}ms` }}
             >
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-hero shadow-lg mb-6 group-hover:scale-110 transition-transform duration-300">
                 <feature.icon className="h-8 w-8 text-primary-foreground" />
               </div>
               <h3 className="font-bold text-xl mb-3">{feature.title}</h3>
               <p className="text-muted-foreground leading-relaxed">{feature.desc}</p>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
-    </section >
+    </motion.section >
 
     {
       !isLoggedIn && (
-        <section className="container py-20">
+        <motion.section
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="container py-20"
+        >
           <Card className="relative overflow-hidden bg-gradient-hero p-12 md:p-16 text-center shadow-2xl">
             {/* Paw Print Pattern Background */}
             <div className="absolute inset-0 z-0 opacity-10 pointer-events-none overflow-hidden">
@@ -1152,7 +1249,7 @@ const Home = () => {
               </Button>
             </div>
           </Card>
-        </section>
+        </motion.section>
       )
     }
   </div >;

@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/hooks/useCart";
 import { intelligentProductSearch } from "@/utils/intelligentSearch";
+import { parseSearchQuery, SearchIntent } from "@/utils/naturalLanguageParser";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -45,6 +46,7 @@ const Shop = () => {
   const [loading, setLoading] = useState(true);
   const [addingProductId, setAddingProductId] = useState<string | null>(null);
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
+  const [nlIntent, setNlIntent] = useState<SearchIntent | null>(null);
   const buttonRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({});
   const { toast } = useToast();
   const { addToCart } = useCart();
@@ -71,7 +73,24 @@ const Shop = () => {
 
   useEffect(() => {
     setSearchQuery(searchParamQuery);
-  }, [searchParamQuery]);
+    if (searchParamQuery) {
+      const intent = parseSearchQuery(searchParamQuery);
+      setNlIntent(intent);
+      // If the intent found a category, we update our local state
+      if (intent.category && intent.category !== "all") {
+        setSearchParams(prev => {
+          const newParams = new URLSearchParams(prev);
+          newParams.set("category", intent.category!);
+          return newParams;
+        }, { replace: true });
+      }
+      if (intent.subcategory) {
+        setSelectedSubcategory(intent.subcategory);
+      }
+    } else {
+      setNlIntent(null);
+    }
+  }, [searchParamQuery, setSearchParams]);
 
   useEffect(() => {
     fetchProducts();
@@ -218,8 +237,34 @@ const Shop = () => {
     })
     : categoryFilteredProducts;
 
-  // Apply intelligent search on subcategory-filtered products
-  const searchedProducts = intelligentProductSearch(subcategoryFilteredProducts, searchQuery);
+  // Apply NL intent filters (Price and Brands)
+  const nlFilteredProducts = nlIntent
+    ? subcategoryFilteredProducts.filter(product => {
+      // 1. Price Range Filters
+      if (nlIntent.minPrice !== undefined && product.price < nlIntent.minPrice) {
+        return false;
+      }
+      if (nlIntent.maxPrice !== undefined && product.price > nlIntent.maxPrice) {
+        return false;
+      }
+
+      // 2. Brand Filter (if multiple brands detected, match any)
+      if (nlIntent.brands && nlIntent.brands.length > 0) {
+        const productName = product.name.toLowerCase();
+        const matchesBrand = nlIntent.brands.some((brand: string) => productName.includes(brand.toLowerCase()));
+        if (!matchesBrand) return false;
+      }
+
+      return true;
+    })
+    : subcategoryFilteredProducts;
+
+  // Apply intelligent search on NL-filtered products
+  const searchedProducts = intelligentProductSearch(
+    nlFilteredProducts,
+    nlIntent ? nlIntent.searchTerms : searchQuery,
+    nlIntent
+  );
 
   // Apply sorting only when NOT searching (preserve relevance order when searching)
   const filteredProducts = searchQuery.trim().length > 0
@@ -256,9 +301,26 @@ const Shop = () => {
         </BreadcrumbList>
       </Breadcrumb>
 
-      <div className="mb-6">
-        <h1 className="font-display text-4xl font-bold mb-2">Shop</h1>
-        <p className="text-muted-foreground">Discover premium pet products for your beloved companions</p>
+      <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h1 className="font-display text-4xl font-bold mb-2">Shop</h1>
+          <p className="text-muted-foreground">Discover premium pet products for your beloved companions</p>
+        </div>
+
+        {nlIntent && (
+          <div className="flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-xl animate-fade-in border border-primary/20">
+            <Search className="h-4 w-4" />
+            <span className="text-sm font-medium">Smart Search Active</span>
+            {nlIntent.minPrice !== undefined && nlIntent.maxPrice !== undefined ? (
+              <Badge variant="secondary" className="bg-white/50">{nlIntent.minPrice} - {nlIntent.maxPrice} BD</Badge>
+            ) : nlIntent.maxPrice !== undefined ? (
+              <Badge variant="secondary" className="bg-white/50">Under {nlIntent.maxPrice} BD</Badge>
+            ) : nlIntent.minPrice !== undefined ? (
+              <Badge variant="secondary" className="bg-white/50">Over {nlIntent.minPrice} BD</Badge>
+            ) : null}
+            {nlIntent.category && <Badge variant="secondary" className="bg-white/50">{nlIntent.category}</Badge>}
+          </div>
+        )}
       </div>
 
       {/* Filters - Sticky */}
