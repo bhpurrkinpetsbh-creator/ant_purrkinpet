@@ -2,10 +2,12 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
 import Header from "./components/layout/Header";
 import Footer from "./components/layout/Footer";
 import FreeShippingBanner from "./components/FreeShippingBanner";
+import ScrollToTop from "./components/ScrollToTop";
 import Home from "./pages/Home";
 import Shop from "./pages/Shop";
 import ProductDetail from "./pages/ProductDetail";
@@ -22,9 +24,77 @@ import AdminInventory from "./pages/AdminInventory";
 import AdminProducts from "./pages/AdminProducts";
 import AdminDeletedProducts from "./pages/AdminDeletedProducts";
 import Wishlist from "./pages/Wishlist";
+import DeliveryInfo from "./pages/DeliveryInfo";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
+
+// Page transition variants
+const pageVariants = {
+  initial: {
+    opacity: 0,
+    y: 8,
+  },
+  animate: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.25,
+      ease: "easeOut" as const,
+    },
+  },
+  exit: {
+    opacity: 0,
+    y: -8,
+    transition: {
+      duration: 0.15,
+      ease: "easeIn" as const,
+    },
+  },
+};
+
+// Animated page wrapper
+const AnimatedPage = ({ children }: { children: React.ReactNode }) => (
+  <motion.div
+    initial="initial"
+    animate="animate"
+    exit="exit"
+    variants={pageVariants}
+  >
+    {children}
+  </motion.div>
+);
+
+// Routes component that uses location for AnimatePresence
+const AnimatedRoutes = () => {
+  const location = useLocation();
+
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={<AnimatedPage><Home /></AnimatedPage>} />
+        <Route path="/shop" element={<AnimatedPage><Shop /></AnimatedPage>} />
+        <Route path="/product/:id" element={<AnimatedPage><ProductDetail /></AnimatedPage>} />
+        {/* <Route path="/appointments" element={<AnimatedPage><Appointments /></AnimatedPage>} />*/} {/* DISABLED: Grooming services temporarily closed */}
+        <Route path="/auth" element={<AnimatedPage><Auth /></AnimatedPage>} />
+        <Route path="/about" element={<AnimatedPage><About /></AnimatedPage>} />
+        <Route path="/cart" element={<AnimatedPage><Cart /></AnimatedPage>} />
+        <Route path="/checkout" element={<AnimatedPage><Checkout /></AnimatedPage>} />
+        <Route path="/payment" element={<AnimatedPage><Payment /></AnimatedPage>} />
+        <Route path="/orders" element={<AnimatedPage><Orders /></AnimatedPage>} />
+        <Route path="/wishlist" element={<AnimatedPage><Wishlist /></AnimatedPage>} />
+        <Route path="/admin" element={<AnimatedPage><AdminDashboard /></AnimatedPage>} />
+        <Route path="/admin/orders" element={<AnimatedPage><AdminOrders /></AnimatedPage>} />
+        <Route path="/admin/inventory" element={<AnimatedPage><AdminInventory /></AnimatedPage>} />
+        <Route path="/admin/products" element={<AnimatedPage><AdminProducts /></AnimatedPage>} />
+        <Route path="/admin/deleted-products" element={<AnimatedPage><AdminDeletedProducts /></AnimatedPage>} />
+        <Route path="/delivery" element={<AnimatedPage><DeliveryInfo /></AnimatedPage>} />
+        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+        <Route path="*" element={<AnimatedPage><NotFound /></AnimatedPage>} />
+      </Routes>
+    </AnimatePresence>
+  );
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -49,30 +119,12 @@ const App = () => (
         closeButton
       />
       <BrowserRouter>
+        <ScrollToTop />
         <div className="flex flex-col min-h-screen">
           <Header />
           <FreeShippingBanner />
           <main className="flex-1">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/shop" element={<Shop />} />
-              <Route path="/product/:id" element={<ProductDetail />} />
-              {/* <Route path="/appointments" element={<Appointments />} /> */} {/* DISABLED: Grooming services temporarily closed */}
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/cart" element={<Cart />} />
-              <Route path="/checkout" element={<Checkout />} />
-              <Route path="/payment" element={<Payment />} />
-              <Route path="/orders" element={<Orders />} />
-              <Route path="/wishlist" element={<Wishlist />} />
-              <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/admin/orders" element={<AdminOrders />} />
-              <Route path="/admin/inventory" element={<AdminInventory />} />
-              <Route path="/admin/products" element={<AdminProducts />} />
-              <Route path="/admin/deleted-products" element={<AdminDeletedProducts />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <AnimatedRoutes />
           </main>
           <Footer />
         </div>

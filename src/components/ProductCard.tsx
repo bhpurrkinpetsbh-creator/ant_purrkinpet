@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ShoppingCart, Eye, Check } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { toast } from "sonner";
 
 export interface Product {
@@ -23,6 +23,8 @@ interface ProductCardProps {
 const ProductCard = ({ product }: ProductCardProps) => {
     const { addToCart } = useCart();
     const [isAdding, setIsAdding] = useState(false);
+    const [parallaxStyle, setParallaxStyle] = useState({ transform: 'translate(0, 0) scale(1)' });
+    const imageContainerRef = useRef<HTMLDivElement>(null);
 
     const isDiscounted = product.compare_at_price && product.compare_at_price > product.price;
     const discountPercentage = isDiscounted
@@ -49,10 +51,29 @@ const ProductCard = ({ product }: ProductCardProps) => {
         }
     };
 
+    const handleMouseMove = (e: React.MouseEvent) => {
+        if (!imageContainerRef.current) return;
+        const rect = imageContainerRef.current.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / rect.width - 0.5;
+        const y = (e.clientY - rect.top) / rect.height - 0.5;
+        setParallaxStyle({
+            transform: `translate(${x * 10}px, ${y * 10}px) scale(1.05)`
+        });
+    };
+
+    const handleMouseLeave = () => {
+        setParallaxStyle({ transform: 'translate(0, 0) scale(1)' });
+    };
+
     return (
         <Card className="group relative overflow-hidden h-full border-none shadow-md hover:shadow-xl transition-all duration-300">
             {/* Image Container */}
-            <div className="relative aspect-square overflow-hidden bg-gray-50">
+            <div
+                ref={imageContainerRef}
+                className="relative aspect-square overflow-hidden bg-gray-50"
+                onMouseMove={handleMouseMove}
+                onMouseLeave={handleMouseLeave}
+            >
                 {isDiscounted && (
                     <div className="absolute top-2 left-2 z-10 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full animate-bounce-subtle">
                         -{discountPercentage}%
@@ -63,7 +84,8 @@ const ProductCard = ({ product }: ProductCardProps) => {
                     <img
                         src={product.image_url || "/placeholder.svg"}
                         alt={product.name}
-                        className="w-full h-full object-contain p-4 group-hover:scale-110 transition-transform duration-500"
+                        className="w-full h-full object-contain p-4 transition-transform duration-300 ease-out"
+                        style={parallaxStyle}
                     />
                 </Link>
 
@@ -71,14 +93,14 @@ const ProductCard = ({ product }: ProductCardProps) => {
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2 pointer-events-none">
                     {/* Re-enable pointer events for buttons */}
                     <div className="flex gap-2 pointer-events-auto">
-                        <Button size="icon" variant="secondary" className="rounded-full hover:bg-white hover:scale-110 transition-all" asChild>
+                        <Button size="icon" variant="secondary" className="btn-ripple rounded-full hover:bg-white hover:scale-110 transition-all" asChild>
                             <Link to={`/product/${product.id}`}>
                                 <Eye className="h-4 w-4" />
                             </Link>
                         </Button>
                         <Button
                             size="icon"
-                            className={`rounded-full transition-all ${isAdding ? 'bg-green-500 hover:bg-green-600' : 'bg-primary hover:bg-primary/90 hover:scale-110'}`}
+                            className={`btn-ripple rounded-full transition-all ${isAdding ? 'bg-green-500 hover:bg-green-600' : 'bg-primary hover:bg-primary/90 hover:scale-110'}`}
                             onClick={handleAddToCart}
                             disabled={isAdding}
                         >

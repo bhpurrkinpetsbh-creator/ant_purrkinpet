@@ -208,14 +208,23 @@ const Cart = () => {
                 </p>
               </div>
             )}
-            <Button
-              className="w-full bg-gradient-hero hover:opacity-90"
-              size="lg"
-              asChild
-              disabled={isBelowMinimum}
-            >
-              <Link to="/checkout">Proceed to Checkout</Link>
-            </Button>
+            {isBelowMinimum ? (
+              <Button
+                className="w-full bg-gradient-hero"
+                size="lg"
+                disabled
+              >
+                Proceed to Checkout
+              </Button>
+            ) : (
+              <Button
+                className="w-full bg-gradient-hero hover:opacity-90"
+                size="lg"
+                asChild
+              >
+                <Link to="/checkout">Proceed to Checkout</Link>
+              </Button>
+            )}
           </Card>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Facebook, Instagram, Twitter, Mail, Phone, MapPin } from "lucide-react";
+import { Instagram, Mail, Phone, MapPin } from "lucide-react";
 
 const Footer = () => {
   return (
@@ -15,12 +15,6 @@ const Footer = () => {
               <a href="https://www.instagram.com/purrkinpets.bh/" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
                 <Instagram className="h-5 w-5" />
               </a>
-              <a href="#" className="hover:text-primary transition-colors">
-                <Facebook className="h-5 w-5" />
-              </a>
-              <a href="#" className="hover:text-primary transition-colors">
-                <Twitter className="h-5 w-5" />
-              </a>
             </div>
           </div>
 
@@ -31,7 +25,7 @@ const Footer = () => {
               <li><Link to="/shop?category=dogs" className="text-muted-foreground hover:text-primary transition-colors">Dogs</Link></li>
               <li><Link to="/shop?category=fish" className="text-muted-foreground hover:text-primary transition-colors">Fish</Link></li>
               <li><Link to="/shop?category=birds" className="text-muted-foreground hover:text-primary transition-colors">Birds</Link></li>
-              <li><Link to="/shop?category=rabbits" className="text-muted-foreground hover:text-primary transition-colors">Small Pets</Link></li>
+              <li><Link to="/shop?category=small pets" className="text-muted-foreground hover:text-primary transition-colors">Small Pets</Link></li>
             </ul>
           </div>
 
@@ -42,7 +36,7 @@ const Footer = () => {
               <li><Link to="/about" className="text-muted-foreground hover:text-primary transition-colors">About Us</Link></li>
               <li><Link to="/delivery" className="text-muted-foreground hover:text-primary transition-colors">Delivery Info</Link></li>
             </ul>
-            
+
             <div className="mt-6">
               <h5 className="font-semibold mb-3 text-sm">Find Us</h5>
               <div className="w-full h-[200px] rounded-lg overflow-hidden">

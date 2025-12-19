@@ -12,6 +12,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useInventory } from "@/hooks/useInventory";
+import { DeliveryZonesManager } from "@/components/admin/DeliveryZonesManager";
+import { Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -42,7 +45,7 @@ const AdminInventory = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isAdjustmentDialogOpen, setIsAdjustmentDialogOpen] = useState(false);
-  const [sortColumn, setSortColumn] = useState<'name' | 'sku' | 'stock' | 'price'>('name');
+  const [sortColumn, setSortColumn] = useState<'name' | 'sku' | 'stock' | 'price' | 'category' | 'brand'>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const navigate = useNavigate();
 
@@ -77,6 +80,12 @@ const AdminInventory = () => {
         case 'price':
           comparison = a.price - b.price;
           break;
+        case 'category':
+          comparison = (a.categories?.name || '').localeCompare(b.categories?.name || '');
+          break;
+        case 'brand':
+          comparison = (a.brands?.name || '').localeCompare(b.brands?.name || '');
+          break;
       }
       return sortDirection === 'asc' ? comparison : -comparison;
     });
@@ -84,7 +93,7 @@ const AdminInventory = () => {
     setFilteredProducts(filtered);
   }, [searchQuery, products, sortColumn, sortDirection]);
 
-  const handleSort = (column: 'name' | 'sku' | 'stock' | 'price') => {
+  const handleSort = (column: 'name' | 'sku' | 'stock' | 'price' | 'category' | 'brand') => {
     if (sortColumn === column) {
       setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
     } else {
@@ -188,9 +197,10 @@ const AdminInventory = () => {
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="smart-commands">Smart Commands</TabsTrigger>
           <TabsTrigger value="all-products">All Products</TabsTrigger>
+          <TabsTrigger value="smart-commands">Smart Commands</TabsTrigger>
           <TabsTrigger value="transactions">Transaction History</TabsTrigger>
+          <TabsTrigger value="delivery-zones">Delivery Zones</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -228,10 +238,6 @@ const AdminInventory = () => {
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
-
-        <TabsContent value="smart-commands">
-          <SmartInventoryCommands />
         </TabsContent>
 
         <TabsContent value="all-products" className="space-y-4">
@@ -282,8 +288,24 @@ const AdminInventory = () => {
                             <ArrowUpDown className={`h-3 w-3 ${sortColumn === 'sku' ? 'text-primary' : 'text-muted-foreground'}`} />
                           </div>
                         </TableHead>
-                        <TableHead>Category</TableHead>
-                        <TableHead>Brand</TableHead>
+                        <TableHead
+                          className="cursor-pointer hover:bg-muted/50"
+                          onClick={() => handleSort('category')}
+                        >
+                          <div className="flex items-center gap-1">
+                            Category
+                            <ArrowUpDown className={`h-3 w-3 ${sortColumn === 'category' ? 'text-primary' : 'text-muted-foreground'}`} />
+                          </div>
+                        </TableHead>
+                        <TableHead
+                          className="cursor-pointer hover:bg-muted/50"
+                          onClick={() => handleSort('brand')}
+                        >
+                          <div className="flex items-center gap-1">
+                            Brand
+                            <ArrowUpDown className={`h-3 w-3 ${sortColumn === 'brand' ? 'text-primary' : 'text-muted-foreground'}`} />
+                          </div>
+                        </TableHead>
                         <TableHead
                           className="text-right cursor-pointer hover:bg-muted/50"
                           onClick={() => handleSort('stock')}
@@ -353,8 +375,16 @@ const AdminInventory = () => {
           </Card>
         </TabsContent>
 
+        <TabsContent value="smart-commands">
+          <SmartInventoryCommands />
+        </TabsContent>
+
         <TabsContent value="transactions">
           <InventoryTransactions />
+        </TabsContent>
+
+        <TabsContent value="delivery-zones">
+          <DeliveryZonesManager />
         </TabsContent>
       </Tabs>
 

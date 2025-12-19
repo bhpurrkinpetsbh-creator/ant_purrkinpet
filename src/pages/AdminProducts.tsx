@@ -11,10 +11,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Edit, Search, Trash2, ArrowLeft } from "lucide-react";
+import { Plus, Edit, Search, Trash2, ArrowLeft, ArrowUpDown, Download } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ProductForm } from "@/components/admin/ProductForm";
 
@@ -40,7 +50,10 @@ const AdminProducts = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [formMode, setFormMode] = useState<'add' | 'edit'>('add');
+  const [sortColumn, setSortColumn] = useState<'name' | 'sku' | 'category' | 'brand' | 'price' | 'stock'>('name');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -48,17 +61,53 @@ const AdminProducts = () => {
   }, []);
 
   useEffect(() => {
+    let filtered = products;
+
     if (searchQuery) {
-      const filtered = products.filter(
+      filtered = products.filter(
         (product) =>
           product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           product.sku?.toLowerCase().includes(searchQuery.toLowerCase())
       );
-      setFilteredProducts(filtered);
-    } else {
-      setFilteredProducts(products);
     }
-  }, [searchQuery, products]);
+
+    // Apply sorting
+    filtered = [...filtered].sort((a, b) => {
+      let comparison = 0;
+      switch (sortColumn) {
+        case 'name':
+          comparison = a.name.localeCompare(b.name);
+          break;
+        case 'sku':
+          comparison = (a.sku || '').localeCompare(b.sku || '');
+          break;
+        case 'category':
+          comparison = (a.categories?.name || '').localeCompare(b.categories?.name || '');
+          break;
+        case 'brand':
+          comparison = (a.brands?.name || '').localeCompare(b.brands?.name || '');
+          break;
+        case 'price':
+          comparison = a.price - b.price;
+          break;
+        case 'stock':
+          comparison = (a.stock_quantity ?? 0) - (b.stock_quantity ?? 0);
+          break;
+      }
+      return sortDirection === 'asc' ? comparison : -comparison;
+    });
+
+    setFilteredProducts(filtered);
+  }, [searchQuery, products, sortColumn, sortDirection]);
+
+  const handleSort = (column: 'name' | 'sku' | 'category' | 'brand' | 'price' | 'stock') => {
+    if (sortColumn === column) {
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortColumn(column);
+      setSortDirection('asc');
+    }
+  };
 
   const checkAdminAccess = async () => {
     try {
@@ -154,6 +203,47 @@ const AdminProducts = () => {
     fetchProducts();
   };
 
+  const handleExport = () => {
+    try {
+      // Headers for CSV
+      const headers = ["Product Name", "SKU", "Category", "Brand", "Price (BHD)", "Stock", "Status"];
+
+      // Map data to CSV rows
+      const rows = filteredProducts.map(product => [
+        `"${product.name}"`, // Quote to handle commas in names
+        `"${product.sku || ''}"`,
+        `"${product.categories?.name || '-'}"`,
+        `"${product.brands?.name || '-'}"`,
+        product.price,
+        product.stock_quantity ?? 0,
+        product.is_active ? "Active" : "Inactive"
+      ]);
+
+      // Combine headers and rows
+      const csvContent = [
+        headers.join(","),
+        ...rows.map(row => row.join(","))
+      ].join("\n");
+
+      // Create blob and download
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+
+      link.setAttribute("href", url);
+      link.setAttribute("download", `purrkin_pets_products_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast.success("Products exported successfully");
+    } catch (error) {
+      console.error("Export error:", error);
+      toast.error("Failed to export products");
+    }
+  };
+
   if (!isAdmin) {
     return null;
   }
@@ -193,10 +283,16 @@ const AdminProducts = () => {
                   className="pl-10"
                 />
               </div>
-              <Button onClick={handleAddProduct} className="gap-2">
-                <Plus className="h-4 w-4" />
-                Add Product
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" onClick={() => setIsExportDialogOpen(true)} className="gap-2">
+                  <Download className="h-4 w-4" />
+                  Excel
+                </Button>
+                <Button onClick={handleAddProduct} className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  Add
+                </Button>
+              </div>
             </div>
           </div>
         </CardHeader>
@@ -210,12 +306,60 @@ const AdminProducts = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Product</TableHead>
-                    <TableHead>SKU</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Brand</TableHead>
-                    <TableHead className="text-right">Price</TableHead>
-                    <TableHead className="text-right">Stock</TableHead>
+                    <TableHead
+                      className="cursor-pointer hover:bg-muted/50 transition-colors"
+                      onClick={() => handleSort('name')}
+                    >
+                      <div className="flex items-center gap-1">
+                        Product
+                        <ArrowUpDown className={`h-3 w-3 ${sortColumn === 'name' ? 'text-primary' : 'text-muted-foreground'}`} />
+                      </div>
+                    </TableHead>
+                    <TableHead
+                      className="cursor-pointer hover:bg-muted/50 transition-colors"
+                      onClick={() => handleSort('sku')}
+                    >
+                      <div className="flex items-center gap-1">
+                        SKU
+                        <ArrowUpDown className={`h-3 w-3 ${sortColumn === 'sku' ? 'text-primary' : 'text-muted-foreground'}`} />
+                      </div>
+                    </TableHead>
+                    <TableHead
+                      className="cursor-pointer hover:bg-muted/50 transition-colors"
+                      onClick={() => handleSort('category')}
+                    >
+                      <div className="flex items-center gap-1">
+                        Category
+                        <ArrowUpDown className={`h-3 w-3 ${sortColumn === 'category' ? 'text-primary' : 'text-muted-foreground'}`} />
+                      </div>
+                    </TableHead>
+                    <TableHead
+                      className="cursor-pointer hover:bg-muted/50 transition-colors"
+                      onClick={() => handleSort('brand')}
+                    >
+                      <div className="flex items-center gap-1">
+                        Brand
+                        <ArrowUpDown className={`h-3 w-3 ${sortColumn === 'brand' ? 'text-primary' : 'text-muted-foreground'}`} />
+                      </div>
+                    </TableHead>
+                    <TableHead
+                      className="text-right cursor-pointer hover:bg-muted/50 transition-colors"
+                      onClick={() => handleSort('price')}
+                    >
+                      <div className="flex items-center justify-end gap-1">
+                        Price
+                        <ArrowUpDown className={`h-3 w-3 ${sortColumn === 'price' ? 'text-primary' : 'text-muted-foreground'}`} />
+                      </div>
+                    </TableHead>
+                    <TableHead
+                      className="text-right cursor-pointer hover:bg-muted/50 transition-colors"
+                      onClick={() => handleSort('stock')}
+                    >
+                      <div className="flex items-center justify-end gap-1">
+                        Stock
+                        <ArrowUpDown className={`h-3 w-3 ${sortColumn === 'stock' ? 'text-primary' : 'text-muted-foreground'}`} />
+                      </div>
+                    </TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -288,16 +432,35 @@ const AdminProducts = () => {
         </CardContent>
       </Card>
 
-      {isFormOpen && (
-        <ProductForm
-          mode={formMode}
-          product={selectedProduct}
-          isOpen={isFormOpen}
-          onClose={() => setIsFormOpen(false)}
-          onSuccess={handleFormSuccess}
-        />
-      )}
-    </div>
+      {
+        isFormOpen && (
+          <ProductForm
+            mode={formMode}
+            product={selectedProduct}
+            isOpen={isFormOpen}
+            onClose={() => setIsFormOpen(false)}
+            onSuccess={handleFormSuccess}
+          />
+        )
+      }
+
+      <AlertDialog open={isExportDialogOpen} onOpenChange={setIsExportDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Export Products?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will download a CSV file containing all currently {searchQuery ? "filtered" : "available"} products ({filteredProducts.length} items).
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleExport}>
+              Download Excel
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div >
   );
 };
 
