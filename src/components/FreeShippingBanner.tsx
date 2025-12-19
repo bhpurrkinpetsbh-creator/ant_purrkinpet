@@ -34,26 +34,26 @@ const FreeShippingBanner = () => {
         }`}
     >
       <div className="pointer-events-auto relative overflow-hidden group">
-        {/* Glassmorphism Background with Blur matching site theme */}
-        <div className="absolute inset-0 bg-primary/95 backdrop-blur-md rounded-full shadow-lg border border-white/10" />
+        {/* Gradient Background matching Shop Now button */}
+        <div className="absolute inset-0 bg-gradient-hero backdrop-blur-md rounded-full shadow-lg border border-white/20" />
 
         {/* Subtle Shine Effect */}
-        <div className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-700 bg-gradient-to-r from-transparent via-white/5 to-transparent -skew-x-12 translate-x-[-100%] group-hover:animate-shimmer" />
+        <div className="absolute inset-0 opacity-0 group-hover:opacity-30 transition-opacity duration-700 bg-gradient-to-r from-transparent via-white/30 to-transparent -skew-x-12 translate-x-[-100%] group-hover:animate-shimmer" />
 
         <div className="relative flex items-center gap-4 py-2 pl-4 pr-3 rounded-full text-white">
           {/* Icon Section */}
           <div className="flex items-center justify-center bg-white/10 rounded-full p-1.5 backdrop-blur-sm border border-white/5">
-            <Truck className="h-4 w-4 text-sky-300" />
+            <Truck className="h-4 w-4 text-yellow-300" />
           </div>
 
           {/* Text Content */}
           <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-2 text-sm leading-tight">
-            <span className="font-light text-slate-300">
+            <span className="font-light text-white/90">
               Get <span className="font-semibold text-white">Free Delivery</span> across Bahrain
             </span>
-            <span className="hidden sm:block text-slate-600">•</span>
-            <span className="text-xs sm:text-sm text-slate-300">
-              on orders over <span className="font-bold text-sky-300">20 BD</span>
+            <span className="hidden sm:block text-white/40">•</span>
+            <span className="text-xs sm:text-sm text-white/90">
+              on orders over <span className="font-bold text-yellow-300">20 BD</span>
             </span>
           </div>
 
@@ -62,7 +62,7 @@ const FreeShippingBanner = () => {
             <Button
               size="sm"
               variant="default"
-              className="h-7 px-3 text-xs bg-sky-500 hover:bg-sky-400 text-white rounded-full font-medium transition-colors shadow-sm shadow-sky-900/20"
+              className="h-7 px-3 text-xs bg-white/20 hover:bg-white/30 text-white rounded-full font-medium transition-colors shadow-sm border border-white/20"
               onClick={() => window.location.href = '/shop'}
             >
               Shop Now <ShoppingBag className="ml-1.5 h-3 w-3" />

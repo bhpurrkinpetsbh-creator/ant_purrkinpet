@@ -8,8 +8,9 @@ import logo from "@/assets/purrkin-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/hooks/useCart";
 import { useWishlist } from "@/hooks/useWishlist";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
+import { intelligentProductSearch } from "@/utils/intelligentSearch";
 const Header = () => {
   const {
     cartCount
@@ -20,6 +21,10 @@ const Header = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [headerSearch, setHeaderSearch] = useState("");
   const [cartPulse, setCartPulse] = useState(false);
+  const [allProducts, setAllProducts] = useState<any[]>([]);
+  const [searchSuggestions, setSearchSuggestions] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   useEffect(() => {
     supabase.auth.getUser().then(({
@@ -52,9 +57,50 @@ const Header = () => {
       setCartPulse(true);
       setTimeout(() => setCartPulse(false), 600);
     };
-    
+
     window.addEventListener('cart:item-added', handleCartUpdate);
     return () => window.removeEventListener('cart:item-added', handleCartUpdate);
+  }, []);
+
+  // Fetch all products for search suggestions
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const { data } = await supabase
+        .from("products")
+        .select("id, name, slug, price, image_url, category:categories(name)")
+        .eq("is_active", true)
+        .limit(100);
+
+      if (data) {
+        setAllProducts(data);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  // Handle search input changes and show suggestions
+  useEffect(() => {
+    if (headerSearch.trim().length > 1) {
+      const results = intelligentProductSearch(allProducts, headerSearch);
+      setSearchSuggestions(results.slice(0, 5)); // Show top 5 results
+      setShowSuggestions(true);
+    } else {
+      setSearchSuggestions([]);
+      setShowSuggestions(false);
+    }
+  }, [headerSearch, allProducts]);
+
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const fetchUserProfile = async (userId: string) => {
@@ -89,7 +135,14 @@ const Header = () => {
     if (headerSearch.trim()) {
       navigate(`/shop?search=${encodeURIComponent(headerSearch)}`);
       setHeaderSearch("");
+      setShowSuggestions(false);
     }
+  };
+
+  const handleSuggestionClick = (product: any) => {
+    navigate(`/product/${product.slug}`);
+    setHeaderSearch("");
+    setShowSuggestions(false);
   };
   return <header className="sticky top-0 z-50 w-full border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
       <div className="container flex h-20 items-center justify-between">
@@ -112,15 +165,51 @@ const Header = () => {
 
         <div className="flex items-center gap-2">
           <form onSubmit={handleSearch} className="hidden lg:flex items-center gap-2 max-w-sm">
-            <div className="relative flex-1">
+            <div className="relative flex-1" ref={searchRef}>
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input 
-                type="search" 
-                placeholder="Search products..." 
+              <Input
+                type="search"
+                placeholder="Search products..."
                 className="pl-9 w-full"
                 value={headerSearch}
                 onChange={(e) => setHeaderSearch(e.target.value)}
+                onFocus={() => headerSearch.trim().length > 1 && setShowSuggestions(true)}
               />
+
+              {/* Search Suggestions Dropdown */}
+              {showSuggestions && searchSuggestions.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-96 overflow-y-auto z-50">
+                  {searchSuggestions.map((product) => (
+                    <button
+                      key={product.id}
+                      type="button"
+                      onClick={() => handleSuggestionClick(product)}
+                      className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-50 transition-colors text-left border-b border-gray-100 last:border-b-0"
+                    >
+                      {product.image_url && (
+                        <img
+                          src={product.image_url}
+                          alt={product.name}
+                          className="w-12 h-12 object-cover rounded"
+                        />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">{product.name}</p>
+                        <p className="text-xs text-gray-500">{product.category?.name || 'Uncategorized'}</p>
+                      </div>
+                      <p className="text-sm font-semibold text-primary">{product.price.toFixed(3)} BD</p>
+                    </button>
+                  ))}
+
+                  {/* View all results */}
+                  <button
+                    type="submit"
+                    className="w-full px-3 py-2 text-sm text-center text-primary hover:bg-primary/10 transition-colors font-medium"
+                  >
+                    View all results for "{headerSearch}"
+                  </button>
+                </div>
+              )}
             </div>
           </form>
 

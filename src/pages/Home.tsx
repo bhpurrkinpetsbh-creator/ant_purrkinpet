@@ -46,6 +46,7 @@ const Home = () => {
 
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [discountedProducts, setDiscountedProducts] = useState<Product[]>([]);
+  const [allCategories, setAllCategories] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -74,6 +75,15 @@ const Home = () => {
           .slice(0, 4);
         setDiscountedProducts(validDeals as Product[]);
       }
+
+      // Fetch all categories for subcategory dropdown
+      const { data: categories } = await supabase
+        .from("categories")
+        .select("*")
+        .eq("is_active", true)
+        .order("display_order");
+
+      if (categories) setAllCategories(categories);
     };
 
     fetchProducts();
@@ -197,79 +207,188 @@ const Home = () => {
       {/* Bento Grid Layout */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 max-w-6xl mx-auto">
         {/* Dogs - Featured Large Card */}
-        <Link
-          to="/shop?category=dogs"
-          className="col-span-2 row-span-2 group relative overflow-hidden rounded-3xl shadow-lg hover:shadow-2xl hover:shadow-primary/20 transition-all duration-500 hover:-translate-y-2"
-        >
-          <img
-            src={dogsImage}
-            alt="Dogs"
-            className="w-full h-full object-cover aspect-square lg:aspect-auto group-hover:scale-110 group-hover:rotate-1 transition-transform duration-700"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
-          <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 transform group-hover:translate-y-[-8px] transition-transform duration-500">
-            <h3 className="text-white text-3xl md:text-4xl font-bold mb-2 group-hover:text-primary-foreground transition-colors">Dogs</h3>
-            <p className="text-white/80 text-sm mb-4 hidden md:block group-hover:text-white transition-colors">Premium food, toys, and accessories</p>
-            <span className="inline-flex items-center text-white bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium group-hover:bg-primary group-hover:text-white transition-all duration-300">
-              Shop Now <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-            </span>
+        <div className="col-span-2 row-span-2 group relative overflow-hidden rounded-3xl shadow-lg hover:shadow-2xl hover:shadow-primary/20 transition-all duration-500 hover:-translate-y-2">
+          <Link to="/shop?category=dogs" className="block w-full h-full">
+            <img
+              src={dogsImage}
+              alt="Dogs"
+              className="w-full h-full object-cover aspect-square lg:aspect-auto group-hover:scale-110 group-hover:rotate-1 transition-transform duration-700"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+            <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 transform group-hover:translate-y-[-8px] transition-transform duration-500">
+              <h3 className="text-white text-3xl md:text-4xl font-bold mb-2 group-hover:text-primary-foreground transition-colors">Dogs</h3>
+              <p className="text-white/80 text-sm mb-4 hidden md:block group-hover:text-white transition-colors">Premium food, toys, and accessories</p>
+              <span className="inline-flex items-center text-white bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                Shop Now <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              </span>
+            </div>
+          </Link>
+
+          {/* Subcategories Dropdown - Dog-specific */}
+          <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-10">
+            <div className="bg-white/95 backdrop-blur-md rounded-xl shadow-xl p-3 min-w-[180px] max-w-[220px]">
+              <div className="text-xs font-semibold text-gray-500 mb-2 px-2">Browse Categories</div>
+              <div className="space-y-0.5">
+                {/* Show only dog-related categories */}
+                {allCategories
+                  .filter(cat => {
+                    const name = cat.name.toLowerCase();
+                    const slug = cat.slug.toLowerCase();
+                    return name.includes('dog') || slug.includes('dog');
+                  })
+                  .slice(0, 8)
+                  .map(cat => (
+                    <Link
+                      key={cat.id}
+                      to={`/shop?category=${cat.slug}`}
+                      className="block px-3 py-1.5 text-xs text-gray-700 hover:bg-primary hover:text-white rounded-lg transition-colors"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {cat.name}
+                    </Link>
+                  ))}
+              </div>
+            </div>
           </div>
-        </Link>
+        </div>
 
         {/* Cats */}
-        <Link
-          to="/shop?category=cats"
-          className="group relative overflow-hidden rounded-3xl shadow-lg hover:shadow-2xl hover:shadow-primary/20 transition-all duration-500 hover:-translate-y-2"
-        >
-          <img
-            src={catsImage}
-            alt="Cats"
-            className="w-full h-full object-cover aspect-square group-hover:scale-110 group-hover:-rotate-1 transition-transform duration-700"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
-          <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 transform group-hover:translate-y-[-4px] transition-transform duration-500">
-            <h3 className="text-white text-xl md:text-2xl font-bold group-hover:text-primary-foreground transition-colors">Cats</h3>
-            <span className="text-white/80 text-xs md:text-sm hidden md:inline-flex items-center mt-2 group-hover:text-white transition-colors">
-              Explore <ArrowRight className="ml-1 h-3 w-3 group-hover:translate-x-1 transition-transform" />
-            </span>
+        <div className="group relative overflow-hidden rounded-3xl shadow-lg hover:shadow-2xl hover:shadow-primary/20 transition-all duration-500 hover:-translate-y-2">
+          <Link to="/shop?category=cats" className="block w-full h-full">
+            <img
+              src={catsImage}
+              alt="Cats"
+              className="w-full h-full object-cover aspect-square group-hover:scale-110 group-hover:-rotate-1 transition-transform duration-700"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+            <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 transform group-hover:translate-y-[-4px] transition-transform duration-500">
+              <h3 className="text-white text-xl md:text-2xl font-bold group-hover:text-primary-foreground transition-colors">Cats</h3>
+              <span className="text-white/80 text-xs md:text-sm hidden md:inline-flex items-center mt-2 group-hover:text-white transition-colors">
+                Explore <ArrowRight className="ml-1 h-3 w-3 group-hover:translate-x-1 transition-transform" />
+              </span>
+            </div>
+          </Link>
+
+          {/* Subcategories Dropdown - Cat-specific */}
+          <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-10">
+            <div className="bg-white/95 backdrop-blur-md rounded-xl shadow-xl p-2.5 min-w-[160px] max-w-[200px]">
+              <div className="text-xs font-semibold text-gray-500 mb-1.5 px-2">Browse Categories</div>
+              <div className="space-y-0.5">
+                {/* Show only cat-related categories */}
+                {allCategories
+                  .filter(cat => {
+                    const name = cat.name.toLowerCase();
+                    const slug = cat.slug.toLowerCase();
+                    return name.includes('cat') || slug.includes('cat');
+                  })
+                  .slice(0, 8)
+                  .map(cat => (
+                    <Link
+                      key={cat.id}
+                      to={`/shop?category=${cat.slug}`}
+                      className="block px-2.5 py-1.5 text-xs text-gray-700 hover:bg-primary hover:text-white rounded-lg transition-colors"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {cat.name}
+                    </Link>
+                  ))}
+              </div>
+            </div>
           </div>
-        </Link>
+        </div>
 
         {/* Fishes */}
-        <Link
-          to="/shop?category=fish"
-          className="group relative overflow-hidden rounded-3xl shadow-lg hover:shadow-2xl hover:shadow-primary/20 transition-all duration-500 hover:-translate-y-2"
-        >
-          <img
-            src={fishImage}
-            alt="Fishes and Aquarium"
-            className="w-full h-full object-cover aspect-square group-hover:scale-110 group-hover:rotate-1 transition-transform duration-700"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
-          <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 transform group-hover:translate-y-[-4px] transition-transform duration-500">
-            <h3 className="text-white text-xl md:text-2xl font-bold group-hover:text-primary-foreground transition-colors">Fish & Aquarium</h3>
-            <span className="text-white/80 text-xs md:text-sm hidden md:inline-flex items-center mt-2 group-hover:text-white transition-colors">
-              Explore <ArrowRight className="ml-1 h-3 w-3 group-hover:translate-x-1 transition-transform" />
-            </span>
+        <div className="group relative overflow-hidden rounded-3xl shadow-lg hover:shadow-2xl hover:shadow-primary/20 transition-all duration-500 hover:-translate-y-2">
+          <Link to="/shop?category=fish" className="block w-full h-full">
+            <img
+              src={fishImage}
+              alt="Fishes and Aquarium"
+              className="w-full h-full object-cover aspect-square group-hover:scale-110 group-hover:rotate-1 transition-transform duration-700"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+            <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 transform group-hover:translate-y-[-4px] transition-transform duration-500">
+              <h3 className="text-white text-xl md:text-2xl font-bold group-hover:text-primary-foreground transition-colors">Fish & Aquarium</h3>
+              <span className="text-white/80 text-xs md:text-sm hidden md:inline-flex items-center mt-2 group-hover:text-white transition-colors">
+                Explore <ArrowRight className="ml-1 h-3 w-3 group-hover:translate-x-1 transition-transform" />
+              </span>
+            </div>
+          </Link>
+
+          {/* Subcategories Dropdown - Fish-specific */}
+          <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-10">
+            <div className="bg-white/95 backdrop-blur-md rounded-xl shadow-xl p-2.5 min-w-[160px] max-w-[200px]">
+              <div className="text-xs font-semibold text-gray-500 mb-1.5 px-2">Browse Categories</div>
+              <div className="space-y-0.5">
+                {/* Show only fish/aquarium-related categories */}
+                {allCategories
+                  .filter(cat => {
+                    const name = cat.name.toLowerCase();
+                    const slug = cat.slug.toLowerCase();
+                    return name.includes('fish') || slug.includes('fish') ||
+                           name.includes('aquarium') || slug.includes('aquarium');
+                  })
+                  .slice(0, 8)
+                  .map(cat => (
+                    <Link
+                      key={cat.id}
+                      to={`/shop?category=${cat.slug}`}
+                      className="block px-2.5 py-1.5 text-xs text-gray-700 hover:bg-primary hover:text-white rounded-lg transition-colors"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {cat.name}
+                    </Link>
+                  ))}
+              </div>
+            </div>
           </div>
-        </Link>
+        </div>
 
         {/* Small Pets - Spans 2 columns on mobile */}
-        <Link
-          to="/shop?category=small pets"
-          className="col-span-2 group relative overflow-hidden rounded-3xl shadow-lg hover:shadow-2xl hover:shadow-primary/20 transition-all duration-500 hover:-translate-y-2"
-        >
-          <img
-            src={rabbitsImage}
-            alt="Small Pets"
-            className="w-full h-full object-cover aspect-[2/1] group-hover:scale-105 group-hover:-rotate-1 transition-transform duration-700"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
-          <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 transform group-hover:translate-y-[-4px] transition-transform duration-500">
-            <h3 className="text-white text-xl md:text-2xl font-bold group-hover:text-primary-foreground transition-colors">Small Pets</h3>
-            <p className="text-white/80 text-xs md:text-sm hidden md:block mt-1 group-hover:text-white transition-colors">Rabbits, hamsters, guinea pigs & more</p>
+        <div className="col-span-2 group relative overflow-hidden rounded-3xl shadow-lg hover:shadow-2xl hover:shadow-primary/20 transition-all duration-500 hover:-translate-y-2">
+          <Link to="/shop?category=small pets" className="block w-full h-full">
+            <img
+              src={rabbitsImage}
+              alt="Small Pets"
+              className="w-full h-full object-cover aspect-[2/1] group-hover:scale-105 group-hover:-rotate-1 transition-transform duration-700"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+            <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 transform group-hover:translate-y-[-4px] transition-transform duration-500">
+              <h3 className="text-white text-xl md:text-2xl font-bold group-hover:text-primary-foreground transition-colors">Small Pets</h3>
+              <p className="text-white/80 text-xs md:text-sm hidden md:block mt-1 group-hover:text-white transition-colors">Rabbits, hamsters, guinea pigs & more</p>
+            </div>
+          </Link>
+
+          {/* Subcategories Dropdown - Small Pets-specific */}
+          <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-10">
+            <div className="bg-white/95 backdrop-blur-md rounded-xl shadow-xl p-2.5 min-w-[160px] max-w-[200px]">
+              <div className="text-xs font-semibold text-gray-500 mb-1.5 px-2">Browse Categories</div>
+              <div className="space-y-0.5">
+                {/* Show only small pet-related categories */}
+                {allCategories
+                  .filter(cat => {
+                    const name = cat.name.toLowerCase();
+                    const slug = cat.slug.toLowerCase();
+                    return name.includes('rabbit') || slug.includes('rabbit') ||
+                           name.includes('hamster') || slug.includes('hamster') ||
+                           name.includes('guinea') || slug.includes('guinea') ||
+                           name.includes('bird') || slug.includes('bird') ||
+                           name.includes('small') || slug.includes('small');
+                  })
+                  .slice(0, 8)
+                  .map(cat => (
+                    <Link
+                      key={cat.id}
+                      to={`/shop?category=${cat.slug}`}
+                      className="block px-2.5 py-1.5 text-xs text-gray-700 hover:bg-primary hover:text-white rounded-lg transition-colors"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {cat.name}
+                    </Link>
+                  ))}
+              </div>
+            </div>
           </div>
-        </Link>
+        </div>
       </div>
     </section>
 
