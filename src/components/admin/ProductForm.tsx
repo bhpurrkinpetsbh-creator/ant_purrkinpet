@@ -21,6 +21,7 @@ interface ProductFormProps {
 
 export const ProductForm = ({ mode, product, isOpen, onClose, onSuccess }: ProductFormProps) => {
   const [loading, setLoading] = useState(false);
+  const [optionsLoading, setOptionsLoading] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
   const [brands, setBrands] = useState<any[]>([]);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -49,60 +50,67 @@ export const ProductForm = ({ mode, product, isOpen, onClose, onSuccess }: Produ
   });
 
   useEffect(() => {
-    if (isOpen) {
-      fetchCategoriesAndBrands();
-      if (mode === 'edit' && product) {
-        setFormData({
-          name: product.name || "",
-          slug: product.slug || "",
-          description: product.description || "",
-          price: product.price?.toString() || "",
-          compare_at_price: product.compare_at_price?.toString() || "",
-          sku: product.sku || "",
-          stock_quantity: product.stock_quantity?.toString() || "",
-          low_stock_threshold: product.low_stock_threshold?.toString() || "5",
-          category_id: product.category_id || "",
-          brand_id: product.brand_id || "",
-          weight_kg: product.weight_kg?.toString() || "",
-          length_cm: product.length_cm?.toString() || "",
-          width_cm: product.width_cm?.toString() || "",
-          height_cm: product.height_cm?.toString() || "",
-          meta_title: product.meta_title || "",
-          meta_description: product.meta_description || "",
-          is_active: product.is_active ?? true,
-          is_featured: product.is_featured ?? false,
-        });
-        setImagePreview(product.image_url || "");
-      } else {
-        // Reset form for add mode and auto-generate SKU
-        fetchNextSku();
-        setFormData({
-          name: "",
-          slug: "",
-          description: "",
-          price: "",
-          compare_at_price: "",
-          sku: "", // Will be set by fetchNextSku
-          stock_quantity: "",
-          low_stock_threshold: "5",
-          category_id: "",
-          brand_id: "",
-          weight_kg: "",
-          length_cm: "",
-          width_cm: "",
-          height_cm: "",
-          meta_title: "",
-          meta_description: "",
-          is_active: true,
-          is_featured: false,
-        });
-        setImagePreview("");
-        setImageFile(null);
+    const initForm = async () => {
+      if (isOpen) {
+        // Wait for categories and brands to load first
+        await fetchCategoriesAndBrands();
+
+        if (mode === 'edit' && product) {
+          setFormData({
+            name: product.name || "",
+            slug: product.slug || "",
+            description: product.description || "",
+            price: product.price?.toString() || "",
+            compare_at_price: product.compare_at_price?.toString() || "",
+            sku: product.sku || "",
+            stock_quantity: product.stock_quantity?.toString() || "",
+            low_stock_threshold: product.low_stock_threshold?.toString() || "5",
+            category_id: product.category_id || "",
+            brand_id: product.brand_id || "",
+            weight_kg: product.weight_kg?.toString() || "",
+            length_cm: product.length_cm?.toString() || "",
+            width_cm: product.width_cm?.toString() || "",
+            height_cm: product.height_cm?.toString() || "",
+            meta_title: product.meta_title || "",
+            meta_description: product.meta_description || "",
+            is_active: product.is_active ?? true,
+            is_featured: product.is_featured ?? false,
+          });
+          setImagePreview(product.image_url || "");
+        } else {
+          // Reset form for add mode and auto-generate SKU
+          fetchNextSku();
+          setFormData({
+            name: "",
+            slug: "",
+            description: "",
+            price: "",
+            compare_at_price: "",
+            sku: "", // Will be set by fetchNextSku
+            stock_quantity: "",
+            low_stock_threshold: "5",
+            category_id: "",
+            brand_id: "",
+            weight_kg: "",
+            length_cm: "",
+            width_cm: "",
+            height_cm: "",
+            meta_title: "",
+            meta_description: "",
+            is_active: true,
+            is_featured: false,
+          });
+          setImagePreview("");
+          setImageFile(null);
+        }
       }
-    }
+    };
+
+    initForm();
   }, [isOpen, mode, product]);
 
   const fetchCategoriesAndBrands = async () => {
+    setOptionsLoading(true);
     try {
       const [categoriesRes, brandsRes] = await Promise.all([
         supabase.from('categories').select('*').eq('is_active', true).order('name'),
@@ -117,6 +125,8 @@ export const ProductForm = ({ mode, product, isOpen, onClose, onSuccess }: Produ
     } catch (error: any) {
       console.error("Error fetching categories/brands:", error);
       toast.error("Failed to load categories and brands");
+    } finally {
+      setOptionsLoading(false);
     }
   };
 
@@ -381,40 +391,50 @@ export const ProductForm = ({ mode, product, isOpen, onClose, onSuccess }: Produ
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="category">Category</Label>
-                  <Select
-                    value={formData.category_id}
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, category_id: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.map((cat) => (
-                        <SelectItem key={cat.id} value={cat.id}>
-                          {cat.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  {optionsLoading ? (
+                    <div className="h-10 bg-muted rounded-md animate-pulse" />
+                  ) : (
+                    <Select
+                      key={`cat-${categories.length}-${formData.category_id}`}
+                      value={formData.category_id}
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, category_id: value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map((cat) => (
+                          <SelectItem key={cat.id} value={cat.id}>
+                            {cat.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="brand">Brand</Label>
-                  <Select
-                    value={formData.brand_id}
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, brand_id: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select brand" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {brands.map((brand) => (
-                        <SelectItem key={brand.id} value={brand.id}>
-                          {brand.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  {optionsLoading ? (
+                    <div className="h-10 bg-muted rounded-md animate-pulse" />
+                  ) : (
+                    <Select
+                      key={`brand-${brands.length}-${formData.brand_id}`}
+                      value={formData.brand_id}
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, brand_id: value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select brand" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {brands.map((brand) => (
+                          <SelectItem key={brand.id} value={brand.id}>
+                            {brand.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                 </div>
               </div>
 
@@ -613,6 +633,6 @@ export const ProductForm = ({ mode, product, isOpen, onClose, onSuccess }: Produ
           </div>
         </form>
       </DialogContent>
-    </Dialog>
+    </Dialog >
   );
 };

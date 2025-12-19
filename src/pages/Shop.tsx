@@ -44,9 +44,30 @@ const Shop = () => {
   const [categories, setCategories] = useState<string[]>(["all"]);
   const [loading, setLoading] = useState(true);
   const [addingProductId, setAddingProductId] = useState<string | null>(null);
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
   const buttonRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({});
   const { toast } = useToast();
   const { addToCart } = useCart();
+
+  // Subcategory definitions for Dogs and Cats
+  const subcategories: Record<string, { label: string; keywords: string[] }[]> = {
+    dogs: [
+      { label: "All", keywords: [] },
+      { label: "Dry Food", keywords: ["dry food", "kibble", "dry"] },
+      { label: "Wet Food", keywords: ["wet food", "canned", "wet"] },
+      { label: "Treats", keywords: ["treat", "snack", "biscuit", "chew"] },
+      { label: "Toys", keywords: ["toy", "ball", "rope", "plush"] },
+      { label: "Accessories", keywords: ["collar", "leash", "harness", "bed", "bowl"] },
+    ],
+    cats: [
+      { label: "All", keywords: [] },
+      { label: "Dry Food", keywords: ["dry food", "kibble", "dry"] },
+      { label: "Wet Food", keywords: ["wet food", "canned", "wet"] },
+      { label: "Treats", keywords: ["treat", "snack"] },
+      { label: "Toys", keywords: ["toy", "mouse", "feather", "ball"] },
+      { label: "Litter", keywords: ["litter", "litter box", "sand"] },
+    ],
+  };
 
   useEffect(() => {
     setSearchQuery(searchParamQuery);
@@ -60,6 +81,8 @@ const Shop = () => {
   // Scroll to top when category changes
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Reset subcategory when category changes
+    setSelectedSubcategory(null);
   }, [categoryParam]);
 
   const fetchProducts = async () => {
@@ -180,26 +203,41 @@ const Shop = () => {
     return categoryParam === "all" || categorySlug === categoryParam;
   });
 
-  // Apply intelligent search on category-filtered products
-  const searchedProducts = intelligentProductSearch(categoryFilteredProducts, searchQuery);
+  // Apply subcategory filter if selected
+  const subcategoryFilteredProducts = selectedSubcategory && selectedSubcategory !== "All"
+    ? categoryFilteredProducts.filter(product => {
+      const currentSubcategories = subcategories[categoryParam] || [];
+      const selectedSub = currentSubcategories.find(s => s.label === selectedSubcategory);
+      if (!selectedSub || selectedSub.keywords.length === 0) return true;
+
+      const productName = product.name.toLowerCase();
+      const productDesc = (product.description || "").toLowerCase();
+      return selectedSub.keywords.some(keyword =>
+        productName.includes(keyword.toLowerCase()) || productDesc.includes(keyword.toLowerCase())
+      );
+    })
+    : categoryFilteredProducts;
+
+  // Apply intelligent search on subcategory-filtered products
+  const searchedProducts = intelligentProductSearch(subcategoryFilteredProducts, searchQuery);
 
   // Apply sorting only when NOT searching (preserve relevance order when searching)
   const filteredProducts = searchQuery.trim().length > 0
     ? searchedProducts // Keep relevance-based order from intelligent search
     : searchedProducts.sort((a, b) => {
-        switch (sortBy) {
-          case "price-low":
-            return a.price - b.price;
-          case "price-high":
-            return b.price - a.price;
-          case "sku-asc":
-            return (a.sku || "").localeCompare(b.sku || "");
-          case "featured":
-          default:
-            // Default fallback to SKU if no other sort matches (though default state is sku-asc)
-            return (a.sku || "").localeCompare(b.sku || "");
-        }
-      });
+      switch (sortBy) {
+        case "price-low":
+          return a.price - b.price;
+        case "price-high":
+          return b.price - a.price;
+        case "sku-asc":
+          return (a.sku || "").localeCompare(b.sku || "");
+        case "featured":
+        default:
+          // Default fallback to SKU if no other sort matches (though default state is sku-asc)
+          return (a.sku || "").localeCompare(b.sku || "");
+      }
+    });
 
   return (
     <div className="container py-8">
@@ -290,6 +328,23 @@ const Shop = () => {
             </Button>
           ))}
         </div>
+
+        {/* Subcategory Filters - Only for Dogs and Cats */}
+        {(categoryParam === "dogs" || categoryParam === "cats") && subcategories[categoryParam] && (
+          <div className="flex gap-2 overflow-x-auto pt-2 scrollbar-hide">
+            {subcategories[categoryParam].map((sub) => (
+              <Button
+                key={sub.label}
+                variant={selectedSubcategory === sub.label || (sub.label === "All" && !selectedSubcategory) ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => setSelectedSubcategory(sub.label === "All" ? null : sub.label)}
+                className="whitespace-nowrap text-xs h-7 px-3"
+              >
+                {sub.label}
+              </Button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Products Grid */}

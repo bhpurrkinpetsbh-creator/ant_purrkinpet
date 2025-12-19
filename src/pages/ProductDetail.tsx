@@ -4,12 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ShoppingCart, Heart, Share2, Truck, Shield, ArrowLeft, ZoomIn, Check } from "lucide-react";
+import { ShoppingCart, Heart, Share2, Truck, Shield, ArrowLeft, ZoomIn, Check, Edit } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/hooks/useCart";
 import { useWishlist } from "@/hooks/useWishlist";
 import { ShareDialog } from "@/components/product/ShareDialog";
+import { ProductForm } from "@/components/admin/ProductForm";
 import ImgZoom from "react-img-zoom";
 import {
   Carousel,
@@ -36,6 +37,8 @@ const ProductDetail = () => {
   const [isZoomEnabled, setIsZoomEnabled] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isEditFormOpen, setIsEditFormOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const { addToCart } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
@@ -52,37 +55,66 @@ const ProductDetail = () => {
     };
 
     window.addEventListener('blur', handleBlur);
-    
+
     return () => {
       window.removeEventListener('blur', handleBlur);
     };
   }, []);
 
+  // Check if user is admin
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: roleData } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .eq('role', 'admin')
+          .maybeSingle();
+
+        setIsAdmin(!!roleData);
+      }
+    };
+
+    checkAdminStatus();
+  }, []);
+
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const { data, error } = await supabase
+        // Check if id is a UUID (for id-based lookup) or slug (for slug-based lookup)
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id || '');
+
+        let query = supabase
           .from('products')
           .select(`
             *,
             categories (name),
             brands (name)
-          `)
-          .eq('id', id)
-          .single();
+          `);
+
+        // Use slug if not a UUID, otherwise use id
+        if (isUUID) {
+          query = query.eq('id', id);
+        } else {
+          query = query.eq('slug', id);
+        }
+
+        const { data, error } = await query.single();
 
         if (error) throw error;
         setProduct(data);
 
-        // Fetch product images
+        // Fetch product images using the product's actual id
         const { data: images, error: imagesError } = await supabase
           .from('product_images')
           .select('*')
-          .eq('product_id', id)
+          .eq('product_id', data.id)
           .order('display_order', { ascending: true });
 
         if (imagesError) throw imagesError;
-        
+
         // If no additional images, use the main product image
         if (!images || images.length === 0) {
           setProductImages([{ image_url: data.image_url, is_primary: true }]);
@@ -104,14 +136,14 @@ const ProductDetail = () => {
 
   const handleAddToCart = async () => {
     if (!product || isAdding) return;
-    
+
     setIsAdding(true);
-    
+
     // Create flying cart animation
     const buttonRect = buttonRef.current?.getBoundingClientRect();
     const cartIcon = document.querySelector('[data-cart-icon]');
     const cartRect = cartIcon?.getBoundingClientRect();
-    
+
     if (buttonRect && cartRect) {
       const flyingCart = document.createElement('div');
       flyingCart.innerHTML = `
@@ -128,30 +160,30 @@ const ProductDetail = () => {
         pointer-events: none;
         color: hsl(var(--primary));
       `;
-      
+
       const xDistance = cartRect.left + cartRect.width / 2 - (buttonRect.left + buttonRect.width / 2);
       const yDistance = cartRect.top + cartRect.height / 2 - (buttonRect.top + buttonRect.height / 2);
-      
+
       flyingCart.style.setProperty('--x-mid', `${xDistance * 0.4}px`);
       flyingCart.style.setProperty('--y-mid', `${yDistance * 0.4 - 50}px`);
       flyingCart.style.setProperty('--x-end', `${xDistance}px`);
       flyingCart.style.setProperty('--y-end', `${yDistance}px`);
-      
+
       flyingCart.classList.add('animate-fly-to-cart');
       document.body.appendChild(flyingCart);
-      
+
       setTimeout(() => {
         flyingCart.remove();
         window.dispatchEvent(new CustomEvent('cart:item-added'));
       }, 800);
     }
-    
+
     const success = await addToCart(product.id, quantity);
     if (success) {
       toast.success("Added to cart!", {
         description: `${quantity} x ${product.name}`,
       });
-      
+
       setTimeout(() => {
         setIsAdding(false);
       }, 1200);
@@ -261,7 +293,7 @@ const ProductDetail = () => {
               )}
             </Card>
           )}
-          
+
           <div className="flex justify-center pt-2">
             <Button
               variant={isZoomEnabled ? "default" : "outline"}
@@ -278,8 +310,23 @@ const ProductDetail = () => {
         {/* Product Info */}
         <div className="space-y-6">
           <div>
-            <Badge className="mb-2">{product.categories?.name || 'Product'}</Badge>
-            <h1 className="font-display text-3xl font-bold mb-2">{product.name}</h1>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <Badge className="mb-2">{product.categories?.name || 'Product'}</Badge>
+                <h1 className="font-display text-3xl font-bold mb-2">{product.name}</h1>
+              </div>
+              {isAdmin && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsEditFormOpen(true)}
+                  className="gap-2 shrink-0"
+                >
+                  <Edit className="h-4 w-4" />
+                  Edit Product
+                </Button>
+              )}
+            </div>
             <div className="flex items-center gap-4">
               {(product.stock_quantity ?? 0) > 0 ? (
                 <Badge variant="secondary" className="bg-secondary/20 text-secondary-foreground">
@@ -337,9 +384,8 @@ const ProductDetail = () => {
               <Button
                 ref={buttonRef}
                 size="lg"
-                className={`flex-1 bg-gradient-hero hover:opacity-90 transition-all duration-300 ${
-                  isAdding ? 'animate-button-success' : ''
-                }`}
+                className={`flex-1 bg-gradient-hero hover:opacity-90 transition-all duration-300 ${isAdding ? 'animate-button-success' : ''
+                  }`}
                 onClick={handleAddToCart}
                 disabled={isAdding || (product.stock_quantity ?? 0) <= 0}
               >
@@ -360,19 +406,18 @@ const ProductDetail = () => {
                   </>
                 )}
               </Button>
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 variant="outline"
                 onClick={handleToggleWishlist}
               >
-                <Heart 
-                  className={`h-5 w-5 transition-colors ${
-                    isProductInWishlist ? 'fill-red-500 text-red-500' : ''
-                  }`}
+                <Heart
+                  className={`h-5 w-5 transition-colors ${isProductInWishlist ? 'fill-red-500 text-red-500' : ''
+                    }`}
                 />
               </Button>
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 variant="outline"
                 onClick={() => setShareDialogOpen(true)}
               >
@@ -442,14 +487,29 @@ const ProductDetail = () => {
       </Tabs>
 
       {product && (
-        <ShareDialog 
-          open={shareDialogOpen} 
+        <ShareDialog
+          open={shareDialogOpen}
           onOpenChange={setShareDialogOpen}
           product={{
             id: product.id,
             name: product.name,
             price: product.price,
             image_url: product.image_url
+          }}
+        />
+      )}
+
+      {/* Admin Edit Form */}
+      {isAdmin && product && (
+        <ProductForm
+          mode="edit"
+          product={product}
+          isOpen={isEditFormOpen}
+          onClose={() => setIsEditFormOpen(false)}
+          onSuccess={() => {
+            setIsEditFormOpen(false);
+            // Reload page to show updated product data
+            window.location.reload();
           }}
         />
       )}

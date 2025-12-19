@@ -15,11 +15,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Package, Search, Edit, ArrowLeft } from "lucide-react";
+import { Package, Search, Edit, ArrowLeft, ArrowUpDown } from "lucide-react";
 import { Link } from "react-router-dom";
 import { LowStockProducts } from "@/components/admin/LowStockProducts";
 import { InventoryTransactions } from "@/components/admin/InventoryTransactions";
 import { StockAdjustment } from "@/components/admin/StockAdjustment";
+import { SmartInventoryCommands } from "@/components/admin/SmartInventoryCommands";
 
 interface Product {
   id: string;
@@ -41,6 +42,8 @@ const AdminInventory = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isAdjustmentDialogOpen, setIsAdjustmentDialogOpen] = useState(false);
+  const [sortColumn, setSortColumn] = useState<'name' | 'sku' | 'stock' | 'price'>('name');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -48,17 +51,47 @@ const AdminInventory = () => {
   }, []);
 
   useEffect(() => {
+    let filtered = products;
+
     if (searchQuery) {
-      const filtered = products.filter(
+      filtered = products.filter(
         (product) =>
           product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           product.sku?.toLowerCase().includes(searchQuery.toLowerCase())
       );
-      setFilteredProducts(filtered);
-    } else {
-      setFilteredProducts(products);
     }
-  }, [searchQuery, products]);
+
+    // Apply sorting
+    filtered = [...filtered].sort((a, b) => {
+      let comparison = 0;
+      switch (sortColumn) {
+        case 'name':
+          comparison = a.name.localeCompare(b.name);
+          break;
+        case 'sku':
+          comparison = (a.sku || '').localeCompare(b.sku || '');
+          break;
+        case 'stock':
+          comparison = (a.stock_quantity ?? 0) - (b.stock_quantity ?? 0);
+          break;
+        case 'price':
+          comparison = a.price - b.price;
+          break;
+      }
+      return sortDirection === 'asc' ? comparison : -comparison;
+    });
+
+    setFilteredProducts(filtered);
+  }, [searchQuery, products, sortColumn, sortDirection]);
+
+  const handleSort = (column: 'name' | 'sku' | 'stock' | 'price') => {
+    if (sortColumn === column) {
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortColumn(column);
+      setSortDirection('asc');
+    }
+  };
 
   const checkAdminAccess = async () => {
     try {
@@ -155,6 +188,7 @@ const AdminInventory = () => {
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="smart-commands">Smart Commands</TabsTrigger>
           <TabsTrigger value="all-products">All Products</TabsTrigger>
           <TabsTrigger value="transactions">Transaction History</TabsTrigger>
         </TabsList>
@@ -196,6 +230,10 @@ const AdminInventory = () => {
           </Card>
         </TabsContent>
 
+        <TabsContent value="smart-commands">
+          <SmartInventoryCommands />
+        </TabsContent>
+
         <TabsContent value="all-products" className="space-y-4">
           <Card>
             <CardHeader>
@@ -226,11 +264,35 @@ const AdminInventory = () => {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Product</TableHead>
-                        <TableHead>SKU</TableHead>
+                        <TableHead
+                          className="cursor-pointer hover:bg-muted/50"
+                          onClick={() => handleSort('name')}
+                        >
+                          <div className="flex items-center gap-1">
+                            Product
+                            <ArrowUpDown className={`h-3 w-3 ${sortColumn === 'name' ? 'text-primary' : 'text-muted-foreground'}`} />
+                          </div>
+                        </TableHead>
+                        <TableHead
+                          className="cursor-pointer hover:bg-muted/50"
+                          onClick={() => handleSort('sku')}
+                        >
+                          <div className="flex items-center gap-1">
+                            SKU
+                            <ArrowUpDown className={`h-3 w-3 ${sortColumn === 'sku' ? 'text-primary' : 'text-muted-foreground'}`} />
+                          </div>
+                        </TableHead>
                         <TableHead>Category</TableHead>
                         <TableHead>Brand</TableHead>
-                        <TableHead className="text-right">Stock</TableHead>
+                        <TableHead
+                          className="text-right cursor-pointer hover:bg-muted/50"
+                          onClick={() => handleSort('stock')}
+                        >
+                          <div className="flex items-center justify-end gap-1">
+                            Stock
+                            <ArrowUpDown className={`h-3 w-3 ${sortColumn === 'stock' ? 'text-primary' : 'text-muted-foreground'}`} />
+                          </div>
+                        </TableHead>
                         <TableHead className="text-right">Threshold</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
