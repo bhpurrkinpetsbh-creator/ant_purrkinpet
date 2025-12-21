@@ -310,7 +310,7 @@ const getEmailTemplate = (data: OrderEmailRequest): { subject: string; html: str
                       <div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px; margin-bottom: 30px; border-radius: 4px;">
                         <p style="margin: 0; color: #92400e; font-size: 14px; line-height: 1.6;">
                           <strong>Need Help?</strong><br>
-                          Contact us at <a href="mailto:bhpurrkinpetsbh@gmail.com" style="color: #92400e; text-decoration: underline;">bhpurrkinpetsbh@gmail.com</a> or WhatsApp us at <strong>+973 XXXX XXXX</strong>
+                          Contact us at <a href="mailto:purrkinpets@gmail.com" style="color: #92400e; text-decoration: underline;">purrkinpets@gmail.com</a> or WhatsApp us at <strong>+973 3595 7800</strong>
                         </p>
                       </div>
                       
