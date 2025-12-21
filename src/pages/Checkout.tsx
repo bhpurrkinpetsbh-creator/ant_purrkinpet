@@ -185,12 +185,12 @@ const Checkout = () => {
     setEditingAddressId(address.id);
     setIsAddingNew(false);
     setShowForm(true);
-    
+
     // Check if address label is custom (not in predefined list)
     const isCustomLabel = !ADDRESS_LABELS.slice(0, -1).includes(address.label as any);
     setShowCustomLabel(isCustomLabel);
     setCustomLabelValue(isCustomLabel ? address.label : "");
-    
+
     form.reset({
       label: isCustomLabel ? "Custom" : address.label,
       full_name: address.full_name,
@@ -649,7 +649,7 @@ const Checkout = () => {
                       <FormItem>
                         <FormLabel>Phone Number *</FormLabel>
                         <FormControl>
-                          <Input placeholder="+973 XXXX XXXX" {...field} />
+                          <Input placeholder="+973 3595 7800" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
