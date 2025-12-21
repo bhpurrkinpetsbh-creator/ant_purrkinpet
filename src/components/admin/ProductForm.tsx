@@ -53,6 +53,7 @@ export const ProductForm = ({ mode, product, isOpen, onClose, onSuccess }: Produ
     is_on_offer: false,
     offer_price: "",
     expiration_date: "",
+    barcode: "",
   });
 
   // Subcategory options based on category
@@ -94,6 +95,7 @@ export const ProductForm = ({ mode, product, isOpen, onClose, onSuccess }: Produ
             is_on_offer: product.is_on_offer ?? false,
             offer_price: product.offer_price?.toString() || "",
             expiration_date: product.expiration_date || "",
+            barcode: product.barcode || "",
           });
           setImagePreview(product.image_url || "");
 
@@ -134,6 +136,7 @@ export const ProductForm = ({ mode, product, isOpen, onClose, onSuccess }: Produ
             is_on_offer: false,
             offer_price: "",
             expiration_date: "",
+            barcode: "",
           });
           setImagePreview("");
           setImageFile(null);
@@ -291,6 +294,7 @@ export const ProductForm = ({ mode, product, isOpen, onClose, onSuccess }: Produ
         is_on_offer: formData.is_on_offer,
         offer_price: formData.offer_price ? parseFloat(formData.offer_price) : null,
         expiration_date: formData.expiration_date || null,
+        barcode: formData.barcode || null,
         image_url: imageUrl!,
       };
 
@@ -575,14 +579,26 @@ export const ProductForm = ({ mode, product, isOpen, onClose, onSuccess }: Produ
               <div className="space-y-4 p-4 border rounded-lg bg-card">
                 <h3 className="text-lg font-semibold border-b pb-2">Inventory & Shipping</h3>
 
-                <div className="space-y-2">
-                  <Label htmlFor="sku">SKU</Label>
-                  <Input
-                    id="sku"
-                    value={formData.sku}
-                    onChange={(e) => setFormData(prev => ({ ...prev, sku: e.target.value }))}
-                    placeholder="Product SKU"
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="sku">SKU</Label>
+                    <Input
+                      id="sku"
+                      value={formData.sku}
+                      onChange={(e) => setFormData(prev => ({ ...prev, sku: e.target.value }))}
+                      placeholder="Product SKU"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="barcode">Bar Code</Label>
+                    <Input
+                      id="barcode"
+                      value={formData.barcode}
+                      onChange={(e) => setFormData(prev => ({ ...prev, barcode: e.target.value }))}
+                      placeholder="Scan or enter barcode"
+                    />
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">

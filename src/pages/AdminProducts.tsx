@@ -44,6 +44,7 @@ interface Product {
   is_active: boolean | null;
   is_featured: boolean | null;
   expiration_date: string | null;
+  barcode: string | null;
   brands?: { name: string } | null;
   categories?: { name: string } | null;
 }
@@ -95,7 +96,8 @@ const AdminProducts = () => {
       filtered = products.filter(
         (product) =>
           product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          product.sku?.toLowerCase().includes(searchQuery.toLowerCase())
+          product.sku?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          product.barcode?.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
@@ -295,12 +297,13 @@ const AdminProducts = () => {
   const handleExport = () => {
     try {
       // Headers for CSV
-      const headers = ["Product Name", "SKU", "Category", "Brand", "Price (BHD)", "Stock", "Status"];
+      const headers = ["Product Name", "SKU", "Barcode", "Category", "Brand", "Price (BHD)", "Stock", "Status"];
 
       // Map data to CSV rows
       const rows = filteredProducts.map(product => [
         `"${product.name}"`, // Quote to handle commas in names
         `"${product.sku || ''}"`,
+        `"${product.barcode || ''}"`,
         `"${product.categories?.name || '-'}"`,
         `"${product.brands?.name || '-'}"`,
         product.price,
@@ -379,7 +382,7 @@ const AdminProducts = () => {
                   <div className="relative w-64">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
-                      placeholder="Search by name or SKU..."
+                      placeholder="Search by name, SKU or barcode..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="pl-10"
@@ -461,8 +464,20 @@ const AdminProducts = () => {
                               />
                               <div>
                                 <div className="font-medium">{product.name}</div>
+                                <div className="flex gap-2 mt-1">
+                                  {product.sku && (
+                                    <span className="text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground font-mono">
+                                      SKU: {product.sku}
+                                    </span>
+                                  )}
+                                  {product.barcode && (
+                                    <span className="text-[10px] bg-blue-50 px-1.5 py-0.5 rounded text-blue-600 font-mono border border-blue-100">
+                                      BC: {product.barcode}
+                                    </span>
+                                  )}
+                                </div>
                                 {product.is_featured && (
-                                  <Badge variant="secondary" className="text-xs mt-1">
+                                  <Badge variant="secondary" className="text-[10px] h-4 px-1.5 mt-1">
                                     Featured
                                   </Badge>
                                 )}
