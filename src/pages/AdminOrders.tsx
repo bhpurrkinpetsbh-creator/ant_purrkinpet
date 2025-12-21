@@ -438,8 +438,10 @@ const AdminOrders = () => {
                               Reject Payment
                             </Button>
                           </div>
-                        ) : order.status === 'cancelled' ? (
-                          <span className="text-sm text-muted-foreground">Cancelled</span>
+                        ) : (order.status === 'cancelled' || order.status === 'delivered') ? (
+                          <span className="text-sm text-muted-foreground">
+                            {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                          </span>
                         ) : (
                           <Select
                             value={order.status}
