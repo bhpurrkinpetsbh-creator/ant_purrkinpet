@@ -114,6 +114,50 @@ const AdminOrders = () => {
       if (error) throw error;
 
       toast.success(`Order status updated to ${newStatus}`);
+
+      // If marked as delivered, send email notification
+      if (newStatus === 'delivered') {
+        try {
+          // Fetch complete order details including items for the email
+          const { data: orderData, error: fetchError } = await supabase
+            .from('orders')
+            .select('*, order_items(*)')
+            .eq('id', orderId)
+            .single();
+
+          if (fetchError) throw fetchError;
+
+          await supabase.functions.invoke('send-order-email', {
+            body: {
+              type: 'order_delivered',
+              customerEmail: orderData.customer_email,
+              customerName: orderData.shipping_name,
+              orderNumber: orderData.order_number,
+              orderTotal: Number(orderData.total).toFixed(3),
+              orderDate: new Date(orderData.created_at).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              }),
+              deliveryDate: new Date(orderData.delivered_at).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              }),
+              items: orderData.order_items.map((item: any) => ({
+                product_name: item.product_name,
+                quantity: item.quantity,
+                unit_price: item.unit_price,
+                total_price: item.total_price
+              }))
+            }
+          });
+          console.log('Delivery notification email sent');
+        } catch (emailError) {
+          console.error('Failed to send delivery email:', emailError);
+        }
+      }
+
       fetchOrders(); // Refresh orders list
     } catch (error: any) {
       console.error("Error updating order:", error);
