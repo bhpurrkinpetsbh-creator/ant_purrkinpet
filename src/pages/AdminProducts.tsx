@@ -83,7 +83,15 @@ const AdminProducts = () => {
   const [sortColumn, setSortColumn] = useState<'name' | 'sku' | 'category' | 'brand' | 'price' | 'stock'>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [isCheckingExpiry, setIsCheckingExpiry] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'draft'>('all');
   const navigate = useNavigate();
+  const searchParams = new URLSearchParams(window.location.search);
+
+  useEffect(() => {
+    const filter = searchParams.get('filter');
+    if (filter === 'draft') setStatusFilter('draft');
+    else if (filter === 'active') setStatusFilter('active');
+  }, []);
 
   useEffect(() => {
     checkAdminAccess();
@@ -93,12 +101,19 @@ const AdminProducts = () => {
     let filtered = products;
 
     if (searchQuery) {
-      filtered = products.filter(
+      filtered = filtered.filter(
         (product) =>
           product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           product.sku?.toLowerCase().includes(searchQuery.toLowerCase()) ||
           product.barcode?.toLowerCase().includes(searchQuery.toLowerCase())
       );
+    }
+
+    // Apply status filter
+    if (statusFilter === 'active') {
+      filtered = filtered.filter(p => p.is_active);
+    } else if (statusFilter === 'draft') {
+      filtered = filtered.filter(p => !p.is_active);
     }
 
     // Apply sorting
@@ -128,7 +143,7 @@ const AdminProducts = () => {
     });
 
     setFilteredProducts(filtered);
-  }, [searchQuery, products, sortColumn, sortDirection]);
+  }, [searchQuery, products, sortColumn, sortDirection, statusFilter]);
 
   const handleSort = (column: 'name' | 'sku' | 'category' | 'brand' | 'price' | 'stock') => {
     if (sortColumn === column) {
@@ -375,41 +390,69 @@ const AdminProducts = () => {
                 <div>
                   <CardTitle>All Products</CardTitle>
                   <CardDescription>
-                    {products.length} total products
+                    {filteredProducts.length} {statusFilter === 'all' ? 'total' : statusFilter} products
                   </CardDescription>
                 </div>
-                <div className="flex items-center gap-4">
-                  <div className="relative w-64">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Search by name, SKU or barcode..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
+                <div className="flex flex-col items-end gap-3 flex-1">
                   <div className="flex items-center gap-2">
                     <Button
-                      variant="outline"
-                      onClick={handleCheckExpiry}
-                      disabled={isCheckingExpiry}
-                      className="gap-2 border-orange-200 hover:bg-orange-50 hover:text-orange-600"
+                      variant={statusFilter === 'all' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setStatusFilter('all')}
+                      className="h-8"
                     >
-                      {isCheckingExpiry ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Bell className="h-4 w-4" />
-                      )}
-                      Check Expiry
+                      All
                     </Button>
-                    <Button variant="outline" onClick={() => setIsExportDialogOpen(true)} className="gap-2">
-                      <Download className="h-4 w-4" />
-                      Excel
+                    <Button
+                      variant={statusFilter === 'active' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setStatusFilter('active')}
+                      className="h-8"
+                    >
+                      Active
                     </Button>
-                    <Button onClick={handleAddProduct} className="gap-2">
-                      <Plus className="h-4 w-4" />
-                      Add
+                    <Button
+                      variant={statusFilter === 'draft' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setStatusFilter('draft')}
+                      className="h-8"
+                    >
+                      Drafts
                     </Button>
+                  </div>
+                  <div className="flex items-center gap-4 w-full justify-end">
+                    <div className="relative w-64">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Search by name, SKU or barcode..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={handleCheckExpiry}
+                        disabled={isCheckingExpiry}
+                        className="gap-2 border-orange-200 hover:bg-orange-50 hover:text-orange-600"
+                      >
+                        {isCheckingExpiry ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Bell className="h-4 w-4" />
+                        )}
+                        Check Expiry
+                      </Button>
+                      <Button variant="outline" onClick={() => setIsExportDialogOpen(true)} className="gap-2">
+                        <Download className="h-4 w-4" />
+                        Excel
+                      </Button>
+                      <Button onClick={handleAddProduct} className="gap-2">
+                        <Plus className="h-4 w-4" />
+                        Add
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -568,7 +611,7 @@ const AdminProducts = () => {
                                 onCheckedChange={() => handleToggleStatus(product.id, product.is_active, product.name)}
                               />
                               <span className={`text-sm ${product.is_active ? 'text-green-600 font-medium' : 'text-muted-foreground'}`}>
-                                {product.is_active ? "Active" : "Inactive"}
+                                {product.is_active ? "Active" : "Draft"}
                               </span>
                             </div>
                           </TableCell>
@@ -592,6 +635,13 @@ const AdminProducts = () => {
                           </TableCell>
                         </TableRow>
                       ))}
+                      {filteredProducts.length === 0 && (
+                        <TableRow>
+                          <TableCell colSpan={10} className="h-24 text-center text-muted-foreground font-medium">
+                            No {statusFilter === "all" ? "" : statusFilter} products found.
+                          </TableCell>
+                        </TableRow>
+                      )}
                     </TableBody>
                   </Table>
                 </div>

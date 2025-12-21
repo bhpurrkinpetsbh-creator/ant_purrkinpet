@@ -331,17 +331,41 @@ const AdminDashboard = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Card className="p-4 border bg-muted/30">
-                <div className="text-sm text-muted-foreground font-semibold mb-1">Total Products</div>
-                <div className="text-3xl font-bold text-foreground">{loading ? "..." : stats.totalProducts}</div>
+              <Card
+                className="p-4 border bg-muted/30 cursor-pointer hover:bg-muted/50 hover:border-primary/50 transition-all group"
+                onClick={() => navigate("/admin/products")}
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <div className="text-sm text-muted-foreground font-semibold mb-1">Total Products</div>
+                    <div className="text-3xl font-bold text-foreground">{loading ? "..." : stats.totalProducts}</div>
+                  </div>
+                  <ExternalLink className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
               </Card>
-              <Card className="p-4 border bg-muted/30">
-                <div className="text-sm text-muted-foreground font-semibold mb-1">Active</div>
-                <div className="text-3xl font-bold text-foreground">{loading ? "..." : stats.activeProducts}</div>
+              <Card
+                className="p-4 border bg-muted/30 cursor-pointer hover:bg-muted/50 hover:border-primary/50 transition-all group"
+                onClick={() => navigate("/admin/products?filter=active")}
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <div className="text-sm text-muted-foreground font-semibold mb-1">Active</div>
+                    <div className="text-3xl font-bold text-foreground">{loading ? "..." : stats.activeProducts}</div>
+                  </div>
+                  <ExternalLink className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
               </Card>
-              <Card className="p-4 border bg-muted/30">
-                <div className="text-sm text-muted-foreground font-semibold mb-1">Draft</div>
-                <div className="text-3xl font-bold text-foreground">{loading ? "..." : stats.draftProducts}</div>
+              <Card
+                className="p-4 border bg-muted/30 cursor-pointer hover:bg-muted/50 hover:border-primary/50 transition-all group"
+                onClick={() => navigate("/admin/products?filter=draft")}
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <div className="text-sm text-muted-foreground font-semibold mb-1">Draft</div>
+                    <div className="text-3xl font-bold text-foreground">{loading ? "..." : stats.draftProducts}</div>
+                  </div>
+                  <ExternalLink className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
               </Card>
             </div>
 
