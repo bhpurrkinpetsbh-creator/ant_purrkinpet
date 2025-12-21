@@ -341,14 +341,16 @@ const ProductDetail = () => {
           </div>
 
           <div className="flex items-baseline gap-3">
-            <span className="text-4xl font-bold text-primary">{product.price} BHD</span>
-            {product.compare_at_price && (
+            <span className="text-4xl font-bold text-primary">
+              {product.is_on_offer && product.offer_price ? product.offer_price : product.price} BHD
+            </span>
+            {product.is_on_offer && product.offer_price && (
               <>
                 <span className="text-xl text-muted-foreground line-through">
-                  {product.compare_at_price} BHD
+                  {product.price} BHD
                 </span>
                 <Badge variant="destructive">
-                  {Math.round((1 - product.price / product.compare_at_price) * 100)}% OFF
+                  {Math.round((1 - product.offer_price / product.price) * 100)}% OFF
                 </Badge>
               </>
             )}

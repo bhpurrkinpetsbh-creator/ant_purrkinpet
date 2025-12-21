@@ -79,7 +79,7 @@ const Wishlist = () => {
                       />
                     </div>
                   </Link>
-                  
+
                   <Button
                     variant="destructive"
                     size="icon"
@@ -99,11 +99,11 @@ const Wishlist = () => {
 
                   <div className="flex items-center gap-2 mb-4">
                     <span className="text-lg font-bold text-primary">
-                      {product.price} BHD
+                      {product.is_on_offer && product.offer_price ? product.offer_price : product.price} BHD
                     </span>
-                    {product.compare_at_price && product.compare_at_price > product.price && (
+                    {product.is_on_offer && product.offer_price && product.offer_price < product.price && (
                       <span className="text-sm text-muted-foreground line-through">
-                        {product.compare_at_price} BHD
+                        {product.price} BHD
                       </span>
                     )}
                   </div>

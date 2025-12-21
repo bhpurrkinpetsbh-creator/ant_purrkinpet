@@ -26,6 +26,8 @@ export const ProductForm = ({ mode, product, isOpen, onClose, onSuccess }: Produ
   const [brands, setBrands] = useState<any[]>([]);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
+  const [showCustomSubcategory, setShowCustomSubcategory] = useState(false);
+  const [customSubcategory, setCustomSubcategory] = useState("");
 
   // Form state
   const [formData, setFormData] = useState({
@@ -38,6 +40,7 @@ export const ProductForm = ({ mode, product, isOpen, onClose, onSuccess }: Produ
     stock_quantity: "",
     low_stock_threshold: "5",
     category_id: "",
+    subcategory: "",
     brand_id: "",
     weight_kg: "",
     length_cm: "",
@@ -47,7 +50,19 @@ export const ProductForm = ({ mode, product, isOpen, onClose, onSuccess }: Produ
     meta_description: "",
     is_active: true,
     is_featured: false,
+    is_on_offer: false,
+    offer_price: "",
+    expiration_date: "",
   });
+
+  // Subcategory options based on category
+  const SUBCATEGORY_OPTIONS: Record<string, string[]> = {
+    dogs: ["Dry Food", "Wet Food", "Treats & Bones", "Toys", "Bowls & Feeders", "Grooming & Care", "Collars & Leashes", "Beds & Baskets", "Accessories"],
+    cats: ["Dry Food", "Wet Food", "Treats", "Toys", "Litter & Boxes", "Bowls & Feeders", "Grooming & Care", "Beds & Furniture", "Accessories"],
+    birds: ["Food & Seeds", "Cages", "Toys & Perches", "Accessories"],
+    fish: ["Food", "Aquariums & Tanks", "Filters & Pumps", "Decorations & Plants", "Accessories"],
+    "small-pets": ["Food", "Cages & Habitats", "Bedding & Litter", "Toys", "Accessories"],
+  };
 
   useEffect(() => {
     const initForm = async () => {
@@ -66,6 +81,7 @@ export const ProductForm = ({ mode, product, isOpen, onClose, onSuccess }: Produ
             stock_quantity: product.stock_quantity?.toString() || "",
             low_stock_threshold: product.low_stock_threshold?.toString() || "5",
             category_id: product.category_id || "",
+            subcategory: product.subcategory || "",
             brand_id: product.brand_id || "",
             weight_kg: product.weight_kg?.toString() || "",
             length_cm: product.length_cm?.toString() || "",
@@ -75,8 +91,23 @@ export const ProductForm = ({ mode, product, isOpen, onClose, onSuccess }: Produ
             meta_description: product.meta_description || "",
             is_active: product.is_active ?? true,
             is_featured: product.is_featured ?? false,
+            is_on_offer: product.is_on_offer ?? false,
+            offer_price: product.offer_price?.toString() || "",
+            expiration_date: product.expiration_date || "",
           });
           setImagePreview(product.image_url || "");
+
+          // Check if the subcategory is one of the predefined ones
+          const selectedCategory = categories.find(c => c.id === product.category_id);
+          const categorySlug = selectedCategory?.slug || "";
+          const predefinedOptions = SUBCATEGORY_OPTIONS[categorySlug] || [];
+          if (product.subcategory && !predefinedOptions.includes(product.subcategory)) {
+            setShowCustomSubcategory(true);
+            setCustomSubcategory(product.subcategory);
+          } else {
+            setShowCustomSubcategory(false);
+            setCustomSubcategory("");
+          }
         } else {
           // Reset form for add mode and auto-generate SKU
           fetchNextSku();
@@ -90,6 +121,7 @@ export const ProductForm = ({ mode, product, isOpen, onClose, onSuccess }: Produ
             stock_quantity: "",
             low_stock_threshold: "5",
             category_id: "",
+            subcategory: "",
             brand_id: "",
             weight_kg: "",
             length_cm: "",
@@ -99,6 +131,9 @@ export const ProductForm = ({ mode, product, isOpen, onClose, onSuccess }: Produ
             meta_description: "",
             is_active: true,
             is_featured: false,
+            is_on_offer: false,
+            offer_price: "",
+            expiration_date: "",
           });
           setImagePreview("");
           setImageFile(null);
@@ -243,6 +278,7 @@ export const ProductForm = ({ mode, product, isOpen, onClose, onSuccess }: Produ
         stock_quantity: formData.stock_quantity ? parseInt(formData.stock_quantity) : 0,
         low_stock_threshold: formData.low_stock_threshold ? parseInt(formData.low_stock_threshold) : 5,
         category_id: formData.category_id || null,
+        subcategory: showCustomSubcategory ? customSubcategory : (formData.subcategory || null),
         brand_id: formData.brand_id || null,
         weight_kg: formData.weight_kg ? parseFloat(formData.weight_kg) : null,
         length_cm: formData.length_cm ? parseFloat(formData.length_cm) : null,
@@ -252,6 +288,9 @@ export const ProductForm = ({ mode, product, isOpen, onClose, onSuccess }: Produ
         meta_description: formData.meta_description || null,
         is_active: formData.is_active,
         is_featured: formData.is_featured,
+        is_on_offer: formData.is_on_offer,
+        offer_price: formData.offer_price ? parseFloat(formData.offer_price) : null,
+        expiration_date: formData.expiration_date || null,
         image_url: imageUrl!,
       };
 
@@ -296,121 +335,142 @@ export const ProductForm = ({ mode, product, isOpen, onClose, onSuccess }: Produ
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <Tabs defaultValue="basic" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="basic">Basic Info</TabsTrigger>
-              <TabsTrigger value="pricing">Pricing & Stock</TabsTrigger>
-              <TabsTrigger value="details">Details</TabsTrigger>
-              <TabsTrigger value="seo">SEO</TabsTrigger>
-            </TabsList>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Left Column - Main Details */}
+            <div className="lg:col-span-2 space-y-8">
+              {/* Basic Information Section */}
+              <div className="space-y-4 p-4 border rounded-lg bg-card">
+                <h3 className="text-lg font-semibold border-b pb-2">Product Information</h3>
 
-            <TabsContent value="basic" className="space-y-4">
-              {/* Image Upload */}
-              <div className="space-y-2">
-                <Label htmlFor="image">Product Image *</Label>
-                <div className="flex items-center gap-4">
-                  {imagePreview && (
-                    <div className="relative">
-                      <img
-                        src={imagePreview}
-                        alt="Preview"
-                        className="w-32 h-32 object-cover rounded-lg"
-                      />
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="icon"
-                        className="absolute -top-2 -right-2 h-6 w-6"
-                        onClick={() => {
-                          setImageFile(null);
-                          setImagePreview("");
-                        }}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  )}
-                  <label htmlFor="image" className="cursor-pointer">
-                    <div className="border-2 border-dashed rounded-lg p-6 hover:bg-accent/50 transition-colors">
-                      <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                      <p className="text-sm text-muted-foreground text-center">
-                        Click to upload image
-                      </p>
-                      <p className="text-xs text-muted-foreground text-center mt-1">
-                        PNG, JPG up to 5MB
-                      </p>
-                    </div>
-                    <input
-                      id="image"
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handleImageChange}
-                    />
-                  </label>
-                </div>
-              </div>
-
-              {/* Product Name */}
-              <div className="space-y-2">
-                <Label htmlFor="name">Product Name *</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => handleNameChange(e.target.value)}
-                  placeholder="Enter product name"
-                  required
-                />
-              </div>
-
-              {/* Slug */}
-              <div className="space-y-2">
-                <Label htmlFor="slug">URL Slug *</Label>
-                <Input
-                  id="slug"
-                  value={formData.slug}
-                  onChange={(e) => setFormData(prev => ({ ...prev, slug: e.target.value }))}
-                  placeholder="product-url-slug"
-                  required
-                />
-              </div>
-
-              {/* Description */}
-              <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="Product description"
-                  rows={4}
-                />
-              </div>
-
-              {/* Category & Brand */}
-              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="category">Category</Label>
-                  {optionsLoading ? (
-                    <div className="h-10 bg-muted rounded-md animate-pulse" />
-                  ) : (
-                    <Select
-                      key={`cat-${categories.length}-${formData.category_id}`}
-                      value={formData.category_id}
-                      onValueChange={(value) => setFormData(prev => ({ ...prev, category_id: value }))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categories.map((cat) => (
-                          <SelectItem key={cat.id} value={cat.id}>
-                            {cat.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
+                  <Label htmlFor="name">Product Name *</Label>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => handleNameChange(e.target.value)}
+                    placeholder="Enter product name"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="slug">URL Slug *</Label>
+                  <Input
+                    id="slug"
+                    value={formData.slug}
+                    onChange={(e) => setFormData(prev => ({ ...prev, slug: e.target.value }))}
+                    placeholder="product-url-slug"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                    placeholder="Product description"
+                    rows={4}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="category">Category</Label>
+                    {optionsLoading ? (
+                      <div className="h-10 bg-muted rounded-md animate-pulse" />
+                    ) : (
+                      <Select
+                        key={`cat-${categories.length}-${formData.category_id}`}
+                        value={formData.category_id}
+                        onValueChange={(value) => setFormData(prev => ({ ...prev, category_id: value, subcategory: "" }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {categories.map((cat) => (
+                            <SelectItem key={cat.id} value={cat.id}>
+                              {cat.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="subcategory">Subcategory</Label>
+                    <div className="space-y-2">
+                      {!showCustomSubcategory ? (
+                        <>
+                          {(() => {
+                            const selectedCategory = categories.find(c => c.id === formData.category_id);
+                            const categorySlug = selectedCategory?.slug || "";
+                            const subcategoryOptions = SUBCATEGORY_OPTIONS[categorySlug] || [];
+
+                            return (
+                              <div className="flex gap-2">
+                                <div className="flex-1">
+                                  {subcategoryOptions.length > 0 ? (
+                                    <Select
+                                      key={`subcat-${formData.category_id}-${formData.subcategory}`}
+                                      value={formData.subcategory}
+                                      onValueChange={(value) => setFormData(prev => ({ ...prev, subcategory: value }))}
+                                    >
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Select subcategory" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {subcategoryOptions.map((sub) => (
+                                          <SelectItem key={sub} value={sub}>
+                                            {sub}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  ) : (
+                                    <div className="h-10 bg-muted/50 rounded-md flex items-center justify-center text-sm text-muted-foreground border">
+                                      Select a category first or add custom
+                                    </div>
+                                  )}
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => setShowCustomSubcategory(true)}
+                                >
+                                  Custom
+                                </Button>
+                              </div>
+                            );
+                          })()}
+                        </>
+                      ) : (
+                        <div className="flex gap-2">
+                          <Input
+                            value={customSubcategory}
+                            onChange={(e) => setCustomSubcategory(e.target.value)}
+                            placeholder="Enter custom subcategory"
+                            className="flex-1"
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setShowCustomSubcategory(false);
+                              setCustomSubcategory("");
+                            }}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -438,189 +498,273 @@ export const ProductForm = ({ mode, product, isOpen, onClose, onSuccess }: Produ
                 </div>
               </div>
 
-              {/* Active & Featured */}
-              <div className="flex items-center gap-6">
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="is_active"
-                    checked={formData.is_active}
-                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))}
-                  />
-                  <Label htmlFor="is_active">Active (Visible in store)</Label>
+              {/* Pricing Section */}
+              <div className="space-y-4 p-4 border rounded-lg bg-card">
+                <h3 className="text-lg font-semibold border-b pb-2">Pricing Strategy</h3>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="compare_at_price">
+                      MRP / Cost Price (BHD)
+                      <span className="text-xs text-muted-foreground ml-1">(Original price)</span>
+                    </Label>
+                    <Input
+                      id="compare_at_price"
+                      type="number"
+                      step="0.001"
+                      value={formData.compare_at_price}
+                      onChange={(e) => setFormData(prev => ({ ...prev, compare_at_price: e.target.value }))}
+                      placeholder="Optional"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="price">
+                      Website Price (BHD) <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="price"
+                      type="number"
+                      step="0.001"
+                      value={formData.price}
+                      onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+                      placeholder="0.00"
+                      required
+                    />
+                  </div>
                 </div>
 
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="is_featured"
-                    checked={formData.is_featured}
-                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_featured: checked }))}
+                <div className="flex items-center gap-3 p-3 border rounded-md bg-muted/20">
+                  <input
+                    type="checkbox"
+                    id="is_on_offer"
+                    checked={formData.is_on_offer}
+                    onChange={(e) => setFormData(prev => ({ ...prev, is_on_offer: e.target.checked }))}
+                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                   />
-                  <Label htmlFor="is_featured">Featured Product</Label>
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="pricing" className="space-y-4">
-              {/* Price */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="price">Regular Price (BHD) *</Label>
-                  <Input
-                    id="price"
-                    type="number"
-                    step="0.001"
-                    value={formData.price}
-                    onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
-                    placeholder="0.00"
-                    required
-                  />
+                  <Label htmlFor="is_on_offer" className="cursor-pointer flex-1">
+                    <span className="font-medium">🏷️ Mark as On Offer</span>
+                    <span className="text-xs text-muted-foreground block">Show in Offer Zone with discount badge</span>
+                  </Label>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="compare_at_price">Sale Price (BHD)</Label>
-                  <Input
-                    id="compare_at_price"
-                    type="number"
-                    step="0.001"
-                    value={formData.compare_at_price}
-                    onChange={(e) => setFormData(prev => ({ ...prev, compare_at_price: e.target.value }))}
-                    placeholder="0.00"
-                  />
-                </div>
-              </div>
-
-              {/* SKU */}
-              <div className="space-y-2">
-                <Label htmlFor="sku">
-                  SKU
-                  {mode === 'add' && (
-                    <span className="text-xs text-muted-foreground ml-2">(Auto-generated, editable)</span>
-                  )}
-                </Label>
-                <Input
-                  id="sku"
-                  value={formData.sku}
-                  onChange={(e) => setFormData(prev => ({ ...prev, sku: e.target.value }))}
-                  placeholder="Product SKU"
-                />
-                {mode === 'add' && (
-                  <p className="text-xs text-muted-foreground">
-                    SKU auto-generated based on last product. You can edit it if needed.
-                  </p>
+                {formData.is_on_offer && (
+                  <div className="space-y-2 p-3 border-2 border-primary/30 rounded-md bg-primary/5">
+                    <Label htmlFor="offer_price">
+                      Offer Price (BHD) <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="offer_price"
+                      type="number"
+                      step="0.001"
+                      value={formData.offer_price}
+                      onChange={(e) => setFormData(prev => ({ ...prev, offer_price: e.target.value }))}
+                      placeholder="Enter offer price"
+                      className="border-primary/50"
+                    />
+                    {formData.offer_price && formData.price && parseFloat(formData.offer_price) < parseFloat(formData.price) && (
+                      <p className="text-sm text-green-600 font-medium">
+                        ✓ Discount: {Math.round((1 - parseFloat(formData.offer_price) / parseFloat(formData.price)) * 100)}% OFF
+                      </p>
+                    )}
+                  </div>
                 )}
               </div>
 
-              {/* Stock */}
-              <div className="grid grid-cols-2 gap-4">
+              {/* Inventory Section */}
+              <div className="space-y-4 p-4 border rounded-lg bg-card">
+                <h3 className="text-lg font-semibold border-b pb-2">Inventory & Shipping</h3>
+
                 <div className="space-y-2">
-                  <Label htmlFor="stock_quantity">Stock Quantity</Label>
+                  <Label htmlFor="sku">SKU</Label>
                   <Input
-                    id="stock_quantity"
-                    type="number"
-                    value={formData.stock_quantity}
-                    onChange={(e) => setFormData(prev => ({ ...prev, stock_quantity: e.target.value }))}
-                    placeholder="0"
+                    id="sku"
+                    value={formData.sku}
+                    onChange={(e) => setFormData(prev => ({ ...prev, sku: e.target.value }))}
+                    placeholder="Product SKU"
                   />
                 </div>
 
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="stock_quantity">Stock Quantity</Label>
+                    <Input
+                      id="stock_quantity"
+                      type="number"
+                      value={formData.stock_quantity}
+                      onChange={(e) => setFormData(prev => ({ ...prev, stock_quantity: e.target.value }))}
+                      placeholder="0"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="low_stock_threshold">Low Stock Alert</Label>
+                    <Input
+                      id="low_stock_threshold"
+                      type="number"
+                      value={formData.low_stock_threshold}
+                      onChange={(e) => setFormData(prev => ({ ...prev, low_stock_threshold: e.target.value }))}
+                      placeholder="5"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-4 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="weight_kg">Weight (kg)</Label>
+                    <Input
+                      id="weight_kg"
+                      type="number"
+                      step="0.01"
+                      value={formData.weight_kg}
+                      onChange={(e) => setFormData(prev => ({ ...prev, weight_kg: e.target.value }))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="length_cm">L (cm)</Label>
+                    <Input
+                      id="length_cm"
+                      type="number"
+                      step="0.1"
+                      value={formData.length_cm}
+                      onChange={(e) => setFormData(prev => ({ ...prev, length_cm: e.target.value }))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="width_cm">W (cm)</Label>
+                    <Input
+                      id="width_cm"
+                      type="number"
+                      step="0.1"
+                      value={formData.width_cm}
+                      onChange={(e) => setFormData(prev => ({ ...prev, width_cm: e.target.value }))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="height_cm">H (cm)</Label>
+                    <Input
+                      id="height_cm"
+                      type="number"
+                      step="0.1"
+                      value={formData.height_cm}
+                      onChange={(e) => setFormData(prev => ({ ...prev, height_cm: e.target.value }))}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* SEO Section (Commented Out) */}
+              {/* 
+              <div className="space-y-4 p-4 border rounded-lg bg-card opacity-60">
+                <h3 className="text-lg font-semibold border-b pb-2">SEO Settings</h3>
                 <div className="space-y-2">
-                  <Label htmlFor="low_stock_threshold">Low Stock Alert Threshold</Label>
+                  <Label htmlFor="meta_title">Meta Title</Label>
                   <Input
-                    id="low_stock_threshold"
-                    type="number"
-                    value={formData.low_stock_threshold}
-                    onChange={(e) => setFormData(prev => ({ ...prev, low_stock_threshold: e.target.value }))}
-                    placeholder="5"
+                    id="meta_title"
+                    value={formData.meta_title}
+                    onChange={(e) => setFormData(prev => ({ ...prev, meta_title: e.target.value }))}
+                    placeholder="SEO title"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="meta_description">Meta Description</Label>
+                  <Textarea
+                    id="meta_description"
+                    value={formData.meta_description}
+                    onChange={(e) => setFormData(prev => ({ ...prev, meta_description: e.target.value }))}
+                    placeholder="SEO description"
+                    rows={2}
                   />
                 </div>
               </div>
-            </TabsContent>
+              */}
+            </div>
 
-            <TabsContent value="details" className="space-y-4">
-              {/* Weight */}
-              <div className="space-y-2">
-                <Label htmlFor="weight_kg">Weight (kg)</Label>
-                <Input
-                  id="weight_kg"
-                  type="number"
-                  step="0.01"
-                  value={formData.weight_kg}
-                  onChange={(e) => setFormData(prev => ({ ...prev, weight_kg: e.target.value }))}
-                  placeholder="0.00"
-                />
-              </div>
-
-              {/* Dimensions */}
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="length_cm">Length (cm)</Label>
-                  <Input
-                    id="length_cm"
-                    type="number"
-                    step="0.1"
-                    value={formData.length_cm}
-                    onChange={(e) => setFormData(prev => ({ ...prev, length_cm: e.target.value }))}
-                    placeholder="0.0"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="width_cm">Width (cm)</Label>
-                  <Input
-                    id="width_cm"
-                    type="number"
-                    step="0.1"
-                    value={formData.width_cm}
-                    onChange={(e) => setFormData(prev => ({ ...prev, width_cm: e.target.value }))}
-                    placeholder="0.0"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="height_cm">Height (cm)</Label>
-                  <Input
-                    id="height_cm"
-                    type="number"
-                    step="0.1"
-                    value={formData.height_cm}
-                    onChange={(e) => setFormData(prev => ({ ...prev, height_cm: e.target.value }))}
-                    placeholder="0.0"
-                  />
+            {/* Right Column - Image & Status (Secondary Details) */}
+            <div className="space-y-8">
+              {/* Image Upload Section */}
+              <div className="space-y-4 p-4 border rounded-lg bg-card text-center">
+                <h3 className="text-lg font-semibold border-b pb-2">Product Image</h3>
+                <div className="flex flex-col items-center gap-4">
+                  {imagePreview ? (
+                    <div className="relative group">
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        className="w-full aspect-square object-contain rounded-lg border bg-muted/20"
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute -top-2 -right-2 h-8 w-8 shadow-lg"
+                        onClick={() => {
+                          setImageFile(null);
+                          setImagePreview("");
+                        }}
+                      >
+                        <X className="h-5 w-5" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <label htmlFor="image" className="w-full cursor-pointer">
+                      <div className="border-2 border-dashed rounded-lg p-10 hover:bg-accent/50 transition-all group">
+                        <Upload className="h-10 w-10 mx-auto mb-3 text-muted-foreground group-hover:text-primary transition-colors" />
+                        <p className="font-medium text-sm">Upload Image</p>
+                        <p className="text-xs text-muted-foreground mt-1">PNG, JPG up to 5MB</p>
+                      </div>
+                      <input id="image" type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+                    </label>
+                  )}
                 </div>
               </div>
-            </TabsContent>
 
-            <TabsContent value="seo" className="space-y-4">
-              {/* Meta Title */}
-              <div className="space-y-2">
-                <Label htmlFor="meta_title">Meta Title</Label>
-                <Input
-                  id="meta_title"
-                  value={formData.meta_title}
-                  onChange={(e) => setFormData(prev => ({ ...prev, meta_title: e.target.value }))}
-                  placeholder="SEO page title"
-                />
+              {/* Status Section */}
+              <div className="space-y-4 p-4 border rounded-lg bg-card">
+                <h3 className="text-lg font-semibold border-b pb-2">Visibility & Status</h3>
+
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="is_active" className="cursor-pointer">Active in Store</Label>
+                    <Switch
+                      id="is_active"
+                      checked={formData.is_active}
+                      onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="is_featured" className="cursor-pointer">Featured Product</Label>
+                    <Switch
+                      id="is_featured"
+                      checked={formData.is_featured}
+                      onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_featured: checked }))}
+                    />
+                  </div>
+
+                  <div className="space-y-2 pt-4 border-t">
+                    <Label htmlFor="expiration_date">Expiration Date</Label>
+                    <Input
+                      id="expiration_date"
+                      type="date"
+                      value={formData.expiration_date}
+                      onChange={(e) => setFormData(prev => ({ ...prev, expiration_date: e.target.value }))}
+                      className="w-full"
+                    />
+                    <p className="text-[10px] text-muted-foreground italic">
+                      Used for automated expiration alerts
+                    </p>
+                  </div>
+                </div>
               </div>
+            </div>
+          </div>
 
-              {/* Meta Description */}
-              <div className="space-y-2">
-                <Label htmlFor="meta_description">Meta Description</Label>
-                <Textarea
-                  id="meta_description"
-                  value={formData.meta_description}
-                  onChange={(e) => setFormData(prev => ({ ...prev, meta_description: e.target.value }))}
-                  placeholder="SEO meta description"
-                  rows={3}
-                />
-              </div>
-            </TabsContent>
-          </Tabs>
-
-          <div className="flex justify-end gap-3 pt-4 border-t">
+          <div className="flex justify-end gap-3 pt-6 border-t sticky bottom-0 bg-background pb-2">
             <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
               Cancel
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" disabled={loading} className="px-8 bg-primary hover:bg-primary/90">
               {loading ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />

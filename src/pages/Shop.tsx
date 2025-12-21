@@ -32,6 +32,8 @@ type Product = {
   brand_id: string | null;
   categories: { name: string; slug: string } | null;
   compare_at_price: number | null;
+  offer_price: number | null;
+  is_on_offer: boolean | null;
   sku: string | null;
 };
 
@@ -39,6 +41,7 @@ const Shop = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryParam = searchParams.get("category") || "all";
   const searchParamQuery = searchParams.get("search") || "";
+  const offersParam = searchParams.get("offers") === "true";
   const [searchQuery, setSearchQuery] = useState(searchParamQuery);
   const [sortBy, setSortBy] = useState("sku-asc");
   const [products, setProducts] = useState<Product[]>([]);
@@ -119,6 +122,8 @@ const Shop = () => {
           category_id,
           brand_id,
           compare_at_price,
+          offer_price,
+          is_on_offer,
           categories (
             name,
             slug
@@ -219,7 +224,14 @@ const Shop = () => {
   // Filter products by category first
   const categoryFilteredProducts = products.filter(product => {
     const categorySlug = product.categories?.slug || "";
-    return categoryParam === "all" || categorySlug === categoryParam;
+    const matchesCategory = categoryParam === "all" || categorySlug === categoryParam;
+
+    // If offers filter is active, only show products marked as "On Offer"
+    if (offersParam) {
+      return matchesCategory && product.is_on_offer === true;
+    }
+
+    return matchesCategory;
   });
 
   // Apply subcategory filter if selected
@@ -443,16 +455,20 @@ const Shop = () => {
 
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-lg text-primary">{product.price.toFixed(2)} BHD</span>
-                        {product.compare_at_price && (
-                          <span className="text-sm text-muted-foreground line-through">
-                            {product.compare_at_price.toFixed(2)} BHD
-                          </span>
+                        {product.is_on_offer && product.offer_price ? (
+                          <>
+                            <span className="font-bold text-lg text-primary">{product.offer_price.toFixed(2)} BHD</span>
+                            <span className="text-sm text-muted-foreground line-through">
+                              {product.price.toFixed(2)} BHD
+                            </span>
+                          </>
+                        ) : (
+                          <span className="font-bold text-lg text-primary">{product.price.toFixed(2)} BHD</span>
                         )}
                       </div>
-                      {product.compare_at_price && (
+                      {product.is_on_offer && product.offer_price && (
                         <Badge variant="destructive" className="text-xs">
-                          {Math.round((1 - product.price / product.compare_at_price) * 100)}% OFF
+                          {Math.round((1 - product.offer_price / product.price) * 100)}% OFF
                         </Badge>
                       )}
                     </div>

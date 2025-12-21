@@ -21,12 +21,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Edit, Search, Trash2, ArrowLeft, ArrowUpDown, Download } from "lucide-react";
+import { Plus, Edit, Search, Trash2, ArrowLeft, ArrowUpDown, Download, History, Calendar, Bell, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ProductForm } from "@/components/admin/ProductForm";
+import { ProductHistory } from "@/components/admin/ProductHistory";
 
 interface Product {
   id: string;
@@ -34,13 +37,37 @@ interface Product {
   sku: string | null;
   price: number;
   compare_at_price: number | null;
+  offer_price: number | null;
+  is_on_offer: boolean | null;
   stock_quantity: number | null;
   image_url: string;
   is_active: boolean | null;
   is_featured: boolean | null;
+  expiration_date: string | null;
   brands?: { name: string } | null;
   categories?: { name: string } | null;
 }
+
+// Helper function to determine expiry status
+const getExpiryStatus = (expirationDate: string | null) => {
+  if (!expirationDate) return { status: 'none', label: '-', color: 'text-muted-foreground' };
+
+  const today = new Date();
+  const expiry = new Date(expirationDate);
+  const diffTime = expiry.getTime() - today.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 0) {
+    return { status: 'expired', label: 'Expired', color: 'text-red-600 font-medium' };
+  } else if (diffDays <= 30) {
+    return { status: 'critical', label: `${diffDays}d left`, color: 'text-red-600 font-medium' };
+  } else if (diffDays <= 60) {
+    return { status: 'warning', label: `${diffDays}d left`, color: 'text-orange-500 font-medium' };
+  } else {
+    const months = Math.floor(diffDays / 30);
+    return { status: 'ok', label: `${months}mo+`, color: 'text-green-600' };
+  }
+};
 
 const AdminProducts = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -54,6 +81,7 @@ const AdminProducts = () => {
   const [formMode, setFormMode] = useState<'add' | 'edit'>('add');
   const [sortColumn, setSortColumn] = useState<'name' | 'sku' | 'category' | 'brand' | 'price' | 'stock'>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [isCheckingExpiry, setIsCheckingExpiry] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -203,6 +231,67 @@ const AdminProducts = () => {
     fetchProducts();
   };
 
+  const handleToggleStatus = async (productId: string, currentStatus: boolean | null, productName: string) => {
+    const newStatus = !currentStatus;
+    try {
+      const { error } = await supabase
+        .from('products')
+        .update({ is_active: newStatus })
+        .eq('id', productId);
+
+      if (error) throw error;
+
+      // Update local state
+      setProducts(prev => prev.map(p =>
+        p.id === productId ? { ...p, is_active: newStatus } : p
+      ));
+      setFilteredProducts(prev => prev.map(p =>
+        p.id === productId ? { ...p, is_active: newStatus } : p
+      ));
+
+      toast.success(`${productName} is now ${newStatus ? 'Active' : 'Inactive'}`);
+    } catch (error: any) {
+      console.error("Error updating product status:", error);
+      toast.error("Failed to update product status");
+    }
+  };
+
+  const handleUpdatePrice = async (productId: string, updates: Partial<Product>) => {
+    try {
+      const { error } = await supabase
+        .from('products')
+        .update(updates)
+        .eq('id', productId);
+
+      if (error) throw error;
+
+      setProducts(prev => prev.map(p =>
+        p.id === productId ? { ...p, ...updates } : p
+      ));
+
+      toast.success("Product updated successfully");
+    } catch (error: any) {
+      console.error("Error updating product price:", error);
+      toast.error("Failed to update product");
+    }
+  };
+
+  const handleCheckExpiry = async () => {
+    try {
+      setIsCheckingExpiry(true);
+      const { data, error } = await supabase.functions.invoke('check-expiring-products');
+
+      if (error) throw error;
+
+      toast.success(data.message || "Email notification check completed");
+    } catch (error: any) {
+      console.error("Error checking expiration:", error);
+      toast.error(error.message || "Failed to trigger expiration check");
+    } finally {
+      setIsCheckingExpiry(false);
+    }
+  };
+
   const handleExport = () => {
     try {
       // Headers for CSV
@@ -264,173 +353,242 @@ const AdminProducts = () => {
         </p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>All Products</CardTitle>
-              <CardDescription>
-                {products.length} total products
-              </CardDescription>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="relative w-64">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search by name or SKU..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
+      <Tabs defaultValue="products" className="space-y-6">
+        <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsTrigger value="products" className="gap-2">
+            <Edit className="h-4 w-4" />
+            All Products
+          </TabsTrigger>
+          <TabsTrigger value="history" className="gap-2">
+            <History className="h-4 w-4" />
+            Product History
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="products">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>All Products</CardTitle>
+                  <CardDescription>
+                    {products.length} total products
+                  </CardDescription>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="relative w-64">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search by name or SKU..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={handleCheckExpiry}
+                      disabled={isCheckingExpiry}
+                      className="gap-2 border-orange-200 hover:bg-orange-50 hover:text-orange-600"
+                    >
+                      {isCheckingExpiry ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Bell className="h-4 w-4" />
+                      )}
+                      Check Expiry
+                    </Button>
+                    <Button variant="outline" onClick={() => setIsExportDialogOpen(true)} className="gap-2">
+                      <Download className="h-4 w-4" />
+                      Excel
+                    </Button>
+                    <Button onClick={handleAddProduct} className="gap-2">
+                      <Plus className="h-4 w-4" />
+                      Add
+                    </Button>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" onClick={() => setIsExportDialogOpen(true)} className="gap-2">
-                  <Download className="h-4 w-4" />
-                  Excel
-                </Button>
-                <Button onClick={handleAddProduct} className="gap-2">
-                  <Plus className="h-4 w-4" />
-                  Add
-                </Button>
-              </div>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="text-center py-8 text-muted-foreground">
-              Loading products...
-            </div>
-          ) : (
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead
-                      className="cursor-pointer hover:bg-muted/50 transition-colors"
-                      onClick={() => handleSort('name')}
-                    >
-                      <div className="flex items-center gap-1">
-                        Product
-                        <ArrowUpDown className={`h-3 w-3 ${sortColumn === 'name' ? 'text-primary' : 'text-muted-foreground'}`} />
-                      </div>
-                    </TableHead>
-                    <TableHead
-                      className="cursor-pointer hover:bg-muted/50 transition-colors"
-                      onClick={() => handleSort('sku')}
-                    >
-                      <div className="flex items-center gap-1">
-                        SKU
-                        <ArrowUpDown className={`h-3 w-3 ${sortColumn === 'sku' ? 'text-primary' : 'text-muted-foreground'}`} />
-                      </div>
-                    </TableHead>
-                    <TableHead
-                      className="cursor-pointer hover:bg-muted/50 transition-colors"
-                      onClick={() => handleSort('category')}
-                    >
-                      <div className="flex items-center gap-1">
-                        Category
-                        <ArrowUpDown className={`h-3 w-3 ${sortColumn === 'category' ? 'text-primary' : 'text-muted-foreground'}`} />
-                      </div>
-                    </TableHead>
-                    <TableHead
-                      className="cursor-pointer hover:bg-muted/50 transition-colors"
-                      onClick={() => handleSort('brand')}
-                    >
-                      <div className="flex items-center gap-1">
-                        Brand
-                        <ArrowUpDown className={`h-3 w-3 ${sortColumn === 'brand' ? 'text-primary' : 'text-muted-foreground'}`} />
-                      </div>
-                    </TableHead>
-                    <TableHead
-                      className="text-right cursor-pointer hover:bg-muted/50 transition-colors"
-                      onClick={() => handleSort('price')}
-                    >
-                      <div className="flex items-center justify-end gap-1">
-                        Price
-                        <ArrowUpDown className={`h-3 w-3 ${sortColumn === 'price' ? 'text-primary' : 'text-muted-foreground'}`} />
-                      </div>
-                    </TableHead>
-                    <TableHead
-                      className="text-right cursor-pointer hover:bg-muted/50 transition-colors"
-                      onClick={() => handleSort('stock')}
-                    >
-                      <div className="flex items-center justify-end gap-1">
-                        Stock
-                        <ArrowUpDown className={`h-3 w-3 ${sortColumn === 'stock' ? 'text-primary' : 'text-muted-foreground'}`} />
-                      </div>
-                    </TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredProducts.map((product) => (
-                    <TableRow key={product.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={product.image_url}
-                            alt={product.name}
-                            className="w-12 h-12 object-cover rounded"
-                          />
-                          <div>
-                            <div className="font-medium">{product.name}</div>
-                            {product.is_featured && (
-                              <Badge variant="secondary" className="text-xs mt-1">
-                                Featured
-                              </Badge>
-                            )}
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  Loading products...
+                </div>
+              ) : (
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead
+                          className="cursor-pointer hover:bg-muted/50 transition-colors"
+                          onClick={() => handleSort('name')}
+                        >
+                          <div className="flex items-center gap-1">
+                            Product
+                            <ArrowUpDown className={`h-3 w-3 ${sortColumn === 'name' ? 'text-primary' : 'text-muted-foreground'}`} />
                           </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {product.sku || '-'}
-                      </TableCell>
-                      <TableCell>{product.categories?.name || '-'}</TableCell>
-                      <TableCell>{product.brands?.name || '-'}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="font-semibold">{product.price} BHD</div>
-                        {product.compare_at_price && (
-                          <div className="text-xs text-muted-foreground line-through">
-                            {product.compare_at_price} BHD
+                        </TableHead>
+                        <TableHead
+                          className="cursor-pointer hover:bg-muted/50 transition-colors"
+                          onClick={() => handleSort('category')}
+                        >
+                          <div className="flex items-center gap-1">
+                            Category
+                            <ArrowUpDown className={`h-3 w-3 ${sortColumn === 'category' ? 'text-primary' : 'text-muted-foreground'}`} />
                           </div>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {product.stock_quantity ?? 0}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={product.is_active ? "default" : "secondary"}>
-                          {product.is_active ? "Active" : "Inactive"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEditProduct(product)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDeleteProduct(product.id, product.name)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                        </TableHead>
+                        <TableHead className="text-right min-w-[120px]">MRP (BHD)</TableHead>
+                        <TableHead className="text-right min-w-[120px]">Website Price</TableHead>
+                        <TableHead className="text-center">On Offer</TableHead>
+                        <TableHead className="text-right min-w-[120px]">Offer Price</TableHead>
+                        <TableHead className="text-right">Stock</TableHead>
+                        <TableHead>Expiry</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredProducts.map((product) => (
+                        <TableRow key={product.id}>
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                              <img
+                                src={product.image_url}
+                                alt={product.name}
+                                className="w-12 h-12 object-cover rounded"
+                              />
+                              <div>
+                                <div className="font-medium">{product.name}</div>
+                                {product.is_featured && (
+                                  <Badge variant="secondary" className="text-xs mt-1">
+                                    Featured
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>{product.categories?.name || '-'}</TableCell>
+
+                          {/* MRP / Original Price */}
+                          <TableCell className="text-right">
+                            <Input
+                              type="number"
+                              step="0.001"
+                              className="w-24 text-right inline-block h-8 px-2"
+                              defaultValue={product.compare_at_price || ""}
+                              onBlur={(e) => {
+                                const val = e.target.value === "" ? null : parseFloat(e.target.value);
+                                if (val !== product.compare_at_price) {
+                                  handleUpdatePrice(product.id, { compare_at_price: val });
+                                }
+                              }}
+                            />
+                          </TableCell>
+
+                          {/* Website Price */}
+                          <TableCell className="text-right">
+                            <Input
+                              type="number"
+                              step="0.001"
+                              className="w-24 text-right inline-block h-8 px-2 font-semibold"
+                              defaultValue={product.price}
+                              onBlur={(e) => {
+                                const val = parseFloat(e.target.value);
+                                if (!isNaN(val) && val !== product.price) {
+                                  handleUpdatePrice(product.id, { price: val });
+                                }
+                              }}
+                            />
+                          </TableCell>
+
+                          {/* On Offer Toggle */}
+                          <TableCell className="text-center">
+                            <Switch
+                              checked={product.is_on_offer ?? false}
+                              onCheckedChange={(checked) => handleUpdatePrice(product.id, { is_on_offer: checked })}
+                            />
+                          </TableCell>
+
+                          {/* Offer Price */}
+                          <TableCell className="text-right">
+                            <Input
+                              type="number"
+                              step="0.001"
+                              disabled={!product.is_on_offer}
+                              className={`w-24 text-right inline-block h-8 px-2 ${product.is_on_offer ? 'border-primary/50 bg-primary/5 font-bold text-primary' : 'opacity-40'}`}
+                              defaultValue={product.offer_price || ""}
+                              onBlur={(e) => {
+                                const val = e.target.value === "" ? null : parseFloat(e.target.value);
+                                if (val !== product.offer_price) {
+                                  handleUpdatePrice(product.id, { offer_price: val });
+                                }
+                              }}
+                            />
+                          </TableCell>
+
+                          <TableCell className="text-right font-medium">
+                            {product.stock_quantity ?? 0}
+                          </TableCell>
+                          <TableCell>
+                            {(() => {
+                              const expiry = getExpiryStatus(product.expiration_date);
+                              return (
+                                <div className="flex items-center gap-1">
+                                  {product.expiration_date && (
+                                    <Calendar className={`h-3 w-3 ${expiry.color}`} />
+                                  )}
+                                  <span className={expiry.color}>
+                                    {expiry.label}
+                                  </span>
+                                </div>
+                              );
+                            })()}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Switch
+                                checked={product.is_active ?? false}
+                                onCheckedChange={() => handleToggleStatus(product.id, product.is_active, product.name)}
+                              />
+                              <span className={`text-sm ${product.is_active ? 'text-green-600 font-medium' : 'text-muted-foreground'}`}>
+                                {product.is_active ? "Active" : "Inactive"}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleEditProduct(product)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDeleteProduct(product.id, product.name)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="history">
+          <ProductHistory />
+        </TabsContent>
+      </Tabs>
 
       {
         isFormOpen && (

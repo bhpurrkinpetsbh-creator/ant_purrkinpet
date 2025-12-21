@@ -27,7 +27,9 @@ export const useWishlist = () => {
             price,
             image_url,
             stock_quantity,
-            compare_at_price
+            compare_at_price,
+            offer_price,
+            is_on_offer
           )
         `)
         .eq('customer_id', user.id);
@@ -88,7 +90,7 @@ export const useWishlist = () => {
   const addToWishlist = async (productId: string) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      
+
       if (!user) {
         toast({
           title: "Please sign in",
@@ -140,13 +142,13 @@ export const useWishlist = () => {
 
       await fetchWishlistItems();
       window.dispatchEvent(new Event('wishlist:updated'));
-      try { localStorage.setItem('wishlist_updated_at', Date.now().toString()); } catch {}
-      
+      try { localStorage.setItem('wishlist_updated_at', Date.now().toString()); } catch { }
+
       toast({
         title: "Added to wishlist",
         description: "Item has been added to your wishlist"
       });
-      
+
       return true;
     } catch (error: any) {
       console.error('Error adding to wishlist:', error);
@@ -171,16 +173,16 @@ export const useWishlist = () => {
         .eq('product_id', productId);
 
       if (error) throw error;
-      
+
       await fetchWishlistItems();
       window.dispatchEvent(new Event('wishlist:updated'));
-      try { localStorage.setItem('wishlist_updated_at', Date.now().toString()); } catch {}
-      
+      try { localStorage.setItem('wishlist_updated_at', Date.now().toString()); } catch { }
+
       toast({
         title: "Removed from wishlist",
         description: "Item has been removed from your wishlist"
       });
-      
+
       return true;
     } catch (error: any) {
       toast({

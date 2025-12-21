@@ -11,6 +11,8 @@ export interface Product {
     name: string;
     price: number;
     compare_at_price: number | null;
+    offer_price?: number | null;
+    is_on_offer?: boolean | null;
     image_url: string;
     slug: string;
     category_id?: string | null;
@@ -26,10 +28,12 @@ const ProductCard = ({ product }: ProductCardProps) => {
     const [parallaxStyle, setParallaxStyle] = useState({ transform: 'translate(0, 0) scale(1)' });
     const imageContainerRef = useRef<HTMLDivElement>(null);
 
-    const isDiscounted = product.compare_at_price && product.compare_at_price > product.price;
+    // Only show discount if product is marked as "On Offer" and has an offer_price
+    const isDiscounted = product.is_on_offer === true && product.offer_price && product.offer_price < product.price;
     const discountPercentage = isDiscounted
-        ? Math.round(((product.compare_at_price! - product.price) / product.compare_at_price!) * 100)
+        ? Math.round(((product.price - product.offer_price!) / product.price) * 100)
         : 0;
+    const displayPrice = isDiscounted ? product.offer_price! : product.price;
 
     const handleAddToCart = async (e: React.MouseEvent) => {
         e.preventDefault();
@@ -118,10 +122,10 @@ const ProductCard = ({ product }: ProductCardProps) => {
                     </Link>
                 </h3>
                 <div className="flex items-center gap-2 mt-2">
-                    <span className="font-bold text-xl text-primary">BD {product.price.toFixed(3)}</span>
+                    <span className="font-bold text-xl text-primary">BD {displayPrice.toFixed(3)}</span>
                     {isDiscounted && (
                         <span className="text-sm text-muted-foreground line-through">
-                            BD {product.compare_at_price!.toFixed(3)}
+                            BD {product.price.toFixed(3)}
                         </span>
                     )}
                 </div>

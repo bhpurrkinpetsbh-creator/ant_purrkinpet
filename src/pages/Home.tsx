@@ -31,6 +31,7 @@ import { supabase } from "@/integrations/supabase/client";
 import ProductCard, { Product } from "@/components/ProductCard";
 import { motion } from "framer-motion";
 import { SmartSearch } from "@/components/home/SmartSearch";
+import { ShopByPetIcons } from "@/components/home/ShopByPetIcons";
 const Home = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -70,20 +71,17 @@ const Home = () => {
 
       if (featured) setFeaturedProducts(featured as Product[]);
 
-      // Fetch Discounted Products
+      // Fetch Discounted Products (On Offer)
       const { data: discounted } = await supabase
         .from("products")
         .select("*")
         .eq("is_active", true)
-        .not("compare_at_price", "is", null)
+        .eq("is_on_offer", true)
         .limit(10);
 
       if (discounted) {
-        // Client-side filter to ensure it's actually a deal
-        const validDeals = discounted
-          .filter(p => p.compare_at_price && p.compare_at_price > p.price)
-          .slice(0, 4);
-        setDiscountedProducts(validDeals as Product[]);
+        // Take first 4 items marked as offer
+        setDiscountedProducts((discounted as Product[]).slice(0, 4));
       }
 
       // Fetch all categories for subcategory dropdown
@@ -241,714 +239,718 @@ const Home = () => {
       </div>
     </section>
 
+    {/* Shop by Pet - Animal Icons */}
+    <ShopByPetIcons />
 
 
 
-    {/* Categories Section - Bento Grid */}
-    <motion.section
-      initial={{ opacity: 0, y: 50 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-100px" }}
-      transition={{ duration: 0.8, ease: "easeOut" }}
-      className="container py-20"
-    >
-      <div className="text-center mb-12">
-        <span className="text-primary font-medium text-sm uppercase tracking-wider">Explore</span>
-        <h2 className="font-display text-4xl md:text-5xl font-bold mt-2 mb-4">Shop by Pet</h2>
-        <p className="text-muted-foreground text-lg max-w-xl mx-auto">Find everything for your furry, feathered, or finned friends</p>
-      </div>
-
-      {/* 2x2 Grid Layout - Equal Cards */}
-      <motion.div
-        variants={{
-          hidden: { opacity: 0 },
-          visible: {
-            opacity: 1,
-            transition: {
-              staggerChildren: 0.15
-            }
-          }
-        }}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 max-w-5xl mx-auto"
+    {/* OLD BENTO GRID SECTION - TEMPORARILY HIDDEN */}
+    {false && (
+      <motion.section
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="container py-20"
       >
-        {/* Dogs Card */}
+        <div className="text-center mb-12">
+          <span className="text-primary font-medium text-sm uppercase tracking-wider">Explore</span>
+          <h2 className="font-display text-4xl md:text-5xl font-bold mt-2 mb-4">Shop by Pet</h2>
+          <p className="text-muted-foreground text-lg max-w-xl mx-auto">Find everything for your furry, feathered, or finned friends</p>
+        </div>
+
+        {/* 2x2 Grid Layout - Equal Cards */}
         <motion.div
           variants={{
-            hidden: { opacity: 0, y: 30 },
-            visible: { opacity: 1, y: 0 }
+            hidden: { opacity: 0 },
+            visible: {
+              opacity: 1,
+              transition: {
+                staggerChildren: 0.15
+              }
+            }
           }}
-          className="group relative overflow-hidden hover:overflow-visible rounded-3xl shadow-lg hover:shadow-2xl hover:shadow-primary/20 transition-all duration-500 hover:-translate-y-2 hover:z-30 aspect-[4/3]"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 max-w-5xl mx-auto"
         >
-          <Link to="/shop?category=dogs" className="block w-full h-full">
-            <img
-              src={dogsImage}
-              alt="Dogs"
-              className="w-full h-full object-cover aspect-square lg:aspect-auto group-hover:scale-110 group-hover:rotate-1 transition-transform duration-700"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
-            <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 transform group-hover:translate-y-[-8px] transition-transform duration-500">
-              <h3 className="text-white text-3xl md:text-4xl font-bold mb-2 group-hover:text-primary-foreground transition-colors">Dogs</h3>
-              <p className="text-white/80 text-sm hidden md:block group-hover:text-white transition-colors">Premium food, toys, and accessories</p>
-            </div>
-          </Link>
-
-          {/* Hover Dropdown - Dogs */}
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none group-hover:pointer-events-auto z-20">
-            <div className="bg-white/98 backdrop-blur-lg rounded-xl shadow-2xl p-3 w-[280px] transform scale-95 group-hover:scale-100 transition-transform duration-300">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="text-sm font-bold text-gray-800">🐕 Dog Products</h4>
-                <Link
-                  to="/shop?category=dogs"
-                  className="text-xs text-primary hover:underline font-medium"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  View All →
-                </Link>
+          {/* Dogs Card */}
+          <motion.div
+            variants={{
+              hidden: { opacity: 0, y: 30 },
+              visible: { opacity: 1, y: 0 }
+            }}
+            className="group relative overflow-hidden hover:overflow-visible rounded-3xl shadow-lg hover:shadow-2xl hover:shadow-primary/20 transition-all duration-500 hover:-translate-y-2 hover:z-30 aspect-[4/3]"
+          >
+            <Link to="/shop?category=dogs" className="block w-full h-full">
+              <img
+                src={dogsImage}
+                alt="Dogs"
+                className="w-full h-full object-cover aspect-square lg:aspect-auto group-hover:scale-110 group-hover:rotate-1 transition-transform duration-700"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+              <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 transform group-hover:translate-y-[-8px] transition-transform duration-500">
+                <h3 className="text-white text-3xl md:text-4xl font-bold mb-2 group-hover:text-primary-foreground transition-colors">Dogs</h3>
+                <p className="text-white/80 text-sm hidden md:block group-hover:text-white transition-colors">Premium food, toys, and accessories</p>
               </div>
+            </Link>
 
-              {/* Compact Product Carousel */}
-              {dogProducts.length > 0 && (
-                <div className="relative mb-2">
-                  {/* Arrows positioned inside */}
-                  {dogProducts.length > 1 && (
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setDogCarouselIndex((prev) => (prev > 0 ? prev - 1 : dogProducts.length - 1));
-                      }}
-                      className="absolute left-1 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-primary hover:text-white rounded-full p-1.5 shadow-md transition-all z-20 border border-gray-200"
-                    >
-                      <ChevronLeft className="h-3 w-3" />
-                    </button>
-                  )}
+            {/* Hover Dropdown - Dogs */}
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none group-hover:pointer-events-auto z-20">
+              <div className="bg-white/98 backdrop-blur-lg rounded-xl shadow-2xl p-3 w-[280px] transform scale-95 group-hover:scale-100 transition-transform duration-300">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-sm font-bold text-gray-800">🐕 Dog Products</h4>
+                  <Link
+                    to="/shop?category=dogs"
+                    className="text-xs text-primary hover:underline font-medium"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    View All →
+                  </Link>
+                </div>
 
-                  {/* Product Card with Hover Preview */}
-                  <div className="mx-6">
-                    {dogProducts[dogCarouselIndex] && (
-                      <div className="relative group/preview">
-                        <Link
-                          to={`/product/${dogProducts[dogCarouselIndex].slug}`}
-                          className="block"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <div className="bg-gray-50 rounded-lg overflow-hidden border border-gray-100 hover:shadow-md hover:border-primary/30 transition-all">
-                            <div className="h-16 overflow-hidden">
-                              <img
-                                src={dogProducts[dogCarouselIndex].image_url}
-                                alt={dogProducts[dogCarouselIndex].name}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                            <div className="p-2 text-center bg-white">
-                              <p className="text-xs font-semibold text-gray-800 truncate">{dogProducts[dogCarouselIndex].name}</p>
-                              <p className="text-sm font-bold text-primary">{dogProducts[dogCarouselIndex].price.toFixed(3)} BD</p>
-                            </div>
-                          </div>
-                        </Link>
+                {/* Compact Product Carousel */}
+                {dogProducts.length > 0 && (
+                  <div className="relative mb-2">
+                    {/* Arrows positioned inside */}
+                    {dogProducts.length > 1 && (
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setDogCarouselIndex((prev) => (prev > 0 ? prev - 1 : dogProducts.length - 1));
+                        }}
+                        className="absolute left-1 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-primary hover:text-white rounded-full p-1.5 shadow-md transition-all z-20 border border-gray-200"
+                      >
+                        <ChevronLeft className="h-3 w-3" />
+                      </button>
+                    )}
 
-                        {/* Floating Preview Popup - appears above */}
-                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-52 bg-white rounded-xl shadow-2xl border border-gray-200 opacity-0 invisible group-hover/preview:opacity-100 group-hover/preview:visible transition-all duration-200 z-[100]">
+                    {/* Product Card with Hover Preview */}
+                    <div className="mx-6">
+                      {dogProducts[dogCarouselIndex] && (
+                        <div className="relative group/preview">
                           <Link
                             to={`/product/${dogProducts[dogCarouselIndex].slug}`}
-                            onClick={(e) => e.stopPropagation()}
                             className="block"
+                            onClick={(e) => e.stopPropagation()}
                           >
-                            <div className="p-3">
-                              <div className="h-32 rounded-lg overflow-hidden mb-2">
+                            <div className="bg-gray-50 rounded-lg overflow-hidden border border-gray-100 hover:shadow-md hover:border-primary/30 transition-all">
+                              <div className="h-16 overflow-hidden">
                                 <img
                                   src={dogProducts[dogCarouselIndex].image_url}
                                   alt={dogProducts[dogCarouselIndex].name}
                                   className="w-full h-full object-cover"
                                 />
                               </div>
-                              <p className="text-sm font-semibold text-gray-800 text-center">{dogProducts[dogCarouselIndex].name}</p>
-                              <p className="text-lg font-bold text-primary text-center mt-1">{dogProducts[dogCarouselIndex].price.toFixed(3)} BD</p>
-                              <div className="mt-2 bg-primary text-white text-xs font-medium py-2 px-4 rounded-full text-center hover:bg-primary/90">
-                                View Product →
+                              <div className="p-2 text-center bg-white">
+                                <p className="text-xs font-semibold text-gray-800 truncate">{dogProducts[dogCarouselIndex].name}</p>
+                                <p className="text-sm font-bold text-primary">{dogProducts[dogCarouselIndex].price.toFixed(3)} BD</p>
                               </div>
                             </div>
                           </Link>
-                          <div className="absolute top-full left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-b border-r border-gray-200 rotate-45 -mt-1.5"></div>
+
+                          {/* Floating Preview Popup - appears above */}
+                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-52 bg-white rounded-xl shadow-2xl border border-gray-200 opacity-0 invisible group-hover/preview:opacity-100 group-hover/preview:visible transition-all duration-200 z-[100]">
+                            <Link
+                              to={`/product/${dogProducts[dogCarouselIndex].slug}`}
+                              onClick={(e) => e.stopPropagation()}
+                              className="block"
+                            >
+                              <div className="p-3">
+                                <div className="h-32 rounded-lg overflow-hidden mb-2">
+                                  <img
+                                    src={dogProducts[dogCarouselIndex].image_url}
+                                    alt={dogProducts[dogCarouselIndex].name}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                                <p className="text-sm font-semibold text-gray-800 text-center">{dogProducts[dogCarouselIndex].name}</p>
+                                <p className="text-lg font-bold text-primary text-center mt-1">{dogProducts[dogCarouselIndex].price.toFixed(3)} BD</p>
+                                <div className="mt-2 bg-primary text-white text-xs font-medium py-2 px-4 rounded-full text-center hover:bg-primary/90">
+                                  View Product →
+                                </div>
+                              </div>
+                            </Link>
+                            <div className="absolute top-full left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-b border-r border-gray-200 rotate-45 -mt-1.5"></div>
+                          </div>
                         </div>
+                      )}
+                    </div>
+
+                    {dogProducts.length > 1 && (
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setDogCarouselIndex((prev) => (prev < dogProducts.length - 1 ? prev + 1 : 0));
+                        }}
+                        className="absolute right-1 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-primary hover:text-white rounded-full p-1.5 shadow-md transition-all z-20 border border-gray-200"
+                      >
+                        <ChevronRight className="h-3 w-3" />
+                      </button>
+                    )}
+
+                    {/* Dots Indicator */}
+                    {dogProducts.length > 1 && (
+                      <div className="flex justify-center gap-1 mt-1.5">
+                        {dogProducts.slice(0, 6).map((_, idx) => (
+                          <button
+                            key={idx}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setDogCarouselIndex(idx);
+                            }}
+                            className={`w-1.5 h-1.5 rounded-full transition-all ${idx === dogCarouselIndex ? 'bg-primary w-3' : 'bg-gray-300 hover:bg-gray-400'
+                              }`}
+                          />
+                        ))}
                       </div>
                     )}
                   </div>
+                )}
 
-                  {dogProducts.length > 1 && (
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setDogCarouselIndex((prev) => (prev < dogProducts.length - 1 ? prev + 1 : 0));
-                      }}
-                      className="absolute right-1 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-primary hover:text-white rounded-full p-1.5 shadow-md transition-all z-20 border border-gray-200"
-                    >
-                      <ChevronRight className="h-3 w-3" />
-                    </button>
-                  )}
-
-                  {/* Dots Indicator */}
-                  {dogProducts.length > 1 && (
-                    <div className="flex justify-center gap-1 mt-1.5">
-                      {dogProducts.slice(0, 6).map((_, idx) => (
-                        <button
-                          key={idx}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setDogCarouselIndex(idx);
-                          }}
-                          className={`w-1.5 h-1.5 rounded-full transition-all ${idx === dogCarouselIndex ? 'bg-primary w-3' : 'bg-gray-300 hover:bg-gray-400'
-                            }`}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Category Quick Links */}
-              <div className="border-t pt-2">
-                <div className="flex flex-wrap gap-1">
-                  {allCategories
-                    .filter(cat => {
-                      const name = cat.name.toLowerCase();
-                      const slug = cat.slug.toLowerCase();
-                      return name.includes('dog') || slug.includes('dog');
-                    })
-                    .slice(0, 4)
-                    .map(cat => (
-                      <Link
-                        key={cat.id}
-                        to={`/shop?category=${cat.slug}`}
-                        className="px-2 py-0.5 text-[10px] bg-gray-100 text-gray-700 hover:bg-primary hover:text-white rounded-full transition-colors"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {cat.name}
-                      </Link>
-                    ))}
-                </div>
-                {/* Shop All Button */}
-                <Link
-                  to="/shop?category=dogs"
-                  className="mt-2 w-full inline-flex items-center justify-center bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  Browse All Dog Essentials <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Cats Card */}
-        <motion.div
-          variants={{
-            hidden: { opacity: 0, y: 30 },
-            visible: { opacity: 1, y: 0 }
-          }}
-          className="group relative overflow-hidden hover:overflow-visible rounded-3xl shadow-lg hover:shadow-2xl hover:shadow-primary/20 transition-all duration-500 hover:-translate-y-2 hover:z-30 aspect-[4/3]"
-        >
-          <Link to="/shop?category=cats" className="block w-full h-full">
-            <img
-              src={catsImage}
-              alt="Cats"
-              className="w-full h-full object-cover group-hover:scale-110 group-hover:-rotate-1 transition-transform duration-700"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
-            <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 transform group-hover:translate-y-[-8px] transition-transform duration-500">
-              <h3 className="text-white text-3xl md:text-4xl font-bold mb-2 group-hover:text-primary-foreground transition-colors">Cats</h3>
-              <p className="text-white/80 text-sm hidden md:block group-hover:text-white transition-colors">Everything for your feline friends</p>
-            </div>
-          </Link>
-
-          {/* Hover Dropdown - Cats */}
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none group-hover:pointer-events-auto z-20">
-            <div className="bg-white/98 backdrop-blur-lg rounded-xl shadow-2xl p-3 w-[240px] transform scale-95 group-hover:scale-100 transition-transform duration-300">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="text-sm font-bold text-gray-800">🐱 Cats</h4>
-                <Link
-                  to="/shop?category=cats"
-                  className="text-xs text-primary hover:underline font-medium"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  View All →
-                </Link>
-              </div>
-
-              {/* Compact Product Carousel */}
-              {catProducts.length > 0 && (
-                <div className="relative mb-2">
-                  {catProducts.length > 1 && (
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setCatCarouselIndex((prev) => (prev > 0 ? prev - 1 : catProducts.length - 1));
-                      }}
-                      className="absolute left-1 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-primary hover:text-white rounded-full p-1 shadow-md transition-all z-20 border border-gray-200"
-                    >
-                      <ChevronLeft className="h-3 w-3" />
-                    </button>
-                  )}
-
-                  {/* Product Card with Hover Preview */}
-                  <div className="mx-5">
-                    {catProducts[catCarouselIndex] && (
-                      <div className="relative group/preview">
+                {/* Category Quick Links */}
+                <div className="border-t pt-2">
+                  <div className="flex flex-wrap gap-1">
+                    {allCategories
+                      .filter(cat => {
+                        const name = cat.name.toLowerCase();
+                        const slug = cat.slug.toLowerCase();
+                        return name.includes('dog') || slug.includes('dog');
+                      })
+                      .slice(0, 4)
+                      .map(cat => (
                         <Link
-                          to={`/product/${catProducts[catCarouselIndex].slug}`}
-                          className="block"
+                          key={cat.id}
+                          to={`/shop?category=${cat.slug}`}
+                          className="px-2 py-0.5 text-[10px] bg-gray-100 text-gray-700 hover:bg-primary hover:text-white rounded-full transition-colors"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <div className="bg-gray-50 rounded-lg overflow-hidden border border-gray-100 hover:shadow-md hover:border-primary/30 transition-all">
-                            <div className="h-16 overflow-hidden">
-                              <img
-                                src={catProducts[catCarouselIndex].image_url}
-                                alt={catProducts[catCarouselIndex].name}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                            <div className="p-1.5 text-center bg-white">
-                              <p className="text-[10px] font-semibold text-gray-800 truncate">{catProducts[catCarouselIndex].name}</p>
-                              <p className="text-xs font-bold text-primary">{catProducts[catCarouselIndex].price.toFixed(3)} BD</p>
-                            </div>
-                          </div>
+                          {cat.name}
                         </Link>
+                      ))}
+                  </div>
+                  {/* Shop All Button */}
+                  <Link
+                    to="/shop?category=dogs"
+                    className="mt-2 w-full inline-flex items-center justify-center bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Browse All Dog Essentials <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </motion.div>
 
-                        {/* Floating Preview Popup */}
-                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-white rounded-xl shadow-2xl border border-gray-200 opacity-0 invisible group-hover/preview:opacity-100 group-hover/preview:visible transition-all duration-200 z-[100]">
+          {/* Cats Card */}
+          <motion.div
+            variants={{
+              hidden: { opacity: 0, y: 30 },
+              visible: { opacity: 1, y: 0 }
+            }}
+            className="group relative overflow-hidden hover:overflow-visible rounded-3xl shadow-lg hover:shadow-2xl hover:shadow-primary/20 transition-all duration-500 hover:-translate-y-2 hover:z-30 aspect-[4/3]"
+          >
+            <Link to="/shop?category=cats" className="block w-full h-full">
+              <img
+                src={catsImage}
+                alt="Cats"
+                className="w-full h-full object-cover group-hover:scale-110 group-hover:-rotate-1 transition-transform duration-700"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+              <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 transform group-hover:translate-y-[-8px] transition-transform duration-500">
+                <h3 className="text-white text-3xl md:text-4xl font-bold mb-2 group-hover:text-primary-foreground transition-colors">Cats</h3>
+                <p className="text-white/80 text-sm hidden md:block group-hover:text-white transition-colors">Everything for your feline friends</p>
+              </div>
+            </Link>
+
+            {/* Hover Dropdown - Cats */}
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none group-hover:pointer-events-auto z-20">
+              <div className="bg-white/98 backdrop-blur-lg rounded-xl shadow-2xl p-3 w-[240px] transform scale-95 group-hover:scale-100 transition-transform duration-300">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-sm font-bold text-gray-800">🐱 Cats</h4>
+                  <Link
+                    to="/shop?category=cats"
+                    className="text-xs text-primary hover:underline font-medium"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    View All →
+                  </Link>
+                </div>
+
+                {/* Compact Product Carousel */}
+                {catProducts.length > 0 && (
+                  <div className="relative mb-2">
+                    {catProducts.length > 1 && (
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setCatCarouselIndex((prev) => (prev > 0 ? prev - 1 : catProducts.length - 1));
+                        }}
+                        className="absolute left-1 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-primary hover:text-white rounded-full p-1 shadow-md transition-all z-20 border border-gray-200"
+                      >
+                        <ChevronLeft className="h-3 w-3" />
+                      </button>
+                    )}
+
+                    {/* Product Card with Hover Preview */}
+                    <div className="mx-5">
+                      {catProducts[catCarouselIndex] && (
+                        <div className="relative group/preview">
                           <Link
                             to={`/product/${catProducts[catCarouselIndex].slug}`}
-                            onClick={(e) => e.stopPropagation()}
                             className="block"
+                            onClick={(e) => e.stopPropagation()}
                           >
-                            <div className="p-2">
-                              <div className="h-28 rounded-lg overflow-hidden mb-2">
+                            <div className="bg-gray-50 rounded-lg overflow-hidden border border-gray-100 hover:shadow-md hover:border-primary/30 transition-all">
+                              <div className="h-16 overflow-hidden">
                                 <img
                                   src={catProducts[catCarouselIndex].image_url}
                                   alt={catProducts[catCarouselIndex].name}
                                   className="w-full h-full object-cover"
                                 />
                               </div>
-                              <p className="text-xs font-semibold text-gray-800 text-center">{catProducts[catCarouselIndex].name}</p>
-                              <p className="text-base font-bold text-primary text-center mt-1">{catProducts[catCarouselIndex].price.toFixed(3)} BD</p>
-                              <div className="mt-2 bg-primary text-white text-[10px] font-medium py-1.5 px-3 rounded-full text-center">
-                                View Product →
+                              <div className="p-1.5 text-center bg-white">
+                                <p className="text-[10px] font-semibold text-gray-800 truncate">{catProducts[catCarouselIndex].name}</p>
+                                <p className="text-xs font-bold text-primary">{catProducts[catCarouselIndex].price.toFixed(3)} BD</p>
                               </div>
                             </div>
                           </Link>
-                          <div className="absolute top-full left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-white border-b border-r border-gray-200 rotate-45 -mt-1.5"></div>
+
+                          {/* Floating Preview Popup */}
+                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-white rounded-xl shadow-2xl border border-gray-200 opacity-0 invisible group-hover/preview:opacity-100 group-hover/preview:visible transition-all duration-200 z-[100]">
+                            <Link
+                              to={`/product/${catProducts[catCarouselIndex].slug}`}
+                              onClick={(e) => e.stopPropagation()}
+                              className="block"
+                            >
+                              <div className="p-2">
+                                <div className="h-28 rounded-lg overflow-hidden mb-2">
+                                  <img
+                                    src={catProducts[catCarouselIndex].image_url}
+                                    alt={catProducts[catCarouselIndex].name}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                                <p className="text-xs font-semibold text-gray-800 text-center">{catProducts[catCarouselIndex].name}</p>
+                                <p className="text-base font-bold text-primary text-center mt-1">{catProducts[catCarouselIndex].price.toFixed(3)} BD</p>
+                                <div className="mt-2 bg-primary text-white text-[10px] font-medium py-1.5 px-3 rounded-full text-center">
+                                  View Product →
+                                </div>
+                              </div>
+                            </Link>
+                            <div className="absolute top-full left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-white border-b border-r border-gray-200 rotate-45 -mt-1.5"></div>
+                          </div>
                         </div>
+                      )}
+                    </div>
+
+                    {catProducts.length > 1 && (
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setCatCarouselIndex((prev) => (prev < catProducts.length - 1 ? prev + 1 : 0));
+                        }}
+                        className="absolute right-1 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-primary hover:text-white rounded-full p-1 shadow-md transition-all z-20 border border-gray-200"
+                      >
+                        <ChevronRight className="h-3 w-3" />
+                      </button>
+                    )}
+
+                    {catProducts.length > 1 && (
+                      <div className="flex justify-center gap-1 mt-1">
+                        {catProducts.slice(0, 6).map((_, idx) => (
+                          <button
+                            key={idx}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setCatCarouselIndex(idx);
+                            }}
+                            className={`w-1.5 h-1.5 rounded-full transition-all ${idx === catCarouselIndex ? 'bg-primary w-2.5' : 'bg-gray-300 hover:bg-gray-400'}`}
+                          />
+                        ))}
                       </div>
                     )}
                   </div>
+                )}
 
-                  {catProducts.length > 1 && (
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setCatCarouselIndex((prev) => (prev < catProducts.length - 1 ? prev + 1 : 0));
-                      }}
-                      className="absolute right-1 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-primary hover:text-white rounded-full p-1 shadow-md transition-all z-20 border border-gray-200"
-                    >
-                      <ChevronRight className="h-3 w-3" />
-                    </button>
-                  )}
-
-                  {catProducts.length > 1 && (
-                    <div className="flex justify-center gap-1 mt-1">
-                      {catProducts.slice(0, 6).map((_, idx) => (
-                        <button
-                          key={idx}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setCatCarouselIndex(idx);
-                          }}
-                          className={`w-1.5 h-1.5 rounded-full transition-all ${idx === catCarouselIndex ? 'bg-primary w-2.5' : 'bg-gray-300 hover:bg-gray-400'}`}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              <div className="border-t pt-1.5">
-                <div className="flex flex-wrap gap-1">
-                  {allCategories
-                    .filter(cat => {
-                      const name = cat.name.toLowerCase();
-                      const slug = cat.slug.toLowerCase();
-                      return name.includes('cat') || slug.includes('cat');
-                    })
-                    .slice(0, 3)
-                    .map(cat => (
-                      <Link
-                        key={cat.id}
-                        to={`/shop?category=${cat.slug}`}
-                        className="px-2 py-0.5 text-[10px] bg-gray-100 text-gray-700 hover:bg-primary hover:text-white rounded-full transition-colors"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {cat.name}
-                      </Link>
-                    ))}
-                </div>
-                <Link
-                  to="/shop?category=cats"
-                  className="mt-2 w-full inline-flex items-center justify-center bg-primary text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-primary/90 transition-colors"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  Browse All Cat Essentials <ArrowRight className="ml-1 h-3 w-3" />
-                </Link>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Fish Card */}
-        <motion.div
-          variants={{
-            hidden: { opacity: 0, y: 30 },
-            visible: { opacity: 1, y: 0 }
-          }}
-          className="group relative overflow-hidden hover:overflow-visible rounded-3xl shadow-lg hover:shadow-2xl hover:shadow-primary/20 transition-all duration-500 hover:-translate-y-2 hover:z-30 aspect-[4/3]"
-        >
-          <Link to="/shop?category=fish" className="block w-full h-full">
-            <img
-              src={fishImage}
-              alt="Fishes and Aquarium"
-              className="w-full h-full object-cover group-hover:scale-110 group-hover:rotate-1 transition-transform duration-700"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
-            <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 transform group-hover:translate-y-[-8px] transition-transform duration-500">
-              <h3 className="text-white text-3xl md:text-4xl font-bold mb-2 group-hover:text-primary-foreground transition-colors">Fish & Aquarium</h3>
-              <p className="text-white/80 text-sm hidden md:block group-hover:text-white transition-colors">Aquatic supplies and accessories</p>
-            </div>
-          </Link>
-
-          {/* Hover Dropdown - Fish */}
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none group-hover:pointer-events-auto z-20">
-            <div className="bg-white/98 backdrop-blur-lg rounded-xl shadow-2xl p-3 w-[240px] transform scale-95 group-hover:scale-100 transition-transform duration-300">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="text-sm font-bold text-gray-800">🐠 Fish</h4>
-                <Link
-                  to="/shop?category=fish"
-                  className="text-xs text-primary hover:underline font-medium"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  View All →
-                </Link>
-              </div>
-
-              {/* Compact Product Carousel */}
-              {fishProducts.length > 0 && (
-                <div className="relative mb-2">
-                  {fishProducts.length > 1 && (
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setFishCarouselIndex((prev) => (prev > 0 ? prev - 1 : fishProducts.length - 1));
-                      }}
-                      className="absolute left-1 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-primary hover:text-white rounded-full p-1 shadow-md transition-all z-20 border border-gray-200"
-                    >
-                      <ChevronLeft className="h-3 w-3" />
-                    </button>
-                  )}
-
-                  {/* Product Card with Hover Preview */}
-                  <div className="mx-5">
-                    {fishProducts[fishCarouselIndex] && (
-                      <div className="relative group/preview">
+                <div className="border-t pt-1.5">
+                  <div className="flex flex-wrap gap-1">
+                    {allCategories
+                      .filter(cat => {
+                        const name = cat.name.toLowerCase();
+                        const slug = cat.slug.toLowerCase();
+                        return name.includes('cat') || slug.includes('cat');
+                      })
+                      .slice(0, 3)
+                      .map(cat => (
                         <Link
-                          to={`/product/${fishProducts[fishCarouselIndex].slug}`}
-                          className="block"
+                          key={cat.id}
+                          to={`/shop?category=${cat.slug}`}
+                          className="px-2 py-0.5 text-[10px] bg-gray-100 text-gray-700 hover:bg-primary hover:text-white rounded-full transition-colors"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <div className="bg-gray-50 rounded-lg overflow-hidden border border-gray-100 hover:shadow-md hover:border-primary/30 transition-all">
-                            <div className="h-16 overflow-hidden">
-                              <img
-                                src={fishProducts[fishCarouselIndex].image_url}
-                                alt={fishProducts[fishCarouselIndex].name}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                            <div className="p-1.5 text-center bg-white">
-                              <p className="text-[10px] font-semibold text-gray-800 truncate">{fishProducts[fishCarouselIndex].name}</p>
-                              <p className="text-xs font-bold text-primary">{fishProducts[fishCarouselIndex].price.toFixed(3)} BD</p>
-                            </div>
-                          </div>
+                          {cat.name}
                         </Link>
+                      ))}
+                  </div>
+                  <Link
+                    to="/shop?category=cats"
+                    className="mt-2 w-full inline-flex items-center justify-center bg-primary text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-primary/90 transition-colors"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Browse All Cat Essentials <ArrowRight className="ml-1 h-3 w-3" />
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </motion.div>
 
-                        {/* Floating Preview Popup */}
-                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-white rounded-xl shadow-2xl border border-gray-200 opacity-0 invisible group-hover/preview:opacity-100 group-hover/preview:visible transition-all duration-200 z-[100]">
+          {/* Fish Card */}
+          <motion.div
+            variants={{
+              hidden: { opacity: 0, y: 30 },
+              visible: { opacity: 1, y: 0 }
+            }}
+            className="group relative overflow-hidden hover:overflow-visible rounded-3xl shadow-lg hover:shadow-2xl hover:shadow-primary/20 transition-all duration-500 hover:-translate-y-2 hover:z-30 aspect-[4/3]"
+          >
+            <Link to="/shop?category=fish" className="block w-full h-full">
+              <img
+                src={fishImage}
+                alt="Fishes and Aquarium"
+                className="w-full h-full object-cover group-hover:scale-110 group-hover:rotate-1 transition-transform duration-700"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+              <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 transform group-hover:translate-y-[-8px] transition-transform duration-500">
+                <h3 className="text-white text-3xl md:text-4xl font-bold mb-2 group-hover:text-primary-foreground transition-colors">Fish & Aquarium</h3>
+                <p className="text-white/80 text-sm hidden md:block group-hover:text-white transition-colors">Aquatic supplies and accessories</p>
+              </div>
+            </Link>
+
+            {/* Hover Dropdown - Fish */}
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none group-hover:pointer-events-auto z-20">
+              <div className="bg-white/98 backdrop-blur-lg rounded-xl shadow-2xl p-3 w-[240px] transform scale-95 group-hover:scale-100 transition-transform duration-300">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-sm font-bold text-gray-800">🐠 Fish</h4>
+                  <Link
+                    to="/shop?category=fish"
+                    className="text-xs text-primary hover:underline font-medium"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    View All →
+                  </Link>
+                </div>
+
+                {/* Compact Product Carousel */}
+                {fishProducts.length > 0 && (
+                  <div className="relative mb-2">
+                    {fishProducts.length > 1 && (
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setFishCarouselIndex((prev) => (prev > 0 ? prev - 1 : fishProducts.length - 1));
+                        }}
+                        className="absolute left-1 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-primary hover:text-white rounded-full p-1 shadow-md transition-all z-20 border border-gray-200"
+                      >
+                        <ChevronLeft className="h-3 w-3" />
+                      </button>
+                    )}
+
+                    {/* Product Card with Hover Preview */}
+                    <div className="mx-5">
+                      {fishProducts[fishCarouselIndex] && (
+                        <div className="relative group/preview">
                           <Link
                             to={`/product/${fishProducts[fishCarouselIndex].slug}`}
-                            onClick={(e) => e.stopPropagation()}
                             className="block"
+                            onClick={(e) => e.stopPropagation()}
                           >
-                            <div className="p-2">
-                              <div className="h-28 rounded-lg overflow-hidden mb-2">
+                            <div className="bg-gray-50 rounded-lg overflow-hidden border border-gray-100 hover:shadow-md hover:border-primary/30 transition-all">
+                              <div className="h-16 overflow-hidden">
                                 <img
                                   src={fishProducts[fishCarouselIndex].image_url}
                                   alt={fishProducts[fishCarouselIndex].name}
                                   className="w-full h-full object-cover"
                                 />
                               </div>
-                              <p className="text-xs font-semibold text-gray-800 text-center">{fishProducts[fishCarouselIndex].name}</p>
-                              <p className="text-base font-bold text-primary text-center mt-1">{fishProducts[fishCarouselIndex].price.toFixed(3)} BD</p>
-                              <div className="mt-2 bg-primary text-white text-[10px] font-medium py-1.5 px-3 rounded-full text-center">
-                                View Product →
+                              <div className="p-1.5 text-center bg-white">
+                                <p className="text-[10px] font-semibold text-gray-800 truncate">{fishProducts[fishCarouselIndex].name}</p>
+                                <p className="text-xs font-bold text-primary">{fishProducts[fishCarouselIndex].price.toFixed(3)} BD</p>
                               </div>
                             </div>
                           </Link>
-                          <div className="absolute top-full left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-white border-b border-r border-gray-200 rotate-45 -mt-1.5"></div>
+
+                          {/* Floating Preview Popup */}
+                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-white rounded-xl shadow-2xl border border-gray-200 opacity-0 invisible group-hover/preview:opacity-100 group-hover/preview:visible transition-all duration-200 z-[100]">
+                            <Link
+                              to={`/product/${fishProducts[fishCarouselIndex].slug}`}
+                              onClick={(e) => e.stopPropagation()}
+                              className="block"
+                            >
+                              <div className="p-2">
+                                <div className="h-28 rounded-lg overflow-hidden mb-2">
+                                  <img
+                                    src={fishProducts[fishCarouselIndex].image_url}
+                                    alt={fishProducts[fishCarouselIndex].name}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                                <p className="text-xs font-semibold text-gray-800 text-center">{fishProducts[fishCarouselIndex].name}</p>
+                                <p className="text-base font-bold text-primary text-center mt-1">{fishProducts[fishCarouselIndex].price.toFixed(3)} BD</p>
+                                <div className="mt-2 bg-primary text-white text-[10px] font-medium py-1.5 px-3 rounded-full text-center">
+                                  View Product →
+                                </div>
+                              </div>
+                            </Link>
+                            <div className="absolute top-full left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-white border-b border-r border-gray-200 rotate-45 -mt-1.5"></div>
+                          </div>
                         </div>
+                      )}
+                    </div>
+
+                    {fishProducts.length > 1 && (
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setFishCarouselIndex((prev) => (prev < fishProducts.length - 1 ? prev + 1 : 0));
+                        }}
+                        className="absolute right-1 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-primary hover:text-white rounded-full p-1 shadow-md transition-all z-20 border border-gray-200"
+                      >
+                        <ChevronRight className="h-3 w-3" />
+                      </button>
+                    )}
+
+                    {fishProducts.length > 1 && (
+                      <div className="flex justify-center gap-1 mt-1">
+                        {fishProducts.slice(0, 6).map((_, idx) => (
+                          <button
+                            key={idx}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setFishCarouselIndex(idx);
+                            }}
+                            className={`w-1.5 h-1.5 rounded-full transition-all ${idx === fishCarouselIndex ? 'bg-primary w-2.5' : 'bg-gray-300 hover:bg-gray-400'}`}
+                          />
+                        ))}
                       </div>
                     )}
                   </div>
+                )}
 
-                  {fishProducts.length > 1 && (
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setFishCarouselIndex((prev) => (prev < fishProducts.length - 1 ? prev + 1 : 0));
-                      }}
-                      className="absolute right-1 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-primary hover:text-white rounded-full p-1 shadow-md transition-all z-20 border border-gray-200"
-                    >
-                      <ChevronRight className="h-3 w-3" />
-                    </button>
-                  )}
-
-                  {fishProducts.length > 1 && (
-                    <div className="flex justify-center gap-1 mt-1">
-                      {fishProducts.slice(0, 6).map((_, idx) => (
-                        <button
-                          key={idx}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setFishCarouselIndex(idx);
-                          }}
-                          className={`w-1.5 h-1.5 rounded-full transition-all ${idx === fishCarouselIndex ? 'bg-primary w-2.5' : 'bg-gray-300 hover:bg-gray-400'}`}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              <div className="border-t pt-1.5">
-                <div className="flex flex-wrap gap-1">
-                  {allCategories
-                    .filter(cat => {
-                      const name = cat.name.toLowerCase();
-                      const slug = cat.slug.toLowerCase();
-                      return name.includes('fish') || slug.includes('fish') ||
-                        name.includes('aquarium') || slug.includes('aquarium');
-                    })
-                    .slice(0, 3)
-                    .map(cat => (
-                      <Link
-                        key={cat.id}
-                        to={`/shop?category=${cat.slug}`}
-                        className="px-2 py-0.5 text-[10px] bg-gray-100 text-gray-700 hover:bg-primary hover:text-white rounded-full transition-colors"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {cat.name}
-                      </Link>
-                    ))}
-                </div>
-                <Link
-                  to="/shop?category=fish"
-                  className="mt-2 w-full inline-flex items-center justify-center bg-primary text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-primary/90 transition-colors"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  Browse All Fish Essentials <ArrowRight className="ml-1 h-3 w-3" />
-                </Link>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Small Pets Card */}
-        <motion.div
-          variants={{
-            hidden: { opacity: 0, y: 30 },
-            visible: { opacity: 1, y: 0 }
-          }}
-          className="group relative overflow-hidden hover:overflow-visible rounded-3xl shadow-lg hover:shadow-2xl hover:shadow-primary/20 transition-all duration-500 hover:-translate-y-2 hover:z-30 aspect-[4/3]"
-        >
-          <Link to="/shop?category=small-pets" className="block w-full h-full">
-            <img
-              src={rabbitsImage}
-              alt="Small Pets"
-              className="w-full h-full object-cover group-hover:scale-105 group-hover:-rotate-1 transition-transform duration-700"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
-            <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 transform group-hover:translate-y-[-8px] transition-transform duration-500">
-              <h3 className="text-white text-3xl md:text-4xl font-bold mb-2 group-hover:text-primary-foreground transition-colors">Small Pets</h3>
-              <p className="text-white/80 text-sm hidden md:block group-hover:text-white transition-colors">Rabbits, hamsters, guinea pigs & more</p>
-            </div>
-          </Link>
-
-          {/* Hover Dropdown - Small Pets */}
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none group-hover:pointer-events-auto z-20">
-            <div className="bg-white/98 backdrop-blur-lg rounded-xl shadow-2xl p-3 w-[280px] transform scale-95 group-hover:scale-100 transition-transform duration-300">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="text-sm font-bold text-gray-800">🐰 Small Pets</h4>
-                <Link
-                  to="/shop?category=small pets"
-                  className="text-xs text-primary hover:underline font-medium"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  View All →
-                </Link>
-              </div>
-
-              {/* Compact Product Carousel */}
-              {smallPetProducts.length > 0 && (
-                <div className="relative mb-2">
-                  {smallPetProducts.length > 1 && (
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setSmallPetCarouselIndex((prev) => (prev > 0 ? prev - 1 : smallPetProducts.length - 1));
-                      }}
-                      className="absolute left-1 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-primary hover:text-white rounded-full p-1.5 shadow-md transition-all z-20 border border-gray-200"
-                    >
-                      <ChevronLeft className="h-3 w-3" />
-                    </button>
-                  )}
-
-                  {/* Product Card with Hover Preview */}
-                  <div className="mx-6">
-                    {smallPetProducts[smallPetCarouselIndex] && (
-                      <div className="relative group/preview">
+                <div className="border-t pt-1.5">
+                  <div className="flex flex-wrap gap-1">
+                    {allCategories
+                      .filter(cat => {
+                        const name = cat.name.toLowerCase();
+                        const slug = cat.slug.toLowerCase();
+                        return name.includes('fish') || slug.includes('fish') ||
+                          name.includes('aquarium') || slug.includes('aquarium');
+                      })
+                      .slice(0, 3)
+                      .map(cat => (
                         <Link
-                          to={`/product/${smallPetProducts[smallPetCarouselIndex].slug}`}
-                          className="block"
+                          key={cat.id}
+                          to={`/shop?category=${cat.slug}`}
+                          className="px-2 py-0.5 text-[10px] bg-gray-100 text-gray-700 hover:bg-primary hover:text-white rounded-full transition-colors"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <div className="bg-gray-50 rounded-lg overflow-hidden border border-gray-100 hover:shadow-md hover:border-primary/30 transition-all">
-                            <div className="h-16 overflow-hidden">
-                              <img
-                                src={smallPetProducts[smallPetCarouselIndex].image_url}
-                                alt={smallPetProducts[smallPetCarouselIndex].name}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                            <div className="p-2 text-center bg-white">
-                              <p className="text-xs font-semibold text-gray-800 truncate">{smallPetProducts[smallPetCarouselIndex].name}</p>
-                              <p className="text-sm font-bold text-primary">{smallPetProducts[smallPetCarouselIndex].price.toFixed(3)} BD</p>
-                            </div>
-                          </div>
+                          {cat.name}
                         </Link>
+                      ))}
+                  </div>
+                  <Link
+                    to="/shop?category=fish"
+                    className="mt-2 w-full inline-flex items-center justify-center bg-primary text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-primary/90 transition-colors"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Browse All Fish Essentials <ArrowRight className="ml-1 h-3 w-3" />
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </motion.div>
 
-                        {/* Floating Preview Popup */}
-                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-52 bg-white rounded-xl shadow-2xl border border-gray-200 opacity-0 invisible group-hover/preview:opacity-100 group-hover/preview:visible transition-all duration-200 z-[100]">
+          {/* Small Pets Card */}
+          <motion.div
+            variants={{
+              hidden: { opacity: 0, y: 30 },
+              visible: { opacity: 1, y: 0 }
+            }}
+            className="group relative overflow-hidden hover:overflow-visible rounded-3xl shadow-lg hover:shadow-2xl hover:shadow-primary/20 transition-all duration-500 hover:-translate-y-2 hover:z-30 aspect-[4/3]"
+          >
+            <Link to="/shop?category=small-pets" className="block w-full h-full">
+              <img
+                src={rabbitsImage}
+                alt="Small Pets"
+                className="w-full h-full object-cover group-hover:scale-105 group-hover:-rotate-1 transition-transform duration-700"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+              <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 transform group-hover:translate-y-[-8px] transition-transform duration-500">
+                <h3 className="text-white text-3xl md:text-4xl font-bold mb-2 group-hover:text-primary-foreground transition-colors">Small Pets</h3>
+                <p className="text-white/80 text-sm hidden md:block group-hover:text-white transition-colors">Rabbits, hamsters, guinea pigs & more</p>
+              </div>
+            </Link>
+
+            {/* Hover Dropdown - Small Pets */}
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none group-hover:pointer-events-auto z-20">
+              <div className="bg-white/98 backdrop-blur-lg rounded-xl shadow-2xl p-3 w-[280px] transform scale-95 group-hover:scale-100 transition-transform duration-300">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-sm font-bold text-gray-800">🐰 Small Pets</h4>
+                  <Link
+                    to="/shop?category=small pets"
+                    className="text-xs text-primary hover:underline font-medium"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    View All →
+                  </Link>
+                </div>
+
+                {/* Compact Product Carousel */}
+                {smallPetProducts.length > 0 && (
+                  <div className="relative mb-2">
+                    {smallPetProducts.length > 1 && (
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setSmallPetCarouselIndex((prev) => (prev > 0 ? prev - 1 : smallPetProducts.length - 1));
+                        }}
+                        className="absolute left-1 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-primary hover:text-white rounded-full p-1.5 shadow-md transition-all z-20 border border-gray-200"
+                      >
+                        <ChevronLeft className="h-3 w-3" />
+                      </button>
+                    )}
+
+                    {/* Product Card with Hover Preview */}
+                    <div className="mx-6">
+                      {smallPetProducts[smallPetCarouselIndex] && (
+                        <div className="relative group/preview">
                           <Link
                             to={`/product/${smallPetProducts[smallPetCarouselIndex].slug}`}
-                            onClick={(e) => e.stopPropagation()}
                             className="block"
+                            onClick={(e) => e.stopPropagation()}
                           >
-                            <div className="p-3">
-                              <div className="h-32 rounded-lg overflow-hidden mb-2">
+                            <div className="bg-gray-50 rounded-lg overflow-hidden border border-gray-100 hover:shadow-md hover:border-primary/30 transition-all">
+                              <div className="h-16 overflow-hidden">
                                 <img
                                   src={smallPetProducts[smallPetCarouselIndex].image_url}
                                   alt={smallPetProducts[smallPetCarouselIndex].name}
                                   className="w-full h-full object-cover"
                                 />
                               </div>
-                              <p className="text-sm font-semibold text-gray-800 text-center">{smallPetProducts[smallPetCarouselIndex].name}</p>
-                              <p className="text-lg font-bold text-primary text-center mt-1">{smallPetProducts[smallPetCarouselIndex].price.toFixed(3)} BD</p>
-                              <div className="mt-2 bg-primary text-white text-xs font-medium py-2 px-4 rounded-full text-center hover:bg-primary/90">
-                                View Product →
+                              <div className="p-2 text-center bg-white">
+                                <p className="text-xs font-semibold text-gray-800 truncate">{smallPetProducts[smallPetCarouselIndex].name}</p>
+                                <p className="text-sm font-bold text-primary">{smallPetProducts[smallPetCarouselIndex].price.toFixed(3)} BD</p>
                               </div>
                             </div>
                           </Link>
-                          <div className="absolute top-full left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-b border-r border-gray-200 rotate-45 -mt-1.5"></div>
+
+                          {/* Floating Preview Popup */}
+                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-52 bg-white rounded-xl shadow-2xl border border-gray-200 opacity-0 invisible group-hover/preview:opacity-100 group-hover/preview:visible transition-all duration-200 z-[100]">
+                            <Link
+                              to={`/product/${smallPetProducts[smallPetCarouselIndex].slug}`}
+                              onClick={(e) => e.stopPropagation()}
+                              className="block"
+                            >
+                              <div className="p-3">
+                                <div className="h-32 rounded-lg overflow-hidden mb-2">
+                                  <img
+                                    src={smallPetProducts[smallPetCarouselIndex].image_url}
+                                    alt={smallPetProducts[smallPetCarouselIndex].name}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                                <p className="text-sm font-semibold text-gray-800 text-center">{smallPetProducts[smallPetCarouselIndex].name}</p>
+                                <p className="text-lg font-bold text-primary text-center mt-1">{smallPetProducts[smallPetCarouselIndex].price.toFixed(3)} BD</p>
+                                <div className="mt-2 bg-primary text-white text-xs font-medium py-2 px-4 rounded-full text-center hover:bg-primary/90">
+                                  View Product →
+                                </div>
+                              </div>
+                            </Link>
+                            <div className="absolute top-full left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-b border-r border-gray-200 rotate-45 -mt-1.5"></div>
+                          </div>
                         </div>
+                      )}
+                    </div>
+
+                    {smallPetProducts.length > 1 && (
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setSmallPetCarouselIndex((prev) => (prev < smallPetProducts.length - 1 ? prev + 1 : 0));
+                        }}
+                        className="absolute right-1 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-primary hover:text-white rounded-full p-1.5 shadow-md transition-all z-20 border border-gray-200"
+                      >
+                        <ChevronRight className="h-3 w-3" />
+                      </button>
+                    )}
+
+                    {smallPetProducts.length > 1 && (
+                      <div className="flex justify-center gap-1 mt-1.5">
+                        {smallPetProducts.slice(0, 6).map((_, idx) => (
+                          <button
+                            key={idx}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setSmallPetCarouselIndex(idx);
+                            }}
+                            className={`w-1.5 h-1.5 rounded-full transition-all ${idx === smallPetCarouselIndex ? 'bg-primary w-3' : 'bg-gray-300 hover:bg-gray-400'}`}
+                          />
+                        ))}
                       </div>
                     )}
                   </div>
+                )}
 
-                  {smallPetProducts.length > 1 && (
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setSmallPetCarouselIndex((prev) => (prev < smallPetProducts.length - 1 ? prev + 1 : 0));
-                      }}
-                      className="absolute right-1 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-primary hover:text-white rounded-full p-1.5 shadow-md transition-all z-20 border border-gray-200"
-                    >
-                      <ChevronRight className="h-3 w-3" />
-                    </button>
-                  )}
-
-                  {smallPetProducts.length > 1 && (
-                    <div className="flex justify-center gap-1 mt-1.5">
-                      {smallPetProducts.slice(0, 6).map((_, idx) => (
-                        <button
-                          key={idx}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setSmallPetCarouselIndex(idx);
-                          }}
-                          className={`w-1.5 h-1.5 rounded-full transition-all ${idx === smallPetCarouselIndex ? 'bg-primary w-3' : 'bg-gray-300 hover:bg-gray-400'}`}
-                        />
+                <div className="border-t pt-1.5">
+                  <div className="flex flex-wrap gap-1">
+                    {allCategories
+                      .filter(cat => {
+                        const name = cat.name.toLowerCase();
+                        const slug = cat.slug.toLowerCase();
+                        return name.includes('rabbit') || slug.includes('rabbit') ||
+                          name.includes('hamster') || slug.includes('hamster') ||
+                          name.includes('guinea') || slug.includes('guinea') ||
+                          name.includes('bird') || slug.includes('bird') ||
+                          name.includes('small') || slug.includes('small');
+                      })
+                      .slice(0, 4)
+                      .map(cat => (
+                        <Link
+                          key={cat.id}
+                          to={`/shop?category=${cat.slug}`}
+                          className="px-2 py-0.5 text-[10px] bg-gray-100 text-gray-700 hover:bg-primary hover:text-white rounded-full transition-colors"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {cat.name}
+                        </Link>
                       ))}
-                    </div>
-                  )}
+                  </div>
+                  <Link
+                    to="/shop?category=small-pets"
+                    className="mt-2 w-full inline-flex items-center justify-center bg-primary text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-primary/90 transition-colors"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Browse All Small Pet Essentials <ArrowRight className="ml-1 h-3 w-3" />
+                  </Link>
                 </div>
-              )}
-
-              <div className="border-t pt-1.5">
-                <div className="flex flex-wrap gap-1">
-                  {allCategories
-                    .filter(cat => {
-                      const name = cat.name.toLowerCase();
-                      const slug = cat.slug.toLowerCase();
-                      return name.includes('rabbit') || slug.includes('rabbit') ||
-                        name.includes('hamster') || slug.includes('hamster') ||
-                        name.includes('guinea') || slug.includes('guinea') ||
-                        name.includes('bird') || slug.includes('bird') ||
-                        name.includes('small') || slug.includes('small');
-                    })
-                    .slice(0, 4)
-                    .map(cat => (
-                      <Link
-                        key={cat.id}
-                        to={`/shop?category=${cat.slug}`}
-                        className="px-2 py-0.5 text-[10px] bg-gray-100 text-gray-700 hover:bg-primary hover:text-white rounded-full transition-colors"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {cat.name}
-                      </Link>
-                    ))}
-                </div>
-                <Link
-                  to="/shop?category=small-pets"
-                  className="mt-2 w-full inline-flex items-center justify-center bg-primary text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-primary/90 transition-colors"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  Browse All Small Pet Essentials <ArrowRight className="ml-1 h-3 w-3" />
-                </Link>
               </div>
             </div>
-          </div>
+          </motion.div>
         </motion.div>
-      </motion.div>
-    </motion.section>
+      </motion.section>
+    )}
 
     <SmartSearch />
 
