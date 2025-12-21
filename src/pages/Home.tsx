@@ -149,7 +149,7 @@ const Home = () => {
   }, {
     name: "Small Pets",
     image: rabbitsImage,
-    link: "/shop?category=small pets"
+    link: "/shop?category=small-pets"
   }];
   const features = [{
     icon: Award,
