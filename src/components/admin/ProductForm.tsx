@@ -37,7 +37,7 @@ export const ProductForm = ({ mode, product, isOpen, onClose, onSuccess }: Produ
     price: "",
     compare_at_price: "",
     sku: "",
-    stock_quantity: "",
+    stock_quantity: "99",
     low_stock_threshold: "5",
     category_id: "",
     subcategory: "",
@@ -118,7 +118,7 @@ export const ProductForm = ({ mode, product, isOpen, onClose, onSuccess }: Produ
             price: "",
             compare_at_price: "",
             sku: "", // Will be set by fetchNextSku
-            stock_quantity: "",
+            stock_quantity: "99",
             low_stock_threshold: "5",
             category_id: "",
             subcategory: "",
