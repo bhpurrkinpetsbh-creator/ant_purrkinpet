@@ -24,12 +24,14 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Edit, Search, Trash2, ArrowLeft, ArrowUpDown, Download, History, Calendar, Bell, Loader2 } from "lucide-react";
+import { Plus, Edit, Search, Trash2, ArrowLeft, ArrowUpDown, Download, History, Calendar, Bell, Loader2, Upload } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ProductForm } from "@/components/admin/ProductForm";
 import { ProductHistory } from "@/components/admin/ProductHistory";
+import { BulkProductUpload } from "@/components/admin/BulkProductUpload";
 
 interface Product {
   id: string;
@@ -78,12 +80,16 @@ const AdminProducts = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [formMode, setFormMode] = useState<'add' | 'edit'>('add');
   const [sortColumn, setSortColumn] = useState<'name' | 'sku' | 'category' | 'brand' | 'price' | 'stock'>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [isCheckingExpiry, setIsCheckingExpiry] = useState(false);
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
+  const [isSelectMode, setIsSelectMode] = useState(false);
+  const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(window.location.search);
 
@@ -235,6 +241,7 @@ const AdminProducts = () => {
       if (error) throw error;
 
       toast.success("Product moved to trash. It will be permanently deleted after 30 days.");
+      setSelectedProducts(new Set());
       fetchProducts();
     } catch (error: any) {
       console.error("Error deleting product:", error);
@@ -351,6 +358,67 @@ const AdminProducts = () => {
     }
   };
 
+  const handleBulkDelete = async () => {
+    if (selectedProducts.size === 0) return;
+
+    const productNames = filteredProducts
+      .filter(p => selectedProducts.has(p.id))
+      .map(p => p.name)
+      .slice(0, 3)
+      .join(", ");
+    const moreText = selectedProducts.size > 3 ? ` and ${selectedProducts.size - 3} more` : "";
+
+    if (!confirm(`Are you sure you want to delete ${selectedProducts.size} products?\n\n${productNames}${moreText}\n\nThese products will be moved to trash and automatically deleted after 30 days.`)) {
+      return;
+    }
+
+    setIsBulkDeleting(true);
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (const productId of selectedProducts) {
+      try {
+        const { error } = await supabase.rpc('soft_delete_product', {
+          p_product_id: productId,
+          p_deletion_reason: 'Bulk deleted from admin panel'
+        });
+        if (error) throw error;
+        successCount++;
+      } catch (error) {
+        errorCount++;
+        console.error("Error deleting product:", productId, error);
+      }
+    }
+
+    setIsBulkDeleting(false);
+    setSelectedProducts(new Set());
+    fetchProducts();
+
+    if (errorCount === 0) {
+      toast.success(`${successCount} products moved to trash successfully`);
+    } else {
+      toast.warning(`${successCount} deleted, ${errorCount} failed`);
+    }
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedProducts(new Set(filteredProducts.map(p => p.id)));
+    } else {
+      setSelectedProducts(new Set());
+    }
+  };
+
+  const handleSelectProduct = (productId: string, checked: boolean) => {
+    const newSelection = new Set(selectedProducts);
+    if (checked) {
+      newSelection.add(productId);
+    } else {
+      newSelection.delete(productId);
+    }
+    setSelectedProducts(newSelection);
+  };
+
   if (!isAdmin) {
     return null;
   }
@@ -448,10 +516,46 @@ const AdminProducts = () => {
                         <Download className="h-4 w-4" />
                         Excel
                       </Button>
-                      <Button onClick={handleAddProduct} className="gap-2">
-                        <Plus className="h-4 w-4" />
-                        Add
+                      <Button variant="outline" onClick={() => setIsBulkUploadOpen(true)} className="gap-2">
+                        <Upload className="h-4 w-4" />
+                        Bulk Upload
                       </Button>
+                      {isSelectMode ? (
+                        <>
+                          {selectedProducts.size > 0 && (
+                            <Button
+                              variant="destructive"
+                              onClick={handleBulkDelete}
+                              disabled={isBulkDeleting}
+                              className="gap-2"
+                            >
+                              {isBulkDeleting ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="h-4 w-4" />
+                              )}
+                              Delete ({selectedProducts.size})
+                            </Button>
+                          )}
+                          <Button
+                            variant="outline"
+                            onClick={() => { setIsSelectMode(false); setSelectedProducts(new Set()); }}
+                          >
+                            Cancel
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <Button variant="outline" onClick={() => setIsSelectMode(true)} className="gap-2">
+                            <Trash2 className="h-4 w-4" />
+                            Select
+                          </Button>
+                          <Button onClick={handleAddProduct} className="gap-2">
+                            <Plus className="h-4 w-4" />
+                            Add
+                          </Button>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -467,6 +571,14 @@ const AdminProducts = () => {
                   <Table>
                     <TableHeader>
                       <TableRow>
+                        {isSelectMode && (
+                          <TableHead className="w-12">
+                            <Checkbox
+                              checked={selectedProducts.size === filteredProducts.length && filteredProducts.length > 0}
+                              onCheckedChange={(checked) => handleSelectAll(!!checked)}
+                            />
+                          </TableHead>
+                        )}
                         <TableHead
                           className="cursor-pointer hover:bg-muted/50 transition-colors"
                           onClick={() => handleSort('name')}
@@ -497,7 +609,15 @@ const AdminProducts = () => {
                     </TableHeader>
                     <TableBody>
                       {filteredProducts.map((product) => (
-                        <TableRow key={product.id}>
+                        <TableRow key={product.id} className={isSelectMode && selectedProducts.has(product.id) ? 'bg-primary/5' : ''}>
+                          {isSelectMode && (
+                            <TableCell>
+                              <Checkbox
+                                checked={selectedProducts.has(product.id)}
+                                onCheckedChange={(checked) => handleSelectProduct(product.id, !!checked)}
+                              />
+                            </TableCell>
+                          )}
                           <TableCell>
                             <div className="flex items-center gap-3">
                               <img
@@ -637,7 +757,7 @@ const AdminProducts = () => {
                       ))}
                       {filteredProducts.length === 0 && (
                         <TableRow>
-                          <TableCell colSpan={10} className="h-24 text-center text-muted-foreground font-medium">
+                          <TableCell colSpan={isSelectMode ? 11 : 10} className="h-24 text-center text-muted-foreground font-medium">
                             No {statusFilter === "all" ? "" : statusFilter} products found.
                           </TableCell>
                         </TableRow>
@@ -653,7 +773,7 @@ const AdminProducts = () => {
         <TabsContent value="history">
           <ProductHistory />
         </TabsContent>
-      </Tabs>
+      </Tabs >
 
       {
         isFormOpen && (
@@ -666,6 +786,12 @@ const AdminProducts = () => {
           />
         )
       }
+
+      <BulkProductUpload
+        isOpen={isBulkUploadOpen}
+        onClose={() => setIsBulkUploadOpen(false)}
+        onSuccess={fetchProducts}
+      />
 
       <AlertDialog open={isExportDialogOpen} onOpenChange={setIsExportDialogOpen}>
         <AlertDialogContent>
