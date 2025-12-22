@@ -44,7 +44,7 @@ interface Product {
   is_active: boolean | null;
   is_featured: boolean | null;
   expiration_date: string | null;
-  barcode: string | null;
+  barcode?: string | null;
   brands?: { name: string } | null;
   categories?: { name: string } | null;
 }
@@ -83,13 +83,13 @@ const AdminProducts = () => {
   const [sortColumn, setSortColumn] = useState<'name' | 'sku' | 'category' | 'brand' | 'price' | 'stock'>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [isCheckingExpiry, setIsCheckingExpiry] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'draft'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(window.location.search);
 
   useEffect(() => {
     const filter = searchParams.get('filter');
-    if (filter === 'draft') setStatusFilter('draft');
+    if (filter === 'inactive') setStatusFilter('inactive');
     else if (filter === 'active') setStatusFilter('active');
   }, []);
 
@@ -112,7 +112,7 @@ const AdminProducts = () => {
     // Apply status filter
     if (statusFilter === 'active') {
       filtered = filtered.filter(p => p.is_active);
-    } else if (statusFilter === 'draft') {
+    } else if (statusFilter === 'inactive') {
       filtered = filtered.filter(p => !p.is_active);
     }
 
@@ -412,12 +412,12 @@ const AdminProducts = () => {
                       Active
                     </Button>
                     <Button
-                      variant={statusFilter === 'draft' ? 'default' : 'outline'}
+                      variant={statusFilter === 'inactive' ? 'default' : 'outline'}
                       size="sm"
-                      onClick={() => setStatusFilter('draft')}
+                      onClick={() => setStatusFilter('inactive')}
                       className="h-8"
                     >
-                      Drafts
+                      Inactive
                     </Button>
                   </div>
                   <div className="flex items-center gap-4 w-full justify-end">
@@ -611,7 +611,7 @@ const AdminProducts = () => {
                                 onCheckedChange={() => handleToggleStatus(product.id, product.is_active, product.name)}
                               />
                               <span className={`text-sm ${product.is_active ? 'text-green-600 font-medium' : 'text-muted-foreground'}`}>
-                                {product.is_active ? "Active" : "Draft"}
+                                {product.is_active ? "Active" : "Inactive"}
                               </span>
                             </div>
                           </TableCell>

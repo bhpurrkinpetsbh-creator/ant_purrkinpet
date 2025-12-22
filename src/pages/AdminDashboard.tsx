@@ -31,7 +31,7 @@ interface DashboardStats {
   pendingOrders: number;
   totalProducts: number;
   activeProducts: number;
-  draftProducts: number;
+  inactiveProducts: number;
   inStockProducts: number;
   lowStockProducts: number;
   outOfStockProducts: number;
@@ -50,7 +50,7 @@ const AdminDashboard = () => {
     pendingOrders: 0,
     totalProducts: 0,
     activeProducts: 0,
-    draftProducts: 0,
+    inactiveProducts: 0,
     inStockProducts: 0,
     lowStockProducts: 0,
     outOfStockProducts: 0,
@@ -122,7 +122,7 @@ const AdminDashboard = () => {
       console.log("Fetched products:", products);
 
       const activeProducts = products?.filter(p => p.is_active).length || 0;
-      const draftProducts = products?.filter(p => !p.is_active).length || 0;
+      const inactiveProducts = products?.filter(p => !p.is_active).length || 0;
 
       // Use product-specific threshold (default to 5 if not set)
       const inStockProducts = products?.filter(p => {
@@ -158,7 +158,7 @@ const AdminDashboard = () => {
         pendingOrders,
         totalProducts: products?.length || 0,
         activeProducts,
-        draftProducts,
+        inactiveProducts,
         inStockProducts,
         lowStockProducts,
         outOfStockProducts,
@@ -357,12 +357,12 @@ const AdminDashboard = () => {
               </Card>
               <Card
                 className="p-4 border bg-muted/30 cursor-pointer hover:bg-muted/50 hover:border-primary/50 transition-all group"
-                onClick={() => navigate("/admin/products?filter=draft")}
+                onClick={() => navigate("/admin/products?filter=inactive")}
               >
                 <div className="flex justify-between items-start">
                   <div>
-                    <div className="text-sm text-muted-foreground font-semibold mb-1">Draft</div>
-                    <div className="text-3xl font-bold text-foreground">{loading ? "..." : stats.draftProducts}</div>
+                    <div className="text-sm text-muted-foreground font-semibold mb-1">Inactive</div>
+                    <div className="text-3xl font-bold text-foreground">{loading ? "..." : stats.inactiveProducts}</div>
                   </div>
                   <ExternalLink className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
