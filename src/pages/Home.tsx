@@ -806,7 +806,7 @@ const Home = () => {
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="text-sm font-bold text-gray-800">🐰 Small Pets</h4>
                   <Link
-                    to="/shop?category=small pets"
+                    to="/shop?category=small-pets"
                     className="text-xs text-primary hover:underline font-medium"
                     onClick={(e) => e.stopPropagation()}
                   >
