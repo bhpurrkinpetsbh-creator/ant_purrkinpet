@@ -177,21 +177,24 @@ const AdminDashboard = () => {
       value: `BD ${stats.totalRevenue.toFixed(2)} `,
       icon: DollarSign,
       change: `${stats.totalOrders} orders`,
-      trend: "up" as const
+      trend: "up" as const,
+      path: "/admin/orders"
     },
     {
       label: "Total Customers",
       value: stats.totalCustomers.toString(),
       icon: Users,
       change: "All time",
-      trend: "up" as const
+      trend: "up" as const,
+      path: "/admin/customers"
     },
     {
       label: "Active Products",
       value: stats.activeProducts.toString(),
-      icon: TrendingUp,
+      icon: Package,
       change: `${stats.totalProducts} total`,
-      trend: "up" as const
+      trend: "up" as const,
+      path: "/admin/products?filter=active"
     }
   ];
 
@@ -210,11 +213,15 @@ const AdminDashboard = () => {
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         {quickStats.map((stat) => (
-          <Card key={stat.label} className="p-6 hover:shadow-lg transition-shadow">
+          <Card
+            key={stat.label}
+            className="p-6 hover:shadow-xl hover:border-primary/50 cursor-pointer transition-all active:scale-[0.98] group"
+            onClick={() => stat.path && navigate(stat.path)}
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground mb-1 font-medium">{stat.label}</p>
-                <h3 className="text-3xl font-bold text-foreground">{stat.value}</h3>
+                <h3 className="text-3xl font-bold text-foreground group-hover:text-primary transition-colors">{stat.value}</h3>
                 <div className="flex items-center mt-2">
                   <Badge variant={stat.trend === "up" ? "default" : "destructive"} className="text-xs font-bold">
                     {stat.change}
@@ -222,7 +229,7 @@ const AdminDashboard = () => {
                   <span className="text-xs text-muted-foreground ml-2">vs last week</span>
                 </div>
               </div>
-              <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center">
+              <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
                 <stat.icon className="h-7 w-7 text-primary" />
               </div>
             </div>

@@ -23,6 +23,7 @@ import AdminOrders from "./pages/AdminOrders";
 import AdminInventory from "./pages/AdminInventory";
 import AdminProducts from "./pages/AdminProducts";
 import AdminDeletedProducts from "./pages/AdminDeletedProducts";
+import AdminCustomers from "./pages/AdminCustomers";
 import Wishlist from "./pages/Wishlist";
 import DeliveryInfo from "./pages/DeliveryInfo";
 import NotFound from "./pages/NotFound";
@@ -88,6 +89,7 @@ const AnimatedRoutes = () => {
         <Route path="/admin/inventory" element={<AnimatedPage><AdminInventory /></AnimatedPage>} />
         <Route path="/admin/products" element={<AnimatedPage><AdminProducts /></AnimatedPage>} />
         <Route path="/admin/deleted-products" element={<AnimatedPage><AdminDeletedProducts /></AnimatedPage>} />
+        <Route path="/admin/customers" element={<AnimatedPage><AdminCustomers /></AnimatedPage>} />
         <Route path="/delivery" element={<AnimatedPage><DeliveryInfo /></AnimatedPage>} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<AnimatedPage><NotFound /></AnimatedPage>} />
