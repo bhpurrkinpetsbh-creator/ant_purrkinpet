@@ -1,7 +1,7 @@
 # Project Changelog: Purrkin Pets
 
 ## Project Metrics (Snapshot: 2025-12-22)
-- **Total Commits:** 151
+- **Total Commits:** 152
 - **Total Files:** 150
 - **Unique Days Worked:** 16 Days
 - **Total Project Lifespan:** ~2.5 Months (~11 Weeks)
@@ -185,3 +185,4 @@ d7c2cfc - 2025-12-22 : feat: add barcode field to products
 b1e32cc - 2025-12-22 : feat: add RLS policy for admin customer access
 b03f33d - 2025-12-22 : fix: update all remaining small pets links to use hyphenated slug
 fb4f688 - 2025-12-22 : feat: enhance admin dashboard with clickable stats and new customer management page
+f75ee06 - 2025-12-22 : feat: Enhanced bulk upload with images, 15-product limit, multi-select delete
