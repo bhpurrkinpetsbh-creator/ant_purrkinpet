@@ -4,6 +4,7 @@
 - **Total Commits:** 151
 - **Total Files:** 150
 - **Unique Days Worked:** 16 Days
+- **Total Project Lifespan:** ~2.5 Months (~11 Weeks)
 - **Estimated Total Work Time:** ~43.4 Hours
 - **Initial Lines of Code (LOC):** 11,558
 - **Latest Lines of Code (LOC):** 32,494
