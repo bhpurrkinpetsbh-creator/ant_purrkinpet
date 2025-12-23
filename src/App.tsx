@@ -27,6 +27,11 @@ import AdminCustomers from "./pages/AdminCustomers";
 import Wishlist from "./pages/Wishlist";
 import DeliveryInfo from "./pages/DeliveryInfo";
 import NotFound from "./pages/NotFound";
+// POS System Pages
+import POSDashboard from "./pages/POSDashboard";
+import POSCheckout from "./pages/POSCheckout";
+import TalabatEntry from "./pages/TalabatEntry";
+import POSSales from "./pages/POSSales";
 
 const queryClient = new QueryClient();
 
@@ -91,6 +96,11 @@ const AnimatedRoutes = () => {
         <Route path="/admin/deleted-products" element={<AnimatedPage><AdminDeletedProducts /></AnimatedPage>} />
         <Route path="/admin/customers" element={<AnimatedPage><AdminCustomers /></AnimatedPage>} />
         <Route path="/delivery" element={<AnimatedPage><DeliveryInfo /></AnimatedPage>} />
+        {/* POS System Routes - Standalone UI */}
+        <Route path="/pos" element={<POSDashboard />} />
+        <Route path="/pos/checkout" element={<POSCheckout />} />
+        <Route path="/pos/talabat" element={<TalabatEntry />} />
+        <Route path="/pos/sales" element={<POSSales />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<AnimatedPage><NotFound /></AnimatedPage>} />
       </Routes>

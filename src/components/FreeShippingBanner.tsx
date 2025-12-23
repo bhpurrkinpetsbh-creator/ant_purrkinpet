@@ -57,18 +57,18 @@ const FreeShippingBanner = () => {
               </div>
 
               {/* Icon Section */}
-              <div className="flex items-center justify-center bg-white/10 rounded-full p-1.5 backdrop-blur-sm border border-white/5">
-                <Truck className="h-4 w-4 text-yellow-300" />
+              <div className="flex items-center justify-center bg-blue-100 rounded-full p-1.5 backdrop-blur-sm border border-blue-200">
+                <Truck className="h-4 w-4 text-blue-700" />
               </div>
 
               {/* Text Content */}
               <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-2 text-sm leading-tight select-none">
-                <span className="font-light text-white/90">
-                  Get <span className="font-semibold text-white">Free Delivery</span> across Bahrain
+                <span className="font-light text-blue-700">
+                  Get <span className="font-semibold text-blue-800">Free Delivery</span> across Bahrain
                 </span>
-                <span className="hidden sm:block text-white/40">•</span>
-                <span className="text-xs sm:text-sm text-white/90">
-                  on orders over <span className="font-bold text-yellow-300">20 BD</span>
+                <span className="hidden sm:block text-blue-400">•</span>
+                <span className="text-xs sm:text-sm text-blue-700">
+                  on orders over <span className="font-bold text-blue-800">20 BD</span>
                 </span>
               </div>
 
@@ -77,7 +77,7 @@ const FreeShippingBanner = () => {
                 <Button
                   size="sm"
                   variant="default"
-                  className="h-7 px-3 text-xs bg-white/20 hover:bg-white/30 text-white rounded-full font-medium transition-colors shadow-sm border border-white/20"
+                  className="h-7 px-3 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-full font-medium transition-colors shadow-sm border border-blue-700"
                   onClick={() => window.location.href = '/shop'}
                 >
                   Shop Now <ShoppingBag className="ml-1.5 h-3 w-3" />

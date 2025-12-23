@@ -6,10 +6,9 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import Autoplay from "embla-carousel-autoplay";
 import heroStorefront from "@/assets/hero-storefront.jpg";
 import petVideo from "@/assets/pet-video.mp4";
-import petCarrier from "@/assets/pet-carrier.jpg";
 import birdSeeds from "@/assets/bird-seeds.jpg";
-import fishBowl1 from "@/assets/fish-bowl-1.jpg";
-import fishBowl2 from "@/assets/fish-bowl-2.jpg";
+import homeDelivery from "@/assets/home-delivery.png";
+import royalCaninStock from "@/assets/royal-canin-stock.jpg";
 import petVideo3 from "@/assets/pet-video-3.mp4";
 import petVideo4 from "@/assets/pet-video-4.mp4";
 import petVideo5 from "@/assets/pet-video-5.mp4";
@@ -218,19 +217,22 @@ const Home = () => {
                   <img src={heroStorefront} alt="Purrkin Pets storefront" className="rounded-3xl shadow-lg w-full object-cover aspect-video" />
                 </CarouselItem>
                 <CarouselItem>
-                  <video src={petVideo} className="rounded-3xl shadow-lg w-full object-cover aspect-video" muted loop playsInline onMouseEnter={e => e.currentTarget.play()} onMouseLeave={e => e.currentTarget.pause()} />
+                  <div className="relative rounded-3xl shadow-lg w-full aspect-video overflow-hidden">
+                    <img src={homeDelivery} alt="" className="absolute inset-0 w-full h-full object-cover blur-xl scale-110 opacity-60" />
+                    <img src={homeDelivery} alt="Home Delivery - Jahez and Talabat Available" className="relative w-full h-full object-contain z-10" />
+                  </div>
                 </CarouselItem>
                 <CarouselItem>
-                  <img src={petCarrier} alt="Pet carrier for travel" className="rounded-3xl shadow-lg w-full object-cover aspect-video" />
+                  <div className="relative rounded-3xl shadow-lg w-full aspect-video overflow-hidden">
+                    <img src={royalCaninStock} alt="" className="absolute inset-0 w-full h-full object-cover blur-xl scale-110 opacity-60" />
+                    <img src={royalCaninStock} alt="Royal Canin Now in Stock" className="relative w-full h-full object-contain z-10" />
+                  </div>
                 </CarouselItem>
                 <CarouselItem>
                   <img src={birdSeeds} alt="Bird seeds and pet food varieties" className="rounded-3xl shadow-lg w-full object-cover aspect-video" />
                 </CarouselItem>
                 <CarouselItem>
-                  <img src={fishBowl1} alt="Beautiful betta fish in bowl" className="rounded-3xl shadow-lg w-full object-cover aspect-video" />
-                </CarouselItem>
-                <CarouselItem>
-                  <img src={fishBowl2} alt="Betta fish aquarium" className="rounded-3xl shadow-lg w-full object-cover aspect-video" />
+                  <video src={petVideo} className="rounded-3xl shadow-lg w-full object-cover aspect-video" muted loop playsInline onMouseEnter={e => e.currentTarget.play()} onMouseLeave={e => e.currentTarget.pause()} />
                 </CarouselItem>
               </CarouselContent>
             </Carousel>
