@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,6 +32,8 @@ import { Link } from "react-router-dom";
 import { ProductForm } from "@/components/admin/ProductForm";
 import { ProductHistory } from "@/components/admin/ProductHistory";
 import { BulkProductUpload } from "@/components/admin/BulkProductUpload";
+import { CategoryManagement } from "@/components/admin/CategoryManagement";
+import { FolderOpen } from "lucide-react";
 
 interface Product {
   id: string;
@@ -47,6 +49,7 @@ interface Product {
   is_featured: boolean | null;
   expiration_date: string | null;
   barcode?: string | null;
+  subcategory?: string | null;
   brands?: { name: string } | null;
   categories?: { name: string } | null;
 }
@@ -83,13 +86,14 @@ const AdminProducts = () => {
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [formMode, setFormMode] = useState<'add' | 'edit'>('add');
-  const [sortColumn, setSortColumn] = useState<'name' | 'sku' | 'category' | 'brand' | 'price' | 'stock'>('name');
+  const [sortColumn, setSortColumn] = useState<'name' | 'sku' | 'subcategory' | 'brand' | 'price' | 'stock'>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [isCheckingExpiry, setIsCheckingExpiry] = useState(false);
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+  const scrollPositionRef = useRef<number>(0); // Track scroll position for edit operations
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(window.location.search);
 
@@ -132,8 +136,8 @@ const AdminProducts = () => {
         case 'sku':
           comparison = (a.sku || '').localeCompare(b.sku || '');
           break;
-        case 'category':
-          comparison = (a.categories?.name || '').localeCompare(b.categories?.name || '');
+        case 'subcategory':
+          comparison = (a.subcategory || '').localeCompare(b.subcategory || '');
           break;
         case 'brand':
           comparison = (a.brands?.name || '').localeCompare(b.brands?.name || '');
@@ -151,7 +155,7 @@ const AdminProducts = () => {
     setFilteredProducts(filtered);
   }, [searchQuery, products, sortColumn, sortDirection, statusFilter]);
 
-  const handleSort = (column: 'name' | 'sku' | 'category' | 'brand' | 'price' | 'stock') => {
+  const handleSort = (column: 'name' | 'sku' | 'subcategory' | 'brand' | 'price' | 'stock') => {
     if (sortColumn === column) {
       setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
     } else {
@@ -221,6 +225,8 @@ const AdminProducts = () => {
   };
 
   const handleEditProduct = (product: Product) => {
+    // Save current scroll position before opening edit dialog
+    scrollPositionRef.current = window.scrollY;
     setFormMode('edit');
     setSelectedProduct(product);
     setIsFormOpen(true);
@@ -249,10 +255,20 @@ const AdminProducts = () => {
     }
   };
 
-  const handleFormSuccess = () => {
+  const handleFormSuccess = async () => {
+    const savedScrollPosition = scrollPositionRef.current;
+    const wasEdit = formMode === 'edit';
+
     setIsFormOpen(false);
     setSelectedProduct(null);
-    fetchProducts();
+    await fetchProducts();
+
+    // Restore scroll position after data is loaded and DOM is updated
+    if (wasEdit && savedScrollPosition > 0) {
+      setTimeout(() => {
+        window.scrollTo({ top: savedScrollPosition, behavior: 'instant' });
+      }, 300);
+    }
   };
 
   const handleToggleStatus = async (productId: string, currentStatus: boolean | null, productName: string) => {
@@ -440,10 +456,14 @@ const AdminProducts = () => {
       </div>
 
       <Tabs defaultValue="products" className="space-y-6">
-        <TabsList className="grid w-full max-w-md grid-cols-2">
+        <TabsList className="grid w-full max-w-lg grid-cols-3">
           <TabsTrigger value="products" className="gap-2">
             <Edit className="h-4 w-4" />
             All Products
+          </TabsTrigger>
+          <TabsTrigger value="categories" className="gap-2">
+            <FolderOpen className="h-4 w-4" />
+            Categories
           </TabsTrigger>
           <TabsTrigger value="history" className="gap-2">
             <History className="h-4 w-4" />
@@ -590,11 +610,11 @@ const AdminProducts = () => {
                         </TableHead>
                         <TableHead
                           className="cursor-pointer hover:bg-muted/50 transition-colors"
-                          onClick={() => handleSort('category')}
+                          onClick={() => handleSort('subcategory')}
                         >
                           <div className="flex items-center gap-1">
-                            Category
-                            <ArrowUpDown className={`h-3 w-3 ${sortColumn === 'category' ? 'text-primary' : 'text-muted-foreground'}`} />
+                            Subcategory
+                            <ArrowUpDown className={`h-3 w-3 ${sortColumn === 'subcategory' ? 'text-primary' : 'text-muted-foreground'}`} />
                           </div>
                         </TableHead>
                         <TableHead className="text-right min-w-[120px]">MRP (BHD)</TableHead>
@@ -647,7 +667,7 @@ const AdminProducts = () => {
                               </div>
                             </div>
                           </TableCell>
-                          <TableCell>{product.categories?.name || '-'}</TableCell>
+                          <TableCell>{product.subcategory || '-'}</TableCell>
 
                           {/* MRP / Original Price */}
                           <TableCell className="text-right">
@@ -766,6 +786,20 @@ const AdminProducts = () => {
                   </Table>
                 </div>
               )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="categories">
+          <Card>
+            <CardHeader>
+              <CardTitle>Categories & Subcategories</CardTitle>
+              <CardDescription>
+                Manage product categories and their subcategories. New categories will appear in navigation automatically.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <CategoryManagement />
             </CardContent>
           </Card>
         </TabsContent>

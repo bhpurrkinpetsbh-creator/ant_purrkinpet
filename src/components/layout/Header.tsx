@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { ShoppingCart, User, Search, LogOut, Package, Shield, Heart, Dog, Cat, Bird, Fish, Rabbit, LayoutGrid } from "lucide-react";
+import { ShoppingCart, User, Search, LogOut, Package, Shield, Heart, Dog, Cat, Bird, Fish, Rabbit, LayoutGrid, Sparkles, Turtle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,23 @@ import { toast } from "sonner";
 import { CategoryMegaMenu } from "@/components/layout/CategoryMegaMenu";
 import { SearchOverlay } from "@/components/layout/SearchOverlay";
 
+// Category icons mapping
+const CATEGORY_ICONS: Record<string, React.ReactNode> = {
+  dogs: <Dog className="h-3.5 w-3.5 text-primary" />,
+  cats: <Cat className="h-3.5 w-3.5 text-primary" />,
+  birds: <Bird className="h-3.5 w-3.5 text-primary" />,
+  fish: <Fish className="h-3.5 w-3.5 text-primary" />,
+  "small-pets": <Rabbit className="h-3.5 w-3.5 text-primary" />,
+  rabbits: <Rabbit className="h-3.5 w-3.5 text-primary" />,
+  turtles: <Turtle className="h-3.5 w-3.5 text-primary" />,
+};
+
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+}
+
 const Header = () => {
   const { cartCount } = useCart();
   const { wishlistCount } = useWishlist();
@@ -21,6 +38,7 @@ const Header = () => {
   const [cartPulse, setCartPulse] = useState(false);
   const [wishlistPulse, setWishlistPulse] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -41,6 +59,22 @@ const Header = () => {
       }
     });
     return () => subscription.unsubscribe();
+  }, []);
+
+  // Fetch categories from database
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('id, name, slug')
+        .eq('is_active', true)
+        .order('display_order');
+
+      if (!error && data) {
+        setCategories(data);
+      }
+    };
+    fetchCategories();
   }, []);
 
   useEffect(() => {
@@ -86,6 +120,11 @@ const Header = () => {
     await supabase.auth.signOut();
     toast.success("Signed out successfully");
     navigate("/");
+  };
+
+  // Get icon for category, fallback to Sparkles
+  const getCategoryIcon = (slug: string) => {
+    return CATEGORY_ICONS[slug] || <Sparkles className="h-3.5 w-3.5 text-primary" />;
   };
 
   return (
@@ -204,30 +243,20 @@ const Header = () => {
           </div>
         </div>
 
-        {/* Mobile Category Row - Only visible on mobile/tablet */}
+        {/* Mobile Category Row - Dynamically fetched from database */}
         <div className="lg:hidden border-b bg-muted/30">
           <div className="container overflow-x-auto">
             <div className="flex items-center justify-start gap-4 py-2 min-w-max">
-              <Link to="/shop?category=dogs" className="flex items-center gap-1.5 text-sm font-medium text-foreground hover:text-primary transition-colors whitespace-nowrap">
-                <Dog className="h-3.5 w-3.5 text-primary" />
-                Dogs
-              </Link>
-              <Link to="/shop?category=cats" className="flex items-center gap-1.5 text-sm font-medium text-foreground hover:text-primary transition-colors whitespace-nowrap">
-                <Cat className="h-3.5 w-3.5 text-primary" />
-                Cats
-              </Link>
-              <Link to="/shop?category=birds" className="flex items-center gap-1.5 text-sm font-medium text-foreground hover:text-primary transition-colors whitespace-nowrap">
-                <Bird className="h-3.5 w-3.5 text-primary" />
-                Birds
-              </Link>
-              <Link to="/shop?category=fish" className="flex items-center gap-1.5 text-sm font-medium text-foreground hover:text-primary transition-colors whitespace-nowrap">
-                <Fish className="h-3.5 w-3.5 text-primary" />
-                Fish
-              </Link>
-              <Link to="/shop?category=small-pets" className="flex items-center gap-1.5 text-sm font-medium text-foreground hover:text-primary transition-colors whitespace-nowrap">
-                <Rabbit className="h-3.5 w-3.5 text-primary" />
-                Small Pets
-              </Link>
+              {categories.map((category) => (
+                <Link
+                  key={category.id}
+                  to={`/shop?category=${category.slug}`}
+                  className="flex items-center gap-1.5 text-sm font-medium text-foreground hover:text-primary transition-colors whitespace-nowrap"
+                >
+                  {getCategoryIcon(category.slug)}
+                  {category.name}
+                </Link>
+              ))}
               <Link to="/shop" className="flex items-center gap-1.5 text-sm font-medium text-foreground hover:text-primary transition-colors whitespace-nowrap">
                 <LayoutGrid className="h-3.5 w-3.5 text-primary" />
                 All Products

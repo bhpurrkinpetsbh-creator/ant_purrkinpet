@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { ChevronDown, Home, Dog, Cat, Bird, Fish, Rabbit, Tag, Sparkles } from "lucide-react";
+import { ChevronDown, Home, Dog, Cat, Bird, Fish, Rabbit, Tag, Sparkles, Turtle } from "lucide-react";
 
 interface Category {
     id: string;
@@ -10,67 +10,60 @@ interface Category {
     image_url: string | null;
 }
 
-// Subcategory definitions matching Shop.tsx
-const SUBCATEGORIES: Record<string, { label: string; keywords: string[] }[]> = {
-    dogs: [
-        { label: "Dry Dog Food", keywords: ["dry food", "kibble", "dry"] },
-        { label: "Wet Dog Food", keywords: ["wet food", "canned", "wet"] },
-        { label: "Dog Treats & Bones", keywords: ["treat", "snack", "biscuit", "chew", "bone"] },
-        { label: "Dog Toys", keywords: ["toy", "ball", "rope", "plush"] },
-        { label: "Dog Bowls & Feeders", keywords: ["bowl", "feeder", "water"] },
-        { label: "Dog Grooming & Care", keywords: ["shampoo", "brush", "grooming", "care"] },
-        { label: "Dog Collars & Leashes", keywords: ["collar", "leash", "harness"] },
-        { label: "Dog Beds & Baskets", keywords: ["bed", "basket", "mat", "blanket"] },
-    ],
-    cats: [
-        { label: "Dry Cat Food", keywords: ["dry food", "kibble", "dry"] },
-        { label: "Wet Cat Food", keywords: ["wet food", "canned", "wet"] },
-        { label: "Cat Treats", keywords: ["treat", "snack"] },
-        { label: "Cat Toys", keywords: ["toy", "mouse", "feather", "ball"] },
-        { label: "Cat Litter & Boxes", keywords: ["litter", "litter box", "sand"] },
-        { label: "Cat Bowls & Feeders", keywords: ["bowl", "feeder", "water"] },
-        { label: "Cat Grooming & Care", keywords: ["shampoo", "brush", "grooming"] },
-        { label: "Cat Beds & Furniture", keywords: ["bed", "tree", "scratcher", "furniture"] },
-    ],
-    birds: [
-        { label: "Bird Food & Seeds", keywords: ["food", "seed", "pellet"] },
-        { label: "Bird Cages", keywords: ["cage", "aviary"] },
-        { label: "Bird Toys & Perches", keywords: ["toy", "perch", "swing"] },
-        { label: "Bird Accessories", keywords: ["bowl", "feeder", "bath"] },
-    ],
-    fish: [
-        { label: "Fish Food", keywords: ["food", "flake", "pellet"] },
-        { label: "Aquariums & Tanks", keywords: ["aquarium", "tank", "bowl"] },
-        { label: "Filters & Pumps", keywords: ["filter", "pump", "air"] },
-        { label: "Decorations & Plants", keywords: ["decoration", "plant", "gravel"] },
-    ],
-    "small-pets": [
-        { label: "Small Pet Food", keywords: ["food", "hay", "pellet"] },
-        { label: "Cages & Habitats", keywords: ["cage", "habitat", "hutch"] },
-        { label: "Bedding & Litter", keywords: ["bedding", "litter", "substrate"] },
-        { label: "Small Pet Toys", keywords: ["toy", "wheel", "tunnel"] },
-    ],
-};
+interface Subcategory {
+    name: string;
+    category_id: string;
+}
 
 export const CategoryMegaMenu = () => {
     const [categories, setCategories] = useState<Category[]>([]);
+    const [subcategoriesMap, setSubcategoriesMap] = useState<Record<string, string[]>>({});
     const [activeCategory, setActiveCategory] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetchCategories();
+        fetchCategoriesAndSubcategories();
     }, []);
 
-    const fetchCategories = async () => {
+    const fetchCategoriesAndSubcategories = async () => {
         try {
-            const { data, error } = await supabase
+            // Fetch categories
+            const { data: categoriesData, error: catError } = await supabase
                 .from('categories')
                 .select('id, name, slug, image_url')
                 .eq('is_active', true)
                 .order('display_order');
 
-            if (error) throw error;
-            setCategories(data || []);
+            if (catError) throw catError;
+            setCategories(categoriesData || []);
+
+            // Fetch unique subcategories from products (same source as Category Management)
+            const { data: productsWithSubs, error: subsError } = await supabase
+                .from("products")
+                .select("category_id, subcategory")
+                .not("subcategory", "is", null)
+                .eq("is_active", true);
+
+            if (subsError) throw subsError;
+
+            // Build subcategories map by category_id
+            const subsMap: Record<string, Set<string>> = {};
+            productsWithSubs?.forEach((p) => {
+                if (p.category_id && p.subcategory) {
+                    if (!subsMap[p.category_id]) {
+                        subsMap[p.category_id] = new Set();
+                    }
+                    subsMap[p.category_id].add(p.subcategory);
+                }
+            });
+
+            // Convert Sets to arrays
+            const subsMapArray: Record<string, string[]> = {};
+            Object.entries(subsMap).forEach(([catId, subsSet]) => {
+                subsMapArray[catId] = Array.from(subsSet).sort();
+            });
+            setSubcategoriesMap(subsMapArray);
+
         } catch (error) {
             console.error("Error fetching categories:", error);
         } finally {
@@ -78,8 +71,8 @@ export const CategoryMegaMenu = () => {
         }
     };
 
-    const getSubcategoriesForCategory = (slug: string) => {
-        return SUBCATEGORIES[slug] || [];
+    const getSubcategoriesForCategory = (categoryId: string) => {
+        return subcategoriesMap[categoryId] || [];
     };
 
     if (loading || categories.length === 0) {
@@ -93,6 +86,8 @@ export const CategoryMegaMenu = () => {
         birds: <Bird className="h-4 w-4" />,
         fish: <Fish className="h-4 w-4" />,
         "small-pets": <Rabbit className="h-4 w-4" />,
+        rabbits: <Rabbit className="h-4 w-4" />,
+        turtles: <Turtle className="h-4 w-4" />,
     };
 
     return (
@@ -107,7 +102,7 @@ export const CategoryMegaMenu = () => {
             </Link>
 
             {categories.map((category) => {
-                const subcategories = getSubcategoriesForCategory(category.slug);
+                const subcategories = getSubcategoriesForCategory(category.id);
                 const hasSubcategories = subcategories.length > 0;
                 const icon = CATEGORY_ICONS[category.slug] || <Sparkles className="h-4 w-4" />;
 
@@ -138,17 +133,17 @@ export const CategoryMegaMenu = () => {
                                     : 'opacity-0 invisible -translate-y-2 pointer-events-none'
                                     }`}
                             >
-                                <div className="bg-white border border-gray-100 rounded-xl shadow-xl p-6 min-w-[480px]">
-                                    {/* Subcategories Grid - 2 columns like reference image */}
+                                <div className="bg-white border border-gray-100 rounded-xl shadow-xl p-6 min-w-[400px]">
+                                    {/* Subcategories Grid - 2 columns */}
                                     <div className="grid grid-cols-2 gap-x-8 gap-y-3">
-                                        {subcategories.map((sub, index) => (
+                                        {subcategories.map((subName, index) => (
                                             <Link
                                                 key={index}
-                                                to={`/shop?category=${category.slug}&subcategory=${encodeURIComponent(sub.label)}`}
+                                                to={`/shop?category=${category.slug}&subcategory=${encodeURIComponent(subName)}`}
                                                 className="text-sm text-gray-700 hover:text-primary transition-colors py-1"
                                                 onClick={() => setActiveCategory(null)}
                                             >
-                                                {sub.label}
+                                                {subName}
                                             </Link>
                                         ))}
                                     </div>

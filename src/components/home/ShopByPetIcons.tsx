@@ -38,6 +38,20 @@ const petCategories = [
         color: "from-pink-100 to-pink-200",
         image: "https://images.unsplash.com/photo-1425082661705-1834bfd09dca?w=200&h=200&fit=crop&crop=face"
     },
+    {
+        name: "Rabbits",
+        slug: "rabbits",
+        emoji: "🐰",
+        color: "from-purple-100 to-purple-200",
+        image: "https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=200&h=200&fit=crop&crop=face"
+    },
+    {
+        name: "Turtles",
+        slug: "turtles",
+        emoji: "🐢",
+        color: "from-teal-100 to-teal-200",
+        image: "/turtle-category.jpg"
+    },
 ];
 
 export const ShopByPetIcons = () => {

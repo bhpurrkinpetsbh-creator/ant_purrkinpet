@@ -38,6 +38,8 @@ export const BulkProductUpload = ({ isOpen, onClose, onSuccess }: BulkProductUpl
         birds: ["Food & Seeds", "Cages", "Toys & Perches", "Accessories"],
         fish: ["Food", "Aquariums & Tanks", "Filters & Pumps", "Decorations & Plants", "Accessories"],
         "small-pets": ["Food", "Cages & Habitats", "Bedding & Litter", "Toys", "Accessories"],
+        rabbits: ["Food & Hay", "Hutches & Cages", "Bedding", "Toys", "Grooming", "Accessories"],
+        turtles: ["Food", "Tanks & Terrariums", "Lighting & Heating", "Decorations", "Accessories"],
     };
 
     const [step, setStep] = useState<1 | 2>(1);

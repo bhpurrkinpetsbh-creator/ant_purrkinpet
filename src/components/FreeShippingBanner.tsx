@@ -44,40 +44,40 @@ const FreeShippingBanner = () => {
           className="fixed top-24 left-0 right-0 z-40 flex justify-center px-4 pointer-events-none"
         >
           <div className="pointer-events-auto relative overflow-hidden group cursor-grab active:cursor-grabbing">
-            {/* Gradient Background matching Shop Now button */}
-            <div className="absolute inset-0 bg-gradient-hero backdrop-blur-md rounded-full shadow-lg border border-white/20" />
+            {/* Teal/Emerald Gradient Background - Distinct from website orange */}
+            <div className="absolute inset-0 bg-gradient-to-r from-teal-600 via-emerald-500 to-teal-600 backdrop-blur-md rounded-full shadow-lg border border-white/20" />
 
             {/* Subtle Shine Effect */}
             <div className="absolute inset-0 opacity-0 group-hover:opacity-30 transition-opacity duration-700 bg-gradient-to-r from-transparent via-white/30 to-transparent -skew-x-12 translate-x-[-100%] group-hover:animate-shimmer" />
 
             <div className="relative flex items-center gap-4 py-2 pl-3 pr-3 rounded-full text-white">
               {/* Drag Handle Icon */}
-              <div className="flex items-center text-white/40 group-hover:text-white/60 transition-colors pl-1">
+              <div className="flex items-center text-white/50 group-hover:text-white/70 transition-colors pl-1">
                 <GripHorizontal className="h-4 w-4" />
               </div>
 
               {/* Icon Section */}
-              <div className="flex items-center justify-center bg-blue-100 rounded-full p-1.5 backdrop-blur-sm border border-blue-200">
-                <Truck className="h-4 w-4 text-blue-700" />
+              <div className="flex items-center justify-center bg-white/20 rounded-full p-1.5 backdrop-blur-sm border border-white/30">
+                <Truck className="h-4 w-4 text-white" />
               </div>
 
-              {/* Text Content */}
+              {/* Text Content - White text for readability */}
               <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-2 text-sm leading-tight select-none">
-                <span className="font-light text-blue-700">
-                  Get <span className="font-semibold text-blue-800">Free Delivery</span> across Bahrain
+                <span className="font-light text-white/90">
+                  Get <span className="font-bold text-white">Free Delivery</span> across Bahrain
                 </span>
-                <span className="hidden sm:block text-blue-400">•</span>
-                <span className="text-xs sm:text-sm text-blue-700">
-                  on orders over <span className="font-bold text-blue-800">20 BD</span>
+                <span className="hidden sm:block text-white/60">•</span>
+                <span className="text-xs sm:text-sm text-white/90">
+                  on orders over <span className="font-bold text-yellow-300">20 BD</span>
                 </span>
               </div>
 
               {/* Action / Dismiss */}
-              <div className="flex items-center gap-3 pl-2 sm:pl-4 border-l border-white/10 scale-95 sm:scale-100">
+              <div className="flex items-center gap-3 pl-2 sm:pl-4 border-l border-white/20 scale-95 sm:scale-100">
                 <Button
                   size="sm"
                   variant="default"
-                  className="h-7 px-3 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-full font-medium transition-colors shadow-sm border border-blue-700"
+                  className="h-7 px-3 text-xs bg-white hover:bg-white/90 text-teal-700 rounded-full font-semibold transition-colors shadow-sm"
                   onClick={() => window.location.href = '/shop'}
                 >
                   Shop Now <ShoppingBag className="ml-1.5 h-3 w-3" />
@@ -85,7 +85,7 @@ const FreeShippingBanner = () => {
 
                 <button
                   onClick={handleDismiss}
-                  className="text-slate-400 hover:text-white transition-colors p-1 hover:bg-white/10 rounded-full"
+                  className="text-white/60 hover:text-white transition-colors p-1 hover:bg-white/10 rounded-full"
                   aria-label="Dismiss banner"
                 >
                   <X className="h-4 w-4" />
