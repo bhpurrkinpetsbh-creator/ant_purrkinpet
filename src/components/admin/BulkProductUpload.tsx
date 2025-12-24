@@ -49,16 +49,44 @@ export const BulkProductUpload = ({ isOpen, onClose, onSuccess }: BulkProductUpl
     const [categories, setCategories] = useState<{ id: string; name: string; slug: string }[]>([]);
     const [brands, setBrands] = useState<{ id: string; name: string }[]>([]);
     const [imageFiles, setImageFiles] = useState<Map<number, File>>(new Map()); // serial -> File
+    const [dynamicSubcategories, setDynamicSubcategories] = useState<Record<string, string[]>>({}); // category_slug -> subcategories[]
 
     useEffect(() => {
         const fetchData = async () => {
-            const [catRes, brandRes] = await Promise.all([
+            const [catRes, brandRes, productsRes] = await Promise.all([
                 supabase.from("categories").select("id, name, slug").order('name'),
-                supabase.from("brands").select("id, name").order('name')
+                supabase.from("brands").select("id, name").order('name'),
+                // Fetch unique subcategories from existing products
+                supabase.from("products").select("category_id, subcategory").not("subcategory", "is", null)
             ]);
 
             if (catRes.data) setCategories(catRes.data);
             if (brandRes.data) setBrands(brandRes.data);
+
+            // Build dynamic subcategories map from existing products
+            if (productsRes.data && catRes.data) {
+                const categoryIdToSlug = new Map(catRes.data.map(c => [c.id, c.slug]));
+                const dynamicSubs: Record<string, Set<string>> = {};
+
+                productsRes.data.forEach(product => {
+                    if (product.category_id && product.subcategory) {
+                        const slug = categoryIdToSlug.get(product.category_id);
+                        if (slug) {
+                            if (!dynamicSubs[slug]) {
+                                dynamicSubs[slug] = new Set();
+                            }
+                            dynamicSubs[slug].add(product.subcategory);
+                        }
+                    }
+                });
+
+                // Convert Sets to arrays
+                const dynamicSubsArray: Record<string, string[]> = {};
+                Object.entries(dynamicSubs).forEach(([slug, subsSet]) => {
+                    dynamicSubsArray[slug] = Array.from(subsSet);
+                });
+                setDynamicSubcategories(dynamicSubsArray);
+            }
         };
         fetchData();
     }, []);
@@ -93,8 +121,12 @@ export const BulkProductUpload = ({ isOpen, onClose, onSuccess }: BulkProductUpl
         const refData: any[][] = [["Available Categories", "Available Subcategories (by Category)", "Available Brands"]];
         const allSubcategories: string[] = [];
         categories.forEach(cat => {
-            const subs = SUBCATEGORY_OPTIONS[cat.slug] || [];
-            subs.forEach(sub => {
+            // Combine predefined subcategories with dynamic ones from the database
+            const predefinedSubs = SUBCATEGORY_OPTIONS[cat.slug] || [];
+            const dynamicSubs = dynamicSubcategories[cat.slug] || [];
+            const allUniqueSubs = [...new Set([...predefinedSubs, ...dynamicSubs])];
+
+            allUniqueSubs.forEach(sub => {
                 allSubcategories.push(`${cat.name}: ${sub}`);
             });
         });
@@ -116,7 +148,7 @@ export const BulkProductUpload = ({ isOpen, onClose, onSuccess }: BulkProductUpl
         toast.success("Template downloaded! Check 'Valid Values Reference' sheet for allowed values.");
     };
 
-    const validateRow = (row: any, currentCategories: { id: string; name: string; slug: string }[]): ProductRow => {
+    const validateRow = (row: any, currentCategories: { id: string; name: string; slug: string }[], dynamicSubs: Record<string, string[]>): ProductRow => {
         const name = row["Product Name"];
         const price = parseFloat(row["Price (BHD)"]);
         const categoryName = row["Category Name"];
@@ -148,13 +180,21 @@ export const BulkProductUpload = ({ isOpen, onClose, onSuccess }: BulkProductUpl
                 status = "error";
                 errorMessage = `Invalid Category "${categoryName}". Valid: ${validCategoryNames}. (See template Excel "Valid Values" sheet)`;
             } else {
-                const allowedSubcategories = SUBCATEGORY_OPTIONS[matchedCategory.slug] || [];
-                const isValidSub = allowedSubcategories.some(sub => sub.toLowerCase() === subcategoryName.toString().toLowerCase());
+                // Combine predefined subcategories with dynamically fetched ones from the database
+                const predefinedSubs = SUBCATEGORY_OPTIONS[matchedCategory.slug] || [];
+                const dynamicSubsForCategory = dynamicSubs[matchedCategory.slug] || [];
 
-                if (!isValidSub && allowedSubcategories.length > 0) {
+                // Merge and deduplicate (case-insensitive)
+                const allSubcategoriesLower = new Set(predefinedSubs.map(s => s.toLowerCase()));
+                dynamicSubsForCategory.forEach(s => allSubcategoriesLower.add(s.toLowerCase()));
+
+                const isValidSub = allSubcategoriesLower.has(subcategoryName.toString().toLowerCase());
+
+                if (!isValidSub && (predefinedSubs.length > 0 || dynamicSubsForCategory.length > 0)) {
                     status = "error";
                     // Show all valid subcategories with reference to template
-                    const validSubs = allowedSubcategories.join(", ");
+                    const allUniqueSubsForDisplay = [...new Set([...predefinedSubs, ...dynamicSubsForCategory])];
+                    const validSubs = allUniqueSubsForDisplay.join(", ");
                     errorMessage = `Invalid Subcategory for ${matchedCategory.name}. Valid: ${validSubs}. (See template Excel "Valid Values" sheet)`;
                 }
             }
@@ -206,7 +246,7 @@ export const BulkProductUpload = ({ isOpen, onClose, onSuccess }: BulkProductUpl
                     return;
                 }
 
-                const parsedData = jsonData.map((row: any) => validateRow(row, categories));
+                const parsedData = jsonData.map((row: any) => validateRow(row, categories, dynamicSubcategories));
 
                 setPreviewData(parsedData);
                 setErrorCount(parsedData.filter(p => p.status === "error").length);
