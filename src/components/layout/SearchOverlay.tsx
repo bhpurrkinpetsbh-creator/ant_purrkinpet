@@ -175,7 +175,7 @@ export const SearchOverlay = ({ isOpen, onClose }: SearchOverlayProps) => {
                                         {product.name}
                                     </h3>
                                     <p className="text-primary font-bold text-lg">
-                                        BHD{product.price.toFixed(3)}
+                                        BD {product.price.toFixed(3)}
                                     </p>
                                     <p className={`text-sm ${product.stock_quantity > 0 ? 'text-green-600' : 'text-red-500'}`}>
                                         {product.stock_quantity > 0 ? 'In stock' : 'Out of stock'}

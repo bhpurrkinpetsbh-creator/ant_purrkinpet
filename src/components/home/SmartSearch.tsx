@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Search, Sparkles, ArrowRight } from "lucide-react";
+import { Search, Sparkles, ArrowRight, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -13,12 +13,18 @@ const EXAMPLES = [
     "wet food of meo"
 ];
 
-export function SmartSearch() {
+interface SmartSearchProps {
+    onOpenOverlay?: () => void;
+}
+
+export function SmartSearch({ onOpenOverlay }: SmartSearchProps) {
     const [query, setQuery] = useState("");
     const [placeholder, setPlaceholder] = useState("");
     const [exampleIndex, setExampleIndex] = useState(0);
     const [charIndex, setCharIndex] = useState(0);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [isFocused, setIsFocused] = useState(false);
+    const inputRef = useRef<HTMLInputElement>(null);
     const navigate = useNavigate();
 
     // Typing animation effect
@@ -52,6 +58,18 @@ export function SmartSearch() {
 
         // Redirect to shop with the query
         navigate(`/shop?search=${encodeURIComponent(query.trim())}`);
+    };
+
+    const handleClear = () => {
+        setQuery("");
+        inputRef.current?.focus();
+    };
+
+    const handleInputClick = () => {
+        // If there's an overlay handler, trigger it
+        if (onOpenOverlay) {
+            onOpenOverlay();
+        }
     };
 
     return (
@@ -94,12 +112,34 @@ export function SmartSearch() {
 
                         <div className="relative flex-1">
                             <Input
+                                ref={inputRef}
                                 value={query}
                                 onChange={(e) => setQuery(e.target.value)}
+                                onClick={handleInputClick}
+                                onFocus={() => setIsFocused(true)}
+                                onBlur={() => setIsFocused(false)}
                                 className="w-full border-0 focus-visible:ring-0 text-xl py-8 bg-transparent placeholder:text-muted-foreground/50"
                                 placeholder={query ? "" : placeholder}
                             />
                         </div>
+
+                        {/* Clear button - shows when there's text */}
+                        <AnimatePresence>
+                            {query && (
+                                <motion.button
+                                    type="button"
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.8 }}
+                                    transition={{ duration: 0.15 }}
+                                    onClick={handleClear}
+                                    className="flex items-center justify-center w-8 h-8 mr-2 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors"
+                                    aria-label="Clear search"
+                                >
+                                    <X className="h-4 w-4 text-gray-600" />
+                                </motion.button>
+                            )}
+                        </AnimatePresence>
 
                         <Button
                             type="submit"

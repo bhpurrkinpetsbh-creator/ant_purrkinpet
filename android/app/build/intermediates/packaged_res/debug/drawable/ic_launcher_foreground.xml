@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Orange paw pad background -->
+    <group android:translateX="27" android:translateY="27">
+        <!-- Main pad -->
+        <path
+            android:fillColor="#FF6B35"
+            android:pathData="M27,40 C27,50 33,55 27,55 C21,55 27,50 27,40 C27,30 33,25 27,25 C21,25 27,30 27,40 Z M27,35 C14,35 8,45 8,50 C8,55 14,55 27,55 C40,55 46,55 46,50 C46,45 40,35 27,35 Z" />
+        <!-- Small toe pads -->
+        <path
+            android:fillColor="#FF8F5E"
+            android:pathData="M12,25 A5,6 0 1,1 22,25 A5,6 0 1,1 12,25 M32,25 A5,6 0 1,1 42,25 A5,6 0 1,1 32,25 M6,35 A5,6 0 1,1 16,35 A5,6 0 1,1 6,35 M38,35 A5,6 0 1,1 48,35 A5,6 0 1,1 38,35" />
+    </group>
+</vector>
