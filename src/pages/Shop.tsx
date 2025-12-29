@@ -35,6 +35,7 @@ type Product = {
   offer_price: number | null;
   is_on_offer: boolean | null;
   sku: string | null;
+  subcategory: string | null;
 };
 
 const Shop = () => {
@@ -42,37 +43,20 @@ const Shop = () => {
   const categoryParam = searchParams.get("category") || "all";
   const searchParamQuery = searchParams.get("search") || "";
   const offersParam = searchParams.get("offers") === "true";
+  const subcategoryParam = searchParams.get("subcategory") || "";
   const [searchQuery, setSearchQuery] = useState(searchParamQuery);
   const [sortBy, setSortBy] = useState("sku-asc");
   const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<string[]>(["all"]);
+  const [categories, setCategories] = useState<{ id: string; slug: string; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [addingProductId, setAddingProductId] = useState<string | null>(null);
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
   const [nlIntent, setNlIntent] = useState<SearchIntent | null>(null);
+  const [subcategoriesMap, setSubcategoriesMap] = useState<Record<string, string[]>>({});
+  const [subcategoriesLoading, setSubcategoriesLoading] = useState(false);
   const buttonRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({});
   const { toast } = useToast();
   const { addToCart } = useCart();
-
-  // Subcategory definitions for Dogs and Cats
-  const subcategories: Record<string, { label: string; keywords: string[] }[]> = {
-    dogs: [
-      { label: "All", keywords: [] },
-      { label: "Dry Food", keywords: ["dry food", "kibble", "dry"] },
-      { label: "Wet Food", keywords: ["wet food", "canned", "wet"] },
-      { label: "Treats", keywords: ["treat", "snack", "biscuit", "chew"] },
-      { label: "Toys", keywords: ["toy", "ball", "rope", "plush"] },
-      { label: "Accessories", keywords: ["collar", "leash", "harness", "bed", "bowl"] },
-    ],
-    cats: [
-      { label: "All", keywords: [] },
-      { label: "Dry Food", keywords: ["dry food", "kibble", "dry"] },
-      { label: "Wet Food", keywords: ["wet food", "canned", "wet"] },
-      { label: "Treats", keywords: ["treat", "snack"] },
-      { label: "Toys", keywords: ["toy", "mouse", "feather", "ball"] },
-      { label: "Litter", keywords: ["litter", "litter box", "sand"] },
-    ],
-  };
 
   useEffect(() => {
     setSearchQuery(searchParamQuery);
@@ -98,14 +82,91 @@ const Shop = () => {
   useEffect(() => {
     fetchProducts();
     fetchCategories();
+    fetchSubcategories();
+
+    // Listen for category updates from Category Management
+    const handleCategoriesUpdate = () => {
+      fetchCategories();
+      fetchSubcategories();
+    };
+    window.addEventListener('categories:updated', handleCategoriesUpdate);
+    return () => window.removeEventListener('categories:updated', handleCategoriesUpdate);
   }, []);
+
+  const fetchSubcategories = async () => {
+    try {
+      setSubcategoriesLoading(true);
+
+      // Fetch from subcategories table
+      const { data: dbSubcategories, error: dbSubsError } = await supabase
+        .from("subcategories")
+        .select("name, category_id");
+
+      // Don't throw error if table doesn't exist yet
+      if (dbSubsError && !dbSubsError.message.includes('does not exist')) {
+        console.warn('Error fetching subcategories table:', dbSubsError);
+      }
+
+      // Fetch unique subcategories from products (for backward compatibility)
+      const { data: productsWithSubs, error } = await supabase
+        .from("products")
+        .select("category_id, subcategory")
+        .not("subcategory", "is", null)
+        .eq("is_active", true);
+
+      if (error) throw error;
+
+      // Build subcategories map by category_id - start with database subcategories
+      const subsMap: Record<string, Set<string>> = {};
+
+      // Add from subcategories table
+      dbSubcategories?.forEach((sub: any) => {
+        if (sub.category_id && sub.name) {
+          if (!subsMap[sub.category_id]) {
+            subsMap[sub.category_id] = new Set();
+          }
+          subsMap[sub.category_id].add(sub.name);
+        }
+      });
+
+      // Add from products (merge with table subcategories)
+      productsWithSubs?.forEach((p) => {
+        if (p.category_id && p.subcategory) {
+          if (!subsMap[p.category_id]) {
+            subsMap[p.category_id] = new Set();
+          }
+          subsMap[p.category_id].add(p.subcategory);
+        }
+      });
+
+      // Convert Sets to sorted arrays
+      const subsMapArray: Record<string, string[]> = {};
+      Object.entries(subsMap).forEach(([catId, subsSet]) => {
+        subsMapArray[catId] = Array.from(subsSet).sort();
+      });
+      setSubcategoriesMap(subsMapArray);
+    } catch (error) {
+      console.error("Error fetching subcategories:", error);
+    } finally {
+      setSubcategoriesLoading(false);
+    }
+  };
 
   // Scroll to top when category changes
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    // Reset subcategory when category changes
-    setSelectedSubcategory(null);
-  }, [categoryParam]);
+    // Reset subcategory when category changes (but not if subcategory is in URL)
+    if (!subcategoryParam) {
+      setSelectedSubcategory(null);
+    }
+  }, [categoryParam, subcategoryParam]);
+
+  // Set subcategory from URL param
+  useEffect(() => {
+    if (subcategoryParam) {
+      setSelectedSubcategory(subcategoryParam);
+    }
+  }, [subcategoryParam]);
 
   const fetchProducts = async () => {
     try {
@@ -124,6 +185,7 @@ const Shop = () => {
           compare_at_price,
           offer_price,
           is_on_offer,
+          subcategory,
           categories (
             name,
             slug
@@ -149,13 +211,12 @@ const Shop = () => {
     try {
       const { data, error } = await supabase
         .from("categories")
-        .select("slug")
+        .select("id, slug, name")
         .eq("is_active", true)
         .order("display_order");
 
       if (error) throw error;
-      const categoryList = ["all", ...(data?.map(c => c.slug) || [])];
-      setCategories(categoryList);
+      setCategories(data || []);
     } catch (error) {
       console.error("Error fetching categories:", error);
     }
@@ -234,18 +295,14 @@ const Shop = () => {
     return matchesCategory;
   });
 
-  // Apply subcategory filter if selected
-  const subcategoryFilteredProducts = selectedSubcategory && selectedSubcategory !== "All"
+  // Apply subcategory filter if selected (from URL or local state)
+  const subcategoryFilteredProducts = selectedSubcategory
     ? categoryFilteredProducts.filter(product => {
-      const currentSubcategories = subcategories[categoryParam] || [];
-      const selectedSub = currentSubcategories.find(s => s.label === selectedSubcategory);
-      if (!selectedSub || selectedSub.keywords.length === 0) return true;
-
-      const productName = product.name.toLowerCase();
-      const productDesc = (product.description || "").toLowerCase();
-      return selectedSub.keywords.some(keyword =>
-        productName.includes(keyword.toLowerCase()) || productDesc.includes(keyword.toLowerCase())
-      );
+      // Match by product's actual subcategory field (from database)
+      if (product.subcategory) {
+        return product.subcategory.toLowerCase() === selectedSubcategory.toLowerCase();
+      }
+      return false;
     })
     : categoryFilteredProducts;
 
@@ -364,9 +421,10 @@ const Shop = () => {
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="all">All</SelectItem>
                 {categories.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
-                    {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                  <SelectItem key={cat.id} value={cat.slug}>
+                    {cat.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -400,35 +458,49 @@ const Shop = () => {
           >
             All
           </Button>
-          {categories.filter(cat => cat !== "all").map((cat) => (
+          {categories.map((cat) => (
             <Button
-              key={cat}
-              variant={categoryParam === cat ? "default" : "outline"}
+              key={cat.id}
+              variant={categoryParam === cat.slug ? "default" : "outline"}
               size="sm"
-              onClick={() => setSearchParams({ category: cat })}
+              onClick={() => setSearchParams({ category: cat.slug })}
               className="whitespace-nowrap"
             >
-              {cat.charAt(0).toUpperCase() + cat.slice(1)}
+              {cat.name}
             </Button>
           ))}
         </div>
 
-        {/* Subcategory Filters - Only for Dogs and Cats */}
-        {(categoryParam === "dogs" || categoryParam === "cats") && subcategories[categoryParam] && (
-          <div className="flex gap-2 overflow-x-auto pt-2 scrollbar-hide">
-            {subcategories[categoryParam].map((sub) => (
+        {/* Subcategory Filters - Dynamic from database */}
+        {(() => {
+          const currentCategory = categories.find(cat => cat.slug === categoryParam);
+          const categoryId = currentCategory?.id;
+          const subcategoriesForCategory = categoryId ? (subcategoriesMap[categoryId] || []) : [];
+
+          return subcategoriesForCategory.length > 0 && (
+            <div className="flex flex-wrap gap-2 pt-2">
               <Button
-                key={sub.label}
-                variant={selectedSubcategory === sub.label || (sub.label === "All" && !selectedSubcategory) ? "secondary" : "ghost"}
+                variant={!selectedSubcategory ? "secondary" : "ghost"}
                 size="sm"
-                onClick={() => setSelectedSubcategory(sub.label === "All" ? null : sub.label)}
+                onClick={() => setSelectedSubcategory(null)}
                 className="whitespace-nowrap text-xs h-7 px-3"
               >
-                {sub.label}
+                All
               </Button>
-            ))}
-          </div>
-        )}
+              {subcategoriesForCategory.map((subName) => (
+                <Button
+                  key={subName}
+                  variant={selectedSubcategory === subName ? "secondary" : "ghost"}
+                  size="sm"
+                  onClick={() => setSelectedSubcategory(subName)}
+                  className="whitespace-nowrap text-xs h-7 px-3"
+                >
+                  {subName}
+                </Button>
+              ))}
+            </div>
+          );
+        })()}
       </div>
 
       {/* Products Grid */}

@@ -18,6 +18,13 @@ const petCategories = [
         image: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=200&h=200&fit=crop&crop=face"
     },
     {
+        name: "Dogs & Cats",
+        slug: "dogs-cats",
+        emoji: "🐾",
+        color: "from-amber-100 to-orange-100",
+        image: "https://images.unsplash.com/photo-1623387641168-d9803ddd3f35?w=200&h=200&fit=crop&crop=face"
+    },
+    {
         name: "Birds",
         slug: "birds",
         emoji: "🦜",
@@ -32,13 +39,6 @@ const petCategories = [
         image: "https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?w=200&h=200&fit=crop&crop=face"
     },
     {
-        name: "Small Pets",
-        slug: "small-pets",
-        emoji: "🐹",
-        color: "from-pink-100 to-pink-200",
-        image: "https://images.unsplash.com/photo-1425082661705-1834bfd09dca?w=200&h=200&fit=crop&crop=face"
-    },
-    {
         name: "Rabbits",
         slug: "rabbits",
         emoji: "🐰",
@@ -51,6 +51,13 @@ const petCategories = [
         emoji: "🐢",
         color: "from-teal-100 to-teal-200",
         image: "/turtle-category.jpg"
+    },
+    {
+        name: "Small Pets",
+        slug: "small-pets",
+        emoji: "🐹",
+        color: "from-pink-100 to-pink-200",
+        image: "https://images.unsplash.com/photo-1425082661705-1834bfd09dca?w=200&h=200&fit=crop&crop=face"
     },
 ];
 

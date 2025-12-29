@@ -39,6 +39,7 @@ const Header = () => {
   const [wishlistPulse, setWishlistPulse] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -64,6 +65,7 @@ const Header = () => {
   // Fetch categories from database
   useEffect(() => {
     const fetchCategories = async () => {
+      console.log('🔍 Header fetching categories...');
       const { data, error } = await supabase
         .from('categories')
         .select('id, name, slug')
@@ -71,10 +73,22 @@ const Header = () => {
         .order('display_order');
 
       if (!error && data) {
+        console.log('✅ Header categories fetched:', data);
         setCategories(data);
+      } else if (error) {
+        console.error('❌ Header categories fetch error:', error);
       }
+      setCategoriesLoading(false);
     };
     fetchCategories();
+
+    // Listen for category updates from Category Management
+    const handleCategoriesUpdate = () => {
+      console.log('📥 Header received categories:updated event');
+      fetchCategories();
+    };
+    window.addEventListener('categories:updated', handleCategoriesUpdate);
+    return () => window.removeEventListener('categories:updated', handleCategoriesUpdate);
   }, []);
 
   useEffect(() => {
@@ -139,19 +153,28 @@ const Header = () => {
               <span className="font-display text-lg font-bold bg-gradient-hero bg-clip-text text-transparent hidden sm:inline">PURRKIN PETS</span>
             </Link>
 
-            {/* Category Navigation - Center */}
-            <div className="hidden lg:flex items-center flex-1 justify-center">
-              <CategoryMegaMenu />
+            {/* Search Bar - Center */}
+            <div className="hidden md:flex flex-1 max-w-xl mx-auto">
+              <div className="relative w-full">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Search for pet food, toys, usage..."
+                  className="w-full h-10 pl-10 pr-4 rounded-full border border-input bg-background text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  onClick={() => setIsSearchOpen(true)}
+                  readOnly
+                />
+              </div>
             </div>
 
             {/* Right Side Icons */}
             <div className="flex items-center gap-1">
-              {/* Search Icon */}
+              {/* Search Icon (Mobile Only) */}
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => setIsSearchOpen(true)}
-                className="hover:bg-transparent hover:text-primary transition-colors"
+                className="md:hidden hover:bg-transparent hover:text-primary transition-colors"
               >
                 <Search className="h-5 w-5" />
               </Button>
@@ -242,25 +265,44 @@ const Header = () => {
             </div>
           </div>
         </div>
+        {/* Navigation Row - Desktop */}
+        <div className="hidden lg:block border-b bg-white shadow-sm">
+          <div className="container flex justify-center py-0">
+            <CategoryMegaMenu />
+          </div>
+        </div>
 
         {/* Mobile Category Row - Dynamically fetched from database */}
         <div className="lg:hidden border-b bg-muted/30">
           <div className="container overflow-x-auto">
             <div className="flex items-center justify-start gap-4 py-2 min-w-max">
-              {categories.map((category) => (
-                <Link
-                  key={category.id}
-                  to={`/shop?category=${category.slug}`}
-                  className="flex items-center gap-1.5 text-sm font-medium text-foreground hover:text-primary transition-colors whitespace-nowrap"
-                >
-                  {getCategoryIcon(category.slug)}
-                  {category.name}
-                </Link>
-              ))}
-              <Link to="/shop" className="flex items-center gap-1.5 text-sm font-medium text-foreground hover:text-primary transition-colors whitespace-nowrap">
-                <LayoutGrid className="h-3.5 w-3.5 text-primary" />
-                All Products
-              </Link>
+              {categoriesLoading ? (
+                // Skeleton loader while categories are loading
+                <>
+                  <div className="h-5 w-16 bg-muted-foreground/20 animate-pulse rounded" />
+                  <div className="h-5 w-12 bg-muted-foreground/20 animate-pulse rounded" />
+                  <div className="h-5 w-20 bg-muted-foreground/20 animate-pulse rounded" />
+                  <div className="h-5 w-14 bg-muted-foreground/20 animate-pulse rounded" />
+                  <div className="h-5 w-18 bg-muted-foreground/20 animate-pulse rounded" />
+                </>
+              ) : (
+                <>
+                  {categories.map((category) => (
+                    <Link
+                      key={category.id}
+                      to={`/shop?category=${category.slug}`}
+                      className="flex items-center gap-1.5 text-sm font-medium text-foreground hover:text-primary transition-colors whitespace-nowrap"
+                    >
+                      {getCategoryIcon(category.slug)}
+                      {category.name}
+                    </Link>
+                  ))}
+                  <Link to="/shop" className="flex items-center gap-1.5 text-sm font-medium text-foreground hover:text-primary transition-colors whitespace-nowrap">
+                    <LayoutGrid className="h-3.5 w-3.5 text-primary" />
+                    All Products
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>

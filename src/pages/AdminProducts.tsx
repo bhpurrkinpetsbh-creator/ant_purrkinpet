@@ -33,7 +33,9 @@ import { ProductForm } from "@/components/admin/ProductForm";
 import { ProductHistory } from "@/components/admin/ProductHistory";
 import { BulkProductUpload } from "@/components/admin/BulkProductUpload";
 import { CategoryManagement } from "@/components/admin/CategoryManagement";
-import { FolderOpen } from "lucide-react";
+import { EmptyFieldsTab } from "@/components/admin/EmptyFieldsTab";
+import { ProductWarningIndicator } from "@/components/admin/ProductWarningIndicator";
+import { FolderOpen, AlertTriangle } from "lucide-react";
 
 interface Product {
   id: string;
@@ -456,7 +458,7 @@ const AdminProducts = () => {
       </div>
 
       <Tabs defaultValue="products" className="space-y-6">
-        <TabsList className="grid w-full max-w-lg grid-cols-3">
+        <TabsList className="grid w-full max-w-2xl grid-cols-4">
           <TabsTrigger value="products" className="gap-2">
             <Edit className="h-4 w-4" />
             All Products
@@ -464,6 +466,10 @@ const AdminProducts = () => {
           <TabsTrigger value="categories" className="gap-2">
             <FolderOpen className="h-4 w-4" />
             Categories
+          </TabsTrigger>
+          <TabsTrigger value="empty-fields" className="gap-2">
+            <AlertTriangle className="h-4 w-4" />
+            Empty Fields
           </TabsTrigger>
           <TabsTrigger value="history" className="gap-2">
             <History className="h-4 w-4" />
@@ -618,10 +624,26 @@ const AdminProducts = () => {
                           </div>
                         </TableHead>
                         <TableHead className="text-right min-w-[120px]">MRP (BHD)</TableHead>
-                        <TableHead className="text-right min-w-[120px]">Website Price</TableHead>
+                        <TableHead
+                          className="cursor-pointer hover:bg-muted/50 transition-colors text-right min-w-[120px]"
+                          onClick={() => handleSort('price')}
+                        >
+                          <div className="flex items-center justify-end gap-1">
+                            Website Price
+                            <ArrowUpDown className={`h-3 w-3 ${sortColumn === 'price' ? 'text-primary' : 'text-muted-foreground'}`} />
+                          </div>
+                        </TableHead>
                         <TableHead className="text-center">On Offer</TableHead>
                         <TableHead className="text-right min-w-[120px]">Offer Price</TableHead>
-                        <TableHead className="text-right">Stock</TableHead>
+                        <TableHead
+                          className="cursor-pointer hover:bg-muted/50 transition-colors text-right"
+                          onClick={() => handleSort('stock')}
+                        >
+                          <div className="flex items-center justify-end gap-1">
+                            Stock
+                            <ArrowUpDown className={`h-3 w-3 ${sortColumn === 'stock' ? 'text-primary' : 'text-muted-foreground'}`} />
+                          </div>
+                        </TableHead>
                         <TableHead>Expiry</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
@@ -646,7 +668,10 @@ const AdminProducts = () => {
                                 className="w-12 h-12 object-cover rounded"
                               />
                               <div>
-                                <div className="font-medium">{product.name}</div>
+                                <div className="font-medium flex items-center gap-2">
+                                  {product.name}
+                                  <ProductWarningIndicator product={product} />
+                                </div>
                                 <div className="flex gap-2 mt-1">
                                   {product.sku && (
                                     <span className="text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground font-mono">
@@ -802,6 +827,10 @@ const AdminProducts = () => {
               <CategoryManagement />
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="empty-fields">
+          <EmptyFieldsTab products={products} onEditProduct={handleEditProduct} />
         </TabsContent>
 
         <TabsContent value="history">

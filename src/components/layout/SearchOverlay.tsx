@@ -33,7 +33,7 @@ export const SearchOverlay = ({ isOpen, onClose }: SearchOverlayProps) => {
             setLoading(true);
             const { data } = await supabase
                 .from("products")
-                .select("id, name, slug, price, image_url, stock_quantity, category:categories(name)")
+                .select("id, name, slug, price, image_url, stock_quantity, sku, description, category:categories(name), brand:brands(name)")
                 .eq("is_active", true)
                 .limit(200);
 
@@ -57,15 +57,39 @@ export const SearchOverlay = ({ isOpen, onClose }: SearchOverlayProps) => {
         }
     }, [isOpen]);
 
-    // Handle search
+    // Handle search with word-based matching
     useEffect(() => {
         if (searchQuery.trim().length > 0) {
             const query = searchQuery.toLowerCase();
-            const results = products.filter(p =>
-                p.name.toLowerCase().includes(query) ||
-                p.category?.name?.toLowerCase().includes(query)
-            );
-            setSearchResults(results.slice(0, 6)); // Show top 6 results
+            const queryWords = query.split(/\s+/).filter(word => word.length > 2);
+
+            const results = products.filter(p => {
+                const name = p.name?.toLowerCase() || '';
+                const category = (p.category as any)?.name?.toLowerCase() || '';
+                const brand = (p as any).brand?.name?.toLowerCase() || '';
+                const description = (p as any).description?.toLowerCase() || '';
+                const sku = (p as any).sku?.toString().toLowerCase() || '';
+
+                const searchText = `${name} ${category} ${brand} ${description} ${sku}`;
+
+                // Exact phrase match
+                if (searchText.includes(query)) return true;
+
+                // Match if contains at least 2 words from query (or all words if fewer than 2)
+                const matchedWords = queryWords.filter(word => searchText.includes(word));
+                return matchedWords.length >= Math.min(2, queryWords.length);
+            });
+
+            // Sort by relevance (more matching words = higher priority)
+            results.sort((a, b) => {
+                const aText = `${a.name} ${(a.category as any)?.name} ${(a as any).brand?.name}`.toLowerCase();
+                const bText = `${b.name} ${(b.category as any)?.name} ${(b as any).brand?.name}`.toLowerCase();
+                const aMatches = queryWords.filter(word => aText.includes(word)).length;
+                const bMatches = queryWords.filter(word => bText.includes(word)).length;
+                return bMatches - aMatches;
+            });
+
+            setSearchResults(results.slice(0, 6));
         } else {
             setSearchResults([]);
         }

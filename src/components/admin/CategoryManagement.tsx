@@ -96,7 +96,7 @@ export const CategoryManagement = () => {
                 }
             });
 
-            // Fetch unique subcategories from products
+            // Fetch unique subcategories from products table
             const { data: productsWithSubs, error: subsError } = await supabase
                 .from("products")
                 .select("category_id, subcategory")
@@ -104,9 +104,31 @@ export const CategoryManagement = () => {
 
             if (subsError) throw subsError;
 
-            // Build subcategories map
+            // Fetch subcategories from subcategories table
+            const { data: dbSubcategories, error: dbSubsError } = await supabase
+                .from("subcategories")
+                .select("id, name, category_id");
+
+            if (dbSubsError) throw dbSubsError;
+
+            // Build subcategories map - start with database subcategories
             const subcategoriesMap: Record<string, Subcategory[]> = {};
+            dbSubcategories?.forEach((sub) => {
+                if (!subcategoriesMap[sub.category_id]) {
+                    subcategoriesMap[sub.category_id] = [];
+                }
+                subcategoriesMap[sub.category_id].push({
+                    id: sub.id,
+                    name: sub.name,
+                    category_id: sub.category_id,
+                });
+            });
+
+            // Add subcategories from products that aren't in the database yet
             const seenSubs = new Set<string>();
+            dbSubcategories?.forEach((sub) => {
+                seenSubs.add(`${sub.category_id}-${sub.name}`);
+            });
 
             productsWithSubs?.forEach((p) => {
                 if (p.category_id && p.subcategory) {
@@ -195,16 +217,28 @@ export const CategoryManagement = () => {
         try {
             if (editingCategory) {
                 // Update
-                const { error } = await supabase
+                console.log('💾 Updating category:', {
+                    id: editingCategory.id,
+                    name: categoryForm.name,
+                    slug: categoryForm.slug,
+                    description: categoryForm.description
+                });
+
+                const { data, error } = await supabase
                     .from("categories")
                     .update({
                         name: categoryForm.name,
                         slug: categoryForm.slug,
                         description: categoryForm.description || null,
                     })
-                    .eq("id", editingCategory.id);
+                    .eq("id", editingCategory.id)
+                    .select();
 
-                if (error) throw error;
+                if (error) {
+                    console.error('❌ Update error:', error);
+                    throw error;
+                }
+                console.log('✅ Update result:', data);
                 toast.success("Category updated successfully");
             } else {
                 // Create
@@ -222,7 +256,12 @@ export const CategoryManagement = () => {
             }
 
             setIsCategoryDialogOpen(false);
-            fetchCategories();
+            await fetchCategories();
+            // Small delay to ensure database changes propagate, then notify other components
+            setTimeout(() => {
+                console.log('🔄 Dispatching categories:updated event');
+                window.dispatchEvent(new CustomEvent('categories:updated'));
+            }, 300);
         } catch (error: any) {
             console.error("Error saving category:", error);
             toast.error(error.message || "Failed to save category");
@@ -240,7 +279,11 @@ export const CategoryManagement = () => {
 
             if (error) throw error;
             toast.success(`Category ${category.is_active ? "deactivated" : "activated"}`);
-            fetchCategories();
+            await fetchCategories();
+            // Small delay to ensure database changes propagate
+            setTimeout(() => {
+                window.dispatchEvent(new CustomEvent('categories:updated'));
+            }, 300);
         } catch (error: any) {
             toast.error("Failed to update category status");
         }
@@ -262,7 +305,11 @@ export const CategoryManagement = () => {
 
             if (error) throw error;
             toast.success("Category deleted");
-            fetchCategories();
+            await fetchCategories();
+            // Small delay to ensure database changes propagate
+            setTimeout(() => {
+                window.dispatchEvent(new CustomEvent('categories:updated'));
+            }, 300);
         } catch (error: any) {
             toast.error("Failed to delete category");
         }
@@ -292,22 +339,56 @@ export const CategoryManagement = () => {
         setSavingSubcategory(true);
         try {
             if (editingSubcategory) {
-                // Update all products with old subcategory name to new name
-                const { error } = await supabase
+                // Check if this is a database subcategory (UUID) or product-only (composite key)
+                const isDbSubcategory = editingSubcategory.id.length === 36; // UUID length
+
+                if (isDbSubcategory) {
+                    // Update in database
+                    const { error: updateError } = await supabase
+                        .from("subcategories")
+                        .update({ name: subcategoryForm.name })
+                        .eq("id", editingSubcategory.id);
+
+                    if (updateError) throw updateError;
+                }
+
+                // Also update all products using the old subcategory name
+                const { error: productsError } = await supabase
                     .from("products")
                     .update({ subcategory: subcategoryForm.name })
                     .eq("category_id", subcategoryParentId)
                     .eq("subcategory", editingSubcategory.name);
 
-                if (error) throw error;
+                if (productsError) throw productsError;
                 toast.success("Subcategory updated successfully");
             } else {
-                // For new subcategory, just close dialog - user will use it when adding products
-                toast.success(`Subcategory "${subcategoryForm.name}" can now be used when adding products`);
+                // Insert new subcategory into database
+                const { error: insertError } = await supabase
+                    .from("subcategories")
+                    .insert([{
+                        name: subcategoryForm.name,
+                        category_id: subcategoryParentId,
+                    }]);
+
+                if (insertError) {
+                    // Handle duplicate gracefully
+                    if (insertError.code === '23505') {
+                        toast.success(`Subcategory "${subcategoryForm.name}" already exists`);
+                    } else {
+                        throw insertError;
+                    }
+                } else {
+                    toast.success(`Subcategory "${subcategoryForm.name}" created successfully`);
+                }
             }
 
             setIsSubcategoryDialogOpen(false);
-            fetchCategories();
+            await fetchCategories();
+            // Small delay to ensure database changes propagate
+            setTimeout(() => {
+                console.log('🔄 Dispatching categories:updated event after subcategory save');
+                window.dispatchEvent(new CustomEvent('categories:updated'));
+            }, 300);
         } catch (error: any) {
             console.error("Error saving subcategory:", error);
             toast.error("Failed to save subcategory");
@@ -331,9 +412,41 @@ export const CategoryManagement = () => {
 
         if (!confirm(`Delete subcategory "${subcategory.name}"?`)) return;
 
-        // Since subcategories are derived from products, we just notify
-        toast.success("Subcategory removed (no products were using it)");
-        fetchCategories();
+        try {
+            // Check if this is a database subcategory (UUID) or product-only (composite key)
+            const isDbSubcategory = subcategory.id.length === 36; // UUID length
+
+            if (isDbSubcategory) {
+                // Delete from subcategories table
+                const { error } = await supabase
+                    .from("subcategories")
+                    .delete()
+                    .eq("id", subcategory.id);
+
+                if (error) throw error;
+            }
+
+            // Also clear subcategory from any products (safety measure)
+            const { error: clearError } = await supabase
+                .from("products")
+                .update({ subcategory: null })
+                .eq("category_id", subcategory.category_id)
+                .eq("subcategory", subcategory.name);
+
+            if (clearError) throw clearError;
+
+            toast.success("Subcategory deleted successfully");
+            fetchCategories();
+
+            // Dispatch event to refresh other components
+            setTimeout(() => {
+                console.log('🔄 Dispatching categories:updated event after subcategory delete');
+                window.dispatchEvent(new CustomEvent('categories:updated'));
+            }, 300);
+        } catch (error: any) {
+            console.error("Error deleting subcategory:", error);
+            toast.error("Failed to delete subcategory");
+        }
     };
 
     if (loading) {

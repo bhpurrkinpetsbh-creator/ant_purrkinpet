@@ -28,6 +28,7 @@ export const ProductForm = ({ mode, product, isOpen, onClose, onSuccess }: Produ
   const [imagePreview, setImagePreview] = useState<string>("");
   const [showCustomSubcategory, setShowCustomSubcategory] = useState(false);
   const [customSubcategory, setCustomSubcategory] = useState("");
+  const [dynamicSubcategories, setDynamicSubcategories] = useState<Record<string, string[]>>({});
 
   // Form state
   const [formData, setFormData] = useState({
@@ -169,6 +170,95 @@ export const ProductForm = ({ mode, product, isOpen, onClose, onSuccess }: Produ
       setOptionsLoading(false);
     }
   };
+
+  // Fetch dynamic subcategories from products AND subcategories table
+  const fetchSubcategories = async () => {
+    try {
+      // Fetch from products table
+      const { data: products, error: productsError } = await supabase
+        .from('products')
+        .select('subcategory, category_id, categories(slug)')
+        .not('subcategory', 'is', null)
+        .not('subcategory', 'eq', '');
+
+      if (productsError) throw productsError;
+
+      // Fetch from subcategories table
+      const { data: dbSubcategories, error: dbSubsError } = await supabase
+        .from('subcategories')
+        .select('name, category_id, categories(slug)');
+
+      // Don't throw error if table doesn't exist yet (for backward compatibility)
+      if (dbSubsError && !dbSubsError.message.includes('does not exist')) {
+        console.warn('Error fetching subcategories table:', dbSubsError);
+      }
+
+      // Group subcategories by category slug
+      const subcategoryMap: Record<string, Set<string>> = {};
+
+      // Add from products
+      products?.forEach((product: any) => {
+        const categorySlug = product.categories?.slug;
+        if (categorySlug && product.subcategory) {
+          if (!subcategoryMap[categorySlug]) {
+            subcategoryMap[categorySlug] = new Set();
+          }
+          subcategoryMap[categorySlug].add(product.subcategory);
+        }
+      });
+
+      // Add from subcategories table
+      dbSubcategories?.forEach((sub: any) => {
+        const categorySlug = sub.categories?.slug;
+        if (categorySlug && sub.name) {
+          if (!subcategoryMap[categorySlug]) {
+            subcategoryMap[categorySlug] = new Set();
+          }
+          subcategoryMap[categorySlug].add(sub.name);
+        }
+      });
+
+      // Convert Sets to sorted arrays and merge with hardcoded options
+      const mergedSubcategories: Record<string, string[]> = {};
+      Object.keys(SUBCATEGORY_OPTIONS).forEach(slug => {
+        const hardcoded = new Set(SUBCATEGORY_OPTIONS[slug]);
+        const dynamic = subcategoryMap[slug] || new Set();
+        mergedSubcategories[slug] = Array.from(new Set([...hardcoded, ...dynamic])).sort();
+      });
+
+      // Add any dynamic categories not in hardcoded list
+      Object.keys(subcategoryMap).forEach(slug => {
+        if (!mergedSubcategories[slug]) {
+          mergedSubcategories[slug] = Array.from(subcategoryMap[slug]).sort();
+        }
+      });
+
+      setDynamicSubcategories(mergedSubcategories);
+    } catch (error: any) {
+      console.error("Error fetching subcategories:", error);
+      // Fall back to hardcoded options
+      setDynamicSubcategories(SUBCATEGORY_OPTIONS);
+    }
+  };
+
+  // Listen for category updates from other components
+  useEffect(() => {
+    const handleCategoriesUpdate = () => {
+      console.log('📥 ProductForm received categories:updated event');
+      fetchCategoriesAndBrands();
+      fetchSubcategories();
+    };
+
+    window.addEventListener('categories:updated', handleCategoriesUpdate);
+    return () => window.removeEventListener('categories:updated', handleCategoriesUpdate);
+  }, []);
+
+  // Initial fetch of subcategories
+  useEffect(() => {
+    if (isOpen) {
+      fetchSubcategories();
+    }
+  }, [isOpen]);
 
   const fetchNextSku = async () => {
     try {
@@ -317,6 +407,12 @@ export const ProductForm = ({ mode, product, isOpen, onClose, onSuccess }: Produ
         toast.success("Product updated successfully!");
       }
 
+      // Dispatch event to refresh categories/subcategories in Header and Shop
+      setTimeout(() => {
+        console.log('🔄 Dispatching categories:updated event after product save');
+        window.dispatchEvent(new CustomEvent('categories:updated'));
+      }, 300);
+
       onSuccess();
     } catch (error: any) {
       console.error("Error saving product:", error);
@@ -414,7 +510,7 @@ export const ProductForm = ({ mode, product, isOpen, onClose, onSuccess }: Produ
                           {(() => {
                             const selectedCategory = categories.find(c => c.id === formData.category_id);
                             const categorySlug = selectedCategory?.slug || "";
-                            const subcategoryOptions = SUBCATEGORY_OPTIONS[categorySlug] || [];
+                            const subcategoryOptions = dynamicSubcategories[categorySlug] || SUBCATEGORY_OPTIONS[categorySlug] || [];
 
                             return (
                               <div className="flex gap-2">
