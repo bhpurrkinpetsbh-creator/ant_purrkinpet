@@ -163,47 +163,58 @@ export const BulkImageUpdate = () => {
       ]);
 
       if (productsRes.error) throw productsRes.error;
-      setProducts(productsRes.data || []);
+      const allProducts = productsRes.data || [];
+      setProducts(allProducts);
 
-      // Build a map of product_id -> product_images URLs
-      const productImagesMap: Record<string, string[]> = {};
-      (productImagesRes.data || []).forEach((img: any) => {
-        if (!productImagesMap[img.product_id]) {
-          productImagesMap[img.product_id] = [];
-        }
-        productImagesMap[img.product_id].push(img.image_url);
-      });
+      // Auto-sync: fix product_images entries that have broken URLs
+      // when the main products.image_url is working
+      const productImageRows = productImagesRes.data || [];
+      const productMap = new Map(allProducts.map((p) => [p.id, p]));
 
-      // Check which images are broken (main image + product_images)
+      const syncPromises = productImageRows
+        .filter((pi: any) => {
+          const product = productMap.get(pi.product_id);
+          if (!product) return false;
+          // If product_images URL differs from main and main is a supabase URL
+          return (
+            pi.is_primary &&
+            pi.image_url !== product.image_url &&
+            product.image_url?.includes("supabase")
+          );
+        })
+        .map((pi: any) => {
+          const product = productMap.get(pi.product_id)!;
+          return supabase
+            .from("product_images")
+            .update({ image_url: product.image_url })
+            .eq("product_id", pi.product_id)
+            .eq("is_primary", true);
+        });
+
+      if (syncPromises.length > 0) {
+        await Promise.all(syncPromises);
+        console.log(`Auto-synced ${syncPromises.length} product_images entries`);
+      }
+
+      // Now detect broken images — only check main products.image_url
+      // since product_images primary is now in sync
       const brokenSet = new Set<string>();
 
       const checkImage = (url: string): Promise<boolean> => {
         return new Promise((resolve) => {
           if (!url) { resolve(true); return; } // empty = broken
-          const img = new Image();
+          const img = new window.Image();
           img.onload = () => resolve(false);
           img.onerror = () => resolve(true);
           img.src = url;
         });
       };
 
-      // Check all products in parallel
-      const checks = (productsRes.data || []).map(async (product) => {
-        // Check main image
+      // Check all products in parallel (main image only)
+      const checks = allProducts.map(async (product) => {
         const mainBroken = await checkImage(product.image_url);
         if (mainBroken) {
           brokenSet.add(product.id);
-          return;
-        }
-
-        // Check product_images table entries
-        const detailUrls = productImagesMap[product.id] || [];
-        for (const url of detailUrls) {
-          const isBroken = await checkImage(url);
-          if (isBroken) {
-            brokenSet.add(product.id);
-            return;
-          }
         }
       });
 
