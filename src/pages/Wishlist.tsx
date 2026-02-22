@@ -73,9 +73,10 @@ const Wishlist = () => {
                   <Link to={`/product/${product.id}`}>
                     <div className="aspect-square overflow-hidden bg-muted">
                       <img
-                        src={product.image_url}
+                        src={product.image_url || "/placeholder.svg"}
                         alt={product.name}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        onError={(e) => { e.currentTarget.src = "/placeholder.svg"; }}
                       />
                     </div>
                   </Link>

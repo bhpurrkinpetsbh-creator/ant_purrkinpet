@@ -189,9 +189,10 @@ export const SearchOverlay = ({ isOpen, onClose }: SearchOverlayProps) => {
                             >
                                 <div className="w-16 h-16 md:w-20 md:h-20 bg-gray-100 rounded-lg overflow-hidden shrink-0">
                                     <img
-                                        src={product.image_url}
+                                        src={product.image_url || "/placeholder.svg"}
                                         alt={product.name}
                                         className="w-full h-full object-cover"
+                                        onError={(e) => { e.currentTarget.src = "/placeholder.svg"; }}
                                     />
                                 </div>
                                 <div className="flex-1 min-w-0">

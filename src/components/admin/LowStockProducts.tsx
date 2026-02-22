@@ -105,9 +105,10 @@ export const LowStockProducts = () => {
                 className="flex items-center gap-4 p-4 border rounded-lg hover:bg-accent/50 transition-colors"
               >
                 <img
-                  src={product.image_url}
+                  src={product.image_url || "/placeholder.svg"}
                   alt={product.name}
                   className="w-16 h-16 object-cover rounded-md"
+                  onError={(e) => { e.currentTarget.src = "/placeholder.svg"; }}
                 />
                 <div className="flex-1 min-w-0">
                   <h4 className="font-semibold truncate">{product.name}</h4>

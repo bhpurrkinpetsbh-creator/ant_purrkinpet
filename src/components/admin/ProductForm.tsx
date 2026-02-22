@@ -404,6 +404,16 @@ export const ProductForm = ({ mode, product, isOpen, onClose, onSuccess }: Produ
           .eq('id', product.id);
 
         if (error) throw error;
+
+        // Also update primary image in product_images table if image changed
+        if (imageFile && imageUrl) {
+          await supabase
+            .from('product_images')
+            .update({ image_url: imageUrl })
+            .eq('product_id', product.id)
+            .eq('is_primary', true);
+        }
+
         toast.success("Product updated successfully!");
       }
 

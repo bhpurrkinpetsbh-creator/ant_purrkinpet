@@ -518,9 +518,10 @@ const Shop = () => {
                   <Link to={`/product/${product.id}`}>
                     <div className="aspect-square bg-white relative overflow-hidden">
                       <img
-                        src={product.image_url}
+                        src={product.image_url || "/placeholder.svg"}
                         alt={product.name}
                         className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
+                        onError={(e) => { e.currentTarget.src = "/placeholder.svg"; }}
                       />
                       {!inStock && (
                         <Badge className="absolute top-2 right-2 bg-destructive">Out of Stock</Badge>

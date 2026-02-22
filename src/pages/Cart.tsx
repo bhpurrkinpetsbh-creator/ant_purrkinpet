@@ -132,6 +132,7 @@ const Cart = () => {
                   src={item.products?.image_url || '/placeholder.svg'}
                   alt={item.products?.name}
                   className="w-24 h-24 object-cover rounded-lg"
+                  onError={(e) => { e.currentTarget.src = "/placeholder.svg"; }}
                 />
                 <div className="flex-1">
                   <h3 className="font-semibold mb-1">{item.products?.name}</h3>

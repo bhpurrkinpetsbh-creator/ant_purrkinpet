@@ -90,6 +90,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
                         alt={product.name}
                         className="w-full h-full object-contain p-4 transition-transform duration-300 ease-out"
                         style={parallaxStyle}
+                        onError={(e) => { e.currentTarget.src = "/placeholder.svg"; }}
                     />
                 </Link>
 

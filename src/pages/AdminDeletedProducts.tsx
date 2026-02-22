@@ -216,6 +216,7 @@ const AdminDeletedProducts = () => {
                             src={product.image_url || "/placeholder.svg"}
                             alt={product.product_name}
                             className="w-12 h-12 object-cover rounded"
+                            onError={(e) => { e.currentTarget.src = "/placeholder.svg"; }}
                           />
                           <div>
                             <div className="font-medium">{product.product_name}</div>

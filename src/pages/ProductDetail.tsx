@@ -115,12 +115,13 @@ const ProductDetail = () => {
 
         if (imagesError) throw imagesError;
 
-        // If no additional images, use the main product image
-        if (!images || images.length === 0) {
-          setProductImages([{ image_url: data.image_url, is_primary: true }]);
-        } else {
-          setProductImages(images);
-        }
+        // Always use the main product image_url as primary (most up-to-date)
+        // Then append any additional non-primary images from product_images
+        const additionalImages = (images || []).filter((img: any) => !img.is_primary);
+        setProductImages([
+          { image_url: data.image_url, is_primary: true },
+          ...additionalImages,
+        ]);
       } catch (error) {
         console.error('Error fetching product:', error);
         toast.error("Failed to load product");
@@ -266,6 +267,7 @@ const ProductDetail = () => {
                           src={image.image_url || '/placeholder.svg'}
                           alt={`${product.name} - Image ${index + 1}`}
                           className="w-full h-full object-contain p-4"
+                          onError={(e) => { e.currentTarget.src = "/placeholder.svg"; }}
                         />
                       )}
                     </Card>
@@ -289,6 +291,7 @@ const ProductDetail = () => {
                   src={productImages[0]?.image_url || product.image_url || '/placeholder.svg'}
                   alt={product.name}
                   className="w-full h-full object-contain p-4"
+                  onError={(e) => { e.currentTarget.src = "/placeholder.svg"; }}
                 />
               )}
             </Card>

@@ -277,9 +277,10 @@ const POSCheckout = () => {
                                 className="w-full flex items-center gap-4 p-4 hover:bg-slate-700 transition-colors border-b border-slate-700 last:border-0"
                             >
                                 <img
-                                    src={product.image_url}
+                                    src={product.image_url || "/placeholder.svg"}
                                     alt={product.name}
                                     className="w-16 h-16 object-cover rounded"
+                                    onError={(e) => { e.currentTarget.src = "/placeholder.svg"; }}
                                 />
                                 <div className="flex-1 text-left">
                                     <div className="text-white font-medium">{product.name}</div>

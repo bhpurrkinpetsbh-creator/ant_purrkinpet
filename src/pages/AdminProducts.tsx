@@ -35,7 +35,8 @@ import { BulkProductUpload } from "@/components/admin/BulkProductUpload";
 import { CategoryManagement } from "@/components/admin/CategoryManagement";
 import { EmptyFieldsTab } from "@/components/admin/EmptyFieldsTab";
 import { ProductWarningIndicator } from "@/components/admin/ProductWarningIndicator";
-import { FolderOpen, AlertTriangle } from "lucide-react";
+import { BulkImageUpdate } from "@/components/admin/BulkImageUpdate";
+import { FolderOpen, AlertTriangle, ImageIcon } from "lucide-react";
 
 interface Product {
   id: string;
@@ -458,10 +459,14 @@ const AdminProducts = () => {
       </div>
 
       <Tabs defaultValue="products" className="space-y-6">
-        <TabsList className="grid w-full max-w-2xl grid-cols-4">
+        <TabsList className="grid w-full max-w-3xl grid-cols-5">
           <TabsTrigger value="products" className="gap-2">
             <Edit className="h-4 w-4" />
             All Products
+          </TabsTrigger>
+          <TabsTrigger value="update-images" className="gap-2">
+            <ImageIcon className="h-4 w-4" />
+            Update Images
           </TabsTrigger>
           <TabsTrigger value="categories" className="gap-2">
             <FolderOpen className="h-4 w-4" />
@@ -473,7 +478,7 @@ const AdminProducts = () => {
           </TabsTrigger>
           <TabsTrigger value="history" className="gap-2">
             <History className="h-4 w-4" />
-            Product History
+            History
           </TabsTrigger>
         </TabsList>
 
@@ -663,9 +668,10 @@ const AdminProducts = () => {
                           <TableCell>
                             <div className="flex items-center gap-3">
                               <img
-                                src={product.image_url}
+                                src={product.image_url || "/placeholder.svg"}
                                 alt={product.name}
                                 className="w-12 h-12 object-cover rounded"
+                                onError={(e) => { e.currentTarget.src = "/placeholder.svg"; }}
                               />
                               <div>
                                 <div className="font-medium flex items-center gap-2">
@@ -811,6 +817,20 @@ const AdminProducts = () => {
                   </Table>
                 </div>
               )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="update-images">
+          <Card>
+            <CardHeader>
+              <CardTitle>Update Product Images</CardTitle>
+              <CardDescription>
+                Replace broken or missing product images. Upload new images to Supabase Storage.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <BulkImageUpdate />
             </CardContent>
           </Card>
         </TabsContent>
