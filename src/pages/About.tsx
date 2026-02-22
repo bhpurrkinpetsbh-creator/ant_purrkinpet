@@ -57,9 +57,8 @@ const About = () => {
                   <MapPin className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
                   <div>
                     <p className="font-medium">Location</p>
-                    <p className="text-sm text-muted-foreground">Shop A2136, Near Al Salam Bank</p>
-                    <p className="text-sm text-muted-foreground">Road 5541, Block 255</p>
-                    <p className="text-sm text-muted-foreground">Galali, Al Muharraq, Bahrain</p>
+                    <p className="text-sm text-muted-foreground">Shop No. B-19, 236 Muharraq Central Market</p>
+                    <p className="text-sm text-muted-foreground">Muharraq, Bahrain</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
@@ -106,7 +105,7 @@ const About = () => {
               </h3>
               <div className="aspect-video rounded-lg overflow-hidden">
                 <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3577.8815477368497!2d50.59616!3d26.232324!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjbCsDEzJzU2LjQiTiA1MMKwMzUnNDYuMiJF!5e0!3m2!1sen!2sbh!4v1234567890"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1788.5!2d50.612!3d26.2575!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3e49a5b3e3e3e3e3%3A0x0!2sMuharraq%20Central%20Market!5e0!3m2!1sen!2sbh!4v1234567890!5m2!1sen!2sbh"
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}
@@ -116,7 +115,7 @@ const About = () => {
                   title="Purrkin Pets Location"
                 />
               </div>
-              <p className="text-sm text-muted-foreground mt-4">7JJW+VQ Galali, Bahrain</p>
+              <p className="text-sm text-muted-foreground mt-4">Muharraq Central Market, Muharraq, Bahrain</p>
             </Card>
 
             <Card className="p-6 bg-gradient-hero text-primary-foreground">
