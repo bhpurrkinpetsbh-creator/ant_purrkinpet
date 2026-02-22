@@ -41,7 +41,7 @@ const Footer = () => {
               <h5 className="font-semibold mb-3 text-sm">Find Us</h5>
               <div className="w-full h-[200px] rounded-lg overflow-hidden">
                 <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1788.5!2d50.612!3d26.2575!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3e49a5b3e3e3e3e3%3A0x0!2sMuharraq%20Central%20Market!5e0!3m2!1sen!2sbh!4v1234567890!5m2!1sen!2sbh"
+                  src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d3578!2d50.606645!3d26.25543!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s!2zMjYuMjU1NDMwLCA1MC42MDY2NDU!5e0!3m2!1sen!2sbh"
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}
@@ -59,7 +59,7 @@ const Footer = () => {
             <ul className="space-y-3 text-sm">
               <li className="flex items-center gap-2 text-muted-foreground">
                 <MapPin className="h-4 w-4 flex-shrink-0" />
-                <span>Shop No. B-19, 236 Muharraq Central Market, Muharraq, Bahrain</span>
+                <span>Block 207, Ground Floor, Shop No. B-19-236, Muharraq Central Market, Road 711, Gate 3, Next to LuLu Exchange, Muharraq, Bahrain</span>
               </li>
               <li className="flex items-center gap-2 text-muted-foreground">
                 <Phone className="h-4 w-4 flex-shrink-0" />
