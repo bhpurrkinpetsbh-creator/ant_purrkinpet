@@ -36,6 +36,15 @@
 
 ## Detailed History of Changes
 
+### 2026-03-11 — Maintenance Mode (Bahrain Situation)
+- **Added:** Maintenance page (`src/pages/Maintenance.tsx`) — full-screen "Temporarily Closed" page with safety message, WhatsApp & Instagram contact links
+- **Modified:** `src/App.tsx` — Added `MAINTENANCE_MODE` toggle (line 19). When `true`:
+  - All public routes (home, shop, products, cart, checkout, etc.) show the maintenance page
+  - Header, Footer, and FreeShippingBanner are hidden for a clean full-screen experience
+  - Admin (`/admin/*`), POS (`/pos/*`), and Auth (`/auth`) routes remain accessible
+- **To restore:** Set `MAINTENANCE_MODE = false` in `src/App.tsx`, rebuild, and deploy
+
+---
 
 08945ff - 2025-10-07 : [skip lovable] Use tech stack vite_react_shadcn_ts_20250728_minor
 4463fdf - 2025-10-07 : Implement Purrkin Pets UI

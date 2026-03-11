@@ -8,6 +8,15 @@ import Header from "./components/layout/Header";
 import Footer from "./components/layout/Footer";
 import FreeShippingBanner from "./components/FreeShippingBanner";
 import ScrollToTop from "./components/ScrollToTop";
+import Maintenance from "./pages/Maintenance";
+
+// ============================================================
+// 🔴 MAINTENANCE MODE TOGGLE
+// Set to true  → Website shows "Temporarily Closed" page
+// Set to false → Website runs normally
+// Admin (/admin/*) and POS (/pos/*) routes always stay accessible
+// ============================================================
+const MAINTENANCE_MODE = true;
 import Home from "./pages/Home";
 import Shop from "./pages/Shop";
 import ProductDetail from "./pages/ProductDetail";
@@ -75,6 +84,19 @@ const AnimatedPage = ({ children }: { children: React.ReactNode }) => (
 const AnimatedRoutes = () => {
   const location = useLocation();
 
+  // In maintenance mode, show maintenance page for all public routes
+  // but keep admin and POS routes accessible
+  if (MAINTENANCE_MODE) {
+    const path = location.pathname;
+    const isAdminRoute = path.startsWith("/admin");
+    const isPosRoute = path.startsWith("/pos");
+    const isAuthRoute = path === "/auth";
+
+    if (!isAdminRoute && !isPosRoute && !isAuthRoute) {
+      return <Maintenance />;
+    }
+  }
+
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
@@ -108,6 +130,27 @@ const AnimatedRoutes = () => {
   );
 };
 
+// Helper to check if current path is an admin/POS/auth route (layout needed)
+const AppLayout = () => {
+  const location = useLocation();
+  const path = location.pathname;
+  const isProtectedRoute = path.startsWith("/admin") || path.startsWith("/pos") || path === "/auth";
+
+  // In maintenance mode, hide header/footer/banner for public routes
+  const showLayout = !MAINTENANCE_MODE || isProtectedRoute;
+
+  return (
+    <div className="flex flex-col min-h-screen">
+      {showLayout && <Header />}
+      {showLayout && <FreeShippingBanner />}
+      <main className="flex-1">
+        <AnimatedRoutes />
+      </main>
+      {showLayout && <Footer />}
+    </div>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -132,14 +175,7 @@ const App = () => (
       />
       <BrowserRouter>
         <ScrollToTop />
-        <div className="flex flex-col min-h-screen">
-          <Header />
-          <FreeShippingBanner />
-          <main className="flex-1">
-            <AnimatedRoutes />
-          </main>
-          <Footer />
-        </div>
+        <AppLayout />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
